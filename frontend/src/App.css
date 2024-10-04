@@ -1,0 +1,26 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh; /* Full viewport height */
+}
+
+.left-side {
+  flex: 1;
+  max-width: 60%; /* The left side takes 30% of the width */
+  height: 100%; /* Ensure it spans the full height */
+}
+
+.right-side {
+  flex: 3;
+  padding: 20px;
+  background-color: #f0f2f5;
+  height: 100%; /* Ensure it spans the full height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

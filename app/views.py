@@ -40,7 +40,8 @@ from drf_spectacular.types import OpenApiTypes
 
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
-                            ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer)
+                            ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
+                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer)
 
 
 def send_mail(to, subject, body, body_type='html'):
@@ -201,3 +202,84 @@ class ContentTypeLC(ListCreateAPIView):
     authentication_classes = [JWTAuthentication]
     queryset = ContentType.objects.all().order_by('-id')
     serializer_class = ContentTypeSerializer
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+@extend_schema(request=SiteManagementsSerializer, summary="Site Management", )
+# description="This endpoint helps to rest password.")
+class SiteManagementCRUD(APIView):
+    permission_classes = []
+    authentication_classes = []
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        slideshow = request.FILES.getlist('slideshow')
+        image_data = []
+        for file in slideshow:
+            path = default_storage.save('images/' + file.name, ContentFile(file.read()))
+            image_data.append({'path': path})
+        data['slideshow'] = image_data
+        site = SiteManagement.objects.all()
+        if site:
+            serializer = SiteManagementsSerializer(site[0], data=data, partial=True)
+            s = status.HTTP_200_OK
+        else:
+            serializer = SiteManagementsSerializer(data=data)
+            s = status.HTTP_201_CREATED
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,
+                            content_type='application/json',
+                            status=s)
+        else:
+            return HttpResponse(JSONRenderer().render(serializer.errors),
+                                content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, *args, **kwargs):
+        sites = SiteManagement.objects.all()
+        if sites:
+            serializer = SiteManagementsSerializer(sites, many=True)
+            data = serializer.data[0]
+            data['slideshow'] = ['/media/' + x['path'] for x in data['slideshow'][0]]
+            return Response(data, content_type='application/json', status=status.HTTP_200_OK)
+
+
+class SiteManagementView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    parser_classes = (MultiPartParser, FormParser)
+
+    @extend_schema(parameters=[
+        OpenApiParameter(name='Name', description='Enter Name of the Site', type=str, default='')
+    ], summary="Get Site details", description="This endpoint provides the Site details")
+    def get(self, request, *args, **kwargs):
+        name = request.query_params.get("name")
+        site_managements = SiteManagement.objects.get(name=name)
+        serializer = SiteManagementSerializer(site_managements)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy()  # Make a mutable copy of the request data
+        serializer = SiteManagementSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        try:
+            site_management = SiteManagement.objects.get(pk=pk)
+        except SiteManagement.DoesNotExist:
+            return Response({"error": "SiteManagement not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = request.data.copy()  # Make a mutable copy of the request data
+        serializer = SiteManagementSerializer(site_management, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
