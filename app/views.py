@@ -210,6 +210,7 @@ class ContentTypeLC(ListCreateAPIView):
 class SiteManagementCRUD(APIView):
     permission_classes = []
     authentication_classes = []
+    serializer_class = SiteManagementsSerializer
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
@@ -238,18 +239,24 @@ class SiteManagementCRUD(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        sites = SiteManagement.objects.all()
-        if sites:
-            serializer = SiteManagementsSerializer(sites, many=True)
-            data = serializer.data[0]
-            data['slideshow'] = ['/media/' + x['path'] for x in data['slideshow'][0]]
-            return Response(data, content_type='application/json', status=status.HTTP_200_OK)
+        try:
+            sites = SiteManagement.objects.all()
+            if sites:
+                serializer = SiteManagementsSerializer(sites, many=True)
+                data = serializer.data[0]
+                data['slideshow'] = ['/media/' + x['path'] for x in data['slideshow'][0]]
+                return Response(data, content_type='application/json', status=status.HTTP_200_OK)
+            else:
+                return Response({"message":"No data found"}, content_type='application/json', status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error":str(e)}, content_type='application/json', status=status.HTTP_404_NOT_FOUND)
 
 
 class SiteManagementView(APIView):
     authentication_classes = []
     permission_classes = []
     parser_classes = (MultiPartParser, FormParser)
+    serializer_class = SiteManagementSerializer
 
     @extend_schema(parameters=[
         OpenApiParameter(name='Name', description='Enter Name of the Site', type=str, default='')

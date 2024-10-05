@@ -6,6 +6,10 @@ const SignUp = ({setCurrentForm}) => {
   // States to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [rePassword, setRePassword] = useState('')
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -19,6 +23,13 @@ const SignUp = ({setCurrentForm}) => {
     setCurrentForm('signIn')
   }
 
+  const handleSubmit = async (e) => {
+    console.log(name)
+    console.log(username)
+    console.log(password)
+    console.log(rePassword)
+  }
+
   return (
     <div className="w-full md:w-1/3 p-8 rounded-lg">
       <div className="text-center mb-6 ">
@@ -30,21 +41,27 @@ const SignUp = ({setCurrentForm}) => {
         <h2 className="text-xl font-light text-gray-500">Create Account</h2>
         <p className="text-gray-400">Enter details to create your account</p>
       </div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700">Your name</label>
           <input
             type="text"
             placeholder="Enter your name"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
           />
         </div>
         <div className="mb-4">
           <label className="block text-gray-700">E-mail or phone numbers</label>
           <input
-            type="email"
+            type="text"
             placeholder="Enter your email or phone number"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
           />
         </div>
         <div className="mb-4 flex space-x-4">
@@ -55,6 +72,9 @@ const SignUp = ({setCurrentForm}) => {
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             {/* Eye Icon */}
             <span
@@ -74,6 +94,9 @@ const SignUp = ({setCurrentForm}) => {
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Enter your password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              value={rePassword}
+              onChange={(e) => setRePassword(e.target.value)}
+              required
             />
             {/* Eye Icon */}
             <span
