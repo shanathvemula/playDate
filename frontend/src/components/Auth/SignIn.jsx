@@ -22,11 +22,10 @@ const SignIn = ({setCurrentForm}) => {
 
   const handleSubmit = async (e) => {
     const data = await login(username, password);
-    
   }
 
   return (
-    <div className="w-full md:w-1/3 p-8 rounded-lg">
+    <div>
       <div className="text-center mb-6 ">
         <img
           src="logo.png" // Add your logo here

@@ -41,7 +41,7 @@ from drf_spectacular.types import OpenApiTypes
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
-                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer)
+                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer)
 
 
 def send_mail(to, subject, body, body_type='html'):
@@ -89,6 +89,29 @@ class UserGET(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class SignUp(APIView):
+    queryset = User.objects.all()
+    serializer_class = UserSignUpSerializer
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(request=UserSignUpSerializer, summary="User SignUp", description="* This endpoint helps to sign up the user")
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            password = request.data.get('password')
+            validate_password(password=data['password'], user=User)
+            data['password'] = make_password(data['password'])
+            serializer = UserSignUpSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
+                                    status=status.HTTP_201_CREATED)
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UserCRUD(APIView):

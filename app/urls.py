@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 
-from app.views import (ContentTypeLC, PermissionsLC, GroupLC, GroupRUD, UserCRUD, UserGET, SiteManagementCRUD)
+from app.views import (ContentTypeLC, PermissionsLC, GroupLC, GroupRUD, UserCRUD, UserGET, SiteManagementCRUD, SignUp)
 
 urlpatterns = [
     path('contenttypes/', ContentTypeLC.as_view()),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('user/', UserCRUD.as_view(), name="User"),
     path('user_list/', UserGET.as_view()),
     path('SiteManagement/', SiteManagementCRUD.as_view()),
+    path('signup/', SignUp.as_view())
 ]

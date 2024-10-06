@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User, Group, Permission, ContentType
 from django.conf import settings
+from django.core.serializers import serialize
 
 from app.models import SiteManagement
 
 import os
 
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, Serializer
-
+from rest_framework import serializers
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -37,6 +38,11 @@ class UserSerializerDepth(ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+class UserSignUpSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username','password' ,'first_name')
 
 
 class GroupSerializer(ModelSerializer):
