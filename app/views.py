@@ -16,7 +16,6 @@ from django.shortcuts import render
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from jinja2 import Template
 # Mail Imports
 import email, smtplib, ssl
 from email import encoders
@@ -136,12 +135,11 @@ class SignUp(APIView):
                 email= False
             serializer = UserSignUpSerializer(data=data)
             if serializer.is_valid():
-                # serializer.save()
+                serializer.save()
                 if email:
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
                               "r") as html:
                         body = html.read()
-                    jinja_template = Template(body)
                     # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
                     logInURL = os.getenv("logInURL")
                     # print(os.getenv('logoURL'))
