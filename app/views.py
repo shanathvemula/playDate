@@ -141,11 +141,11 @@ class SignUp(APIView):
                               "r") as html:
                         body = html.read()
                     # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
-                    logInURL = os.getenv("logInURL")
+                    # logInURL = os.getenv("logInURL")
                     # print(os.getenv('logoURL'))
                     body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ app_name }}", os.getenv('app_name'))
                             .replace("{{ first_name }}", data['first_name']).replace("{{ email }}",data['email'])
-                            .replace("{{ logInURL }}", logInURL).replace("{{ current_year }}", str(datetime.now().year))
+                            .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}", str(datetime.now().year))
                             .replace("{{ company_address }}", os.getenv("company_address"))
                             .replace("{{ supportMail }}", os.getenv("supportMail")))
                     send_mail(to=data['email'], subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
