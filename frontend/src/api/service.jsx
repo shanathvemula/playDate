@@ -2,12 +2,10 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { notification } from 'antd';
 
-
-let baseURL = 'http://69.197.176.103:8000';
-
 // Create axios instance with dynamic base URL
 const apiClient = axios.create({
     // baseURL: baseURL,
+    baseURL: '/api',
     headers: {
         'Content-Type': 'application/json',
     }
@@ -25,7 +23,7 @@ const openNotificationWithIcon = (type, message, description) => {
 // Authentication function
 export const login = async (username, password) => {
     try {
-        const response = await apiClient.post('/api/Auth/token/',{
+        const response = await apiClient.post('/Auth/token/',{
             username,
             password,
         });
@@ -45,7 +43,7 @@ export const login = async (username, password) => {
 
 export const signup = async (username, password, first_name) => {
     try {
-        const response = await apiClient.post('/api/User/signup/', {
+        const response = await apiClient.post('/User/signup/', {
             username,
             password,
             first_name
@@ -62,4 +60,10 @@ export const signup = async (username, password, first_name) => {
             openNotificationWithIcon('error', 'Network Error', 'Please try again later.');
         }
     }
+}
+
+
+export const ClientInfo = async () => {
+    const response = await apiClient.get('/Auth/site_management/')
+    return response.data
 }

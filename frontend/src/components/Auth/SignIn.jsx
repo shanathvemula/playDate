@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../../api/service';
+import Cookies from 'js-cookie';
 
 const SignIn = ({setCurrentForm}) => {
   const [showPassword, setShowPassword] = useState(false); // State to control password visibility
@@ -22,6 +23,8 @@ const SignIn = ({setCurrentForm}) => {
 
   const handleSubmit = async (e) => {
     const data = await login(username, password);
+    Cookies.set("token", data.access, {expires: 1/24, secure: true})
+    Cookies.set("refresh", data.refresh, {expires: 7, secure: true})
   }
 
   return (

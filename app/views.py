@@ -1,4 +1,7 @@
 # Django Import
+import os
+from datetime import datetime
+
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse, JsonResponse
@@ -10,14 +13,17 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.utils.timezone import now
 from django.shortcuts import render
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
+from jinja2 import Template
 # Mail Imports
 import email, smtplib, ssl
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT
+
 
 # REST Framework
 from rest_framework.renderers import JSONRenderer
@@ -38,10 +44,16 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
     extend_schema_serializer, extend_schema_field
 from drf_spectacular.types import OpenApiTypes
 
+# django-phonenumber-field
+from phonenumber_field.phonenumber import PhoneNumber
+from phonenumber_field.phonenumber import to_python as parse_phone_number
+
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
                             SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer)
+from playDate.settings import BASE_DIR
+from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT
 
 
 def send_mail(to, subject, body, body_type='html'):
@@ -65,6 +77,18 @@ def send_mail(to, subject, body, body_type='html'):
     except Exception as e:
         return str(e)
 
+def validate_phone_number(phone):
+    # Convert the input to a phone number object
+    phone_number = parse_phone_number(phone)
+    # Check if the phone number is valid (exists in the phonenumbers library)
+    return phone_number and phone_number.is_valid()
+
+def validate_email_address(email):
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
 
 @method_decorator(csrf_exempt, name='dispatch')
 # @extend_schema
@@ -103,9 +127,30 @@ class SignUp(APIView):
             password = request.data.get('password')
             validate_password(password=data['password'], user=User)
             data['password'] = make_password(data['password'])
+
+            if validate_email_address(data['username']):
+                data['email'] = data['username']
+                email = True
+            if validate_phone_number(data['username']):
+                data['phone'] = data['username']
+                email= False
             serializer = UserSignUpSerializer(data=data)
             if serializer.is_valid():
-                serializer.save()
+                # serializer.save()
+                if email:
+                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
+                              "r") as html:
+                        body = html.read()
+                    jinja_template = Template(body)
+                    # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
+                    logInURL = os.getenv("logInURL")
+                    # print(os.getenv('logoURL'))
+                    body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ app_name }}", os.getenv('app_name'))
+                            .replace("{{ first_name }}", data['first_name']).replace("{{ email }}",data['email'])
+                            .replace("{{ logInURL }}", logInURL).replace("{{ current_year }}", str(datetime.now().year))
+                            .replace("{{ company_address }}", os.getenv("company_address"))
+                            .replace("{{ supportMail }}", os.getenv("supportMail")))
+                    send_mail(to=data['email'], subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
                                     status=status.HTTP_201_CREATED)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)

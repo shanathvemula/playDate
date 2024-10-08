@@ -25,7 +25,7 @@ const AuthPage = () => {
     return (
         <div className="min-h-screen flex justify-center items-center bg-gray-100">
             <div className="container mx-auto p-4 md:p-10">
-                <div className="flex flex-col md:flex-row bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="flex flex-col md:flex-row bg-white rounded-lg overflow-hidden">
                     {/* Form section */}
                     <div className="w-full md:w-1/3 p-6 flex items-center justify-center">
                         {currentForm === 'signIn' && (

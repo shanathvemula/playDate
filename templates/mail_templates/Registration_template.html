@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Welcome Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header img {
+            width: 120px;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        .content h1 {
+            font-size: 24px;
+            color: #333333;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777777;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Email Header -->
+        <div class="header">
+            <img src="{{ logo_path }}" alt="App Name Logo">
+        </div>
+
+        <!-- Email Content -->
+        <div class="content">
+            <h1>Welcome to {{ app_name }}, {{ first_name }}!</h1>
+            <p>
+                We're thrilled to have you on board! You can now book your favorite grounds and slots easily. Whether it's a weekend match or a casual game, we’ve got you covered.
+            </p>
+
+            <h2>Your account details:</h2>
+            <ul>
+                <li><strong>name:</strong> {{ first_name }}</li>
+                <li><strong>Email:</strong> {{ email }}</li>
+<!--                <li><strong>Mobile Number:</strong> {{ phone}}</li>-->
+            </ul>
+
+            <p>
+                Start exploring available grounds and slots now. We're here to make your experience seamless. If you need any assistance, feel free to contact us at <a href="mailto:{{ supportMail }}">{{ supportMail }}</a>.
+            </p>
+
+            <!-- Call to Action Button -->
+            <a href="{{ logInURL }}" class="cta-button" style="color: #ffffff">Book Your First Slot</a>
+        </div>
+
+        <!-- Email Footer -->
+        <div class="footer">
+            <p>&copy; {{ current_year }} {{ app_name }}. All rights reserved.</p>
+            <p>{{ app_name }}, {{ company_address }}</p>
+        </div>
+    </div>
+</body>
+</html>
