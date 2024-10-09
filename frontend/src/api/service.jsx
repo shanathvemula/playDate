@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 // Create axios instance with dynamic base URL
 const apiClient = axios.create({
     // baseURL: baseURL,
-    baseURL: 'http://127.0.0.1:8000/',
+    baseURL: 'api/',
     headers: {
         'Content-Type': 'application/json',
         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach

@@ -21,7 +21,7 @@ function PasswordReset() {
           {/* <div className="bg-blue-100 rounded-full p-3"> */}
             {/* <span className="text-blue-500 text-2xl font-bold"> */}
             <img
-              src="http://69.197.176.103:8000/media/logo/Logo_without_background.png" // Add your logo here
+              src="api/media/logo/Logo_without_background.png" // Add your logo here
               alt="Logo"
               className="mx-auto mb-4"/>
             {/* </span> */}
