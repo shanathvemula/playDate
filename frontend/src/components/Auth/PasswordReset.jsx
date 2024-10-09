@@ -18,9 +18,14 @@ function PasswordReset() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
         <div className="flex justify-center mb-6">
-          <div className="bg-blue-100 rounded-full p-3">
-            <span className="text-blue-500 text-2xl font-bold">R</span>
-          </div>
+          {/* <div className="bg-blue-100 rounded-full p-3"> */}
+            {/* <span className="text-blue-500 text-2xl font-bold"> */}
+            <img
+              src="http://69.197.176.103:8000/media/logo/Logo_without_background.png" // Add your logo here
+              alt="Logo"
+              className="mx-auto mb-4"/>
+            {/* </span> */}
+          {/* </div> */}
         </div>
         <h2 className="text-2xl font-bold text-center mb-2">Reset your password</h2>
         <p className="text-gray-600 text-center mb-6">

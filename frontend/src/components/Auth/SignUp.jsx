@@ -55,7 +55,7 @@ const SignUp = ({ setCurrentForm }) => {
     <div>
       <div className="text-center mb-6">
         <img
-          src="logo.png" // Add your logo here
+          src="http://69.197.176.103:8000/media/logo/Logo_without_background.png" // Add your logo here
           alt="Logo"
           className="mx-auto mb-4"
         />
