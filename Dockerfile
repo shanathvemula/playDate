@@ -3,8 +3,8 @@ FROM python:latest
 WORKDIR /usr/src/app
 COPY requirements.txt ./
 
-RUN sudo apt-get install build-dep python-psycopg2
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install psycopg2-binary --user
 
 COPY . .
 EXPOSE 8000
