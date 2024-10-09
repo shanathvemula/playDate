@@ -44,6 +44,10 @@ class UserSignUpSerializer(ModelSerializer):
         model = User
         fields = ('username','password' ,'first_name')
 
+class UserForgetPasswordSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username')
 
 class GroupSerializer(ModelSerializer):
     class Meta:

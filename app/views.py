@@ -1,6 +1,6 @@
 # Django Import
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -50,9 +50,10 @@ from phonenumber_field.phonenumber import to_python as parse_phone_number
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
-                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer)
+                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer,
+                            UserForgetPasswordSerializer)
 from playDate.settings import BASE_DIR
-from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT
+from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT, fernet
 
 
 def send_mail(to, subject, body, body_type='html'):
@@ -119,7 +120,8 @@ class SignUp(APIView):
     authentication_classes = []
     permission_classes = []
 
-    @extend_schema(request=UserSignUpSerializer, summary="User SignUp", description="* This endpoint helps to sign up the user")
+    @extend_schema(request=UserSignUpSerializer, summary="User SignUp", description="* This endpoint helps to sign up the user \n"
+                                                                                    "* Make email will be null or empty string")
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
@@ -135,7 +137,8 @@ class SignUp(APIView):
                 email= False
             serializer = UserSignUpSerializer(data=data)
             if serializer.is_valid():
-                serializer.save()
+                user = User(**data)
+                user.save()
                 if email:
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
                               "r") as html:
@@ -152,6 +155,37 @@ class SignUp(APIView):
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
                                     status=status.HTTP_201_CREATED)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=UserSignUpSerializer, summary="Forget Password", description="* This endpoint helps to generate the forget password mail.\n"
+                                                                                        "* password and first_name will be null or empty.")
+    def put(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            user = User.objects.get(username__exact=data['username'])
+            if user:
+                if user.email:
+                    d = str({"email":user.username, "timeout": datetime.now()+timedelta(days=2)})
+                    encrptMessage = str(fernet.encrypt(d.encode()))
+                    reset_link = os.getenv("serverURL")+"User/signup/?token="+encrptMessage
+                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "forget_password.html"),
+                              "r") as html:
+                        body = html.read()
+                        body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ reset_link }}", reset_link)
+                                .replace("{{ supportMail }}", os.getenv("supportMail")).replace("{{ current_year }}", str(datetime.now().year))
+                                .replace("{{ company_address }}", os.getenv("company_address")).replace("{{ app_name }}", os.getenv('app_name')))
+                        send_mail(to=user.email,
+                                  subject=f"Password Reset Request for Your {os.getenv('app_name')} Account", body=body)
+                        return HttpResponse(JSONRenderer().render({"message":"Reset mail sent"}), content_type='application/json',
+                                            status=status.HTTP_200_OK)
+                    # print(fernet.decrypt(eval(encrptMessage)))
+                    # print(type(eval(encrptMessage).decode()))
+                else:
+                    return HttpResponse(JSONRenderer().render({"Error": "No mail info"}), content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "user does n't exists"}), content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

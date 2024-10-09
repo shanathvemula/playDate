@@ -15,13 +15,16 @@ from datetime import timedelta
 
 from dotenv import load_dotenv
 
+from cryptography.fernet import Fernet
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load the .env file
 env_path = os.path.join(BASE_DIR, ".env")
 load_dotenv(dotenv_path=env_path)
-
+fernet = Fernet(os.getenv('fernet_key').encode('utf-8'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
