@@ -5,11 +5,11 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: "localhost", // e.g., '192.168.1.100'
+    host: "127.0.0.1", // e.g., '192.168.1.100'
     port: 5173, // e.g., 3000
     proxy: {
       "/api": {
-        target: "http://localhost:8000/",
+        target: "http://127.0.0.1:8001/",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
