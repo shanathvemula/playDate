@@ -1,15 +1,26 @@
-FROM node
+# Use an official Node.js runtime as a parent image
+FROM node:18-alpine
 
+# Set the working directory inside the container
 WORKDIR /app
 
-COPY package.json .
+# Copy package.json and package-lock.json (or yarn.lock) to the working directory
+COPY package*.json ./
 
-RUN npm i
+# Install the app dependencies
+RUN npm install
 
+# Copy the rest of the application code
 COPY . .
 
-## EXPOSE [Port you mentioned in the vite.config file]
+# Build the Vite app for production
+RUN npm run build
 
-EXPOSE 5173
+# Install a lightweight HTTP server to serve the static files
+RUN npm install -g serve
 
-CMD ["npm", "run", "dev"]
+# Expose port 5173 for Vite dev server or 3000 for serve
+EXPOSE 3000
+
+# Command to serve the build folder
+CMD ["serve", "-s", "dist", "-l", "3000"]
