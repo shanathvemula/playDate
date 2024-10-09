@@ -3,11 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../../api/service';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 
 const SignIn = ({setCurrentForm}) => {
   const [showPassword, setShowPassword] = useState(false); // State to control password visibility
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword); // Toggle the state
@@ -23,8 +26,10 @@ const SignIn = ({setCurrentForm}) => {
 
   const handleSubmit = async (e) => {
     const data = await login(username, password);
+    // console.log(data,"data")
     Cookies.set("token", data.access, {expires: 1/24, secure: true})
     Cookies.set("refresh", data.refresh, {expires: 7, secure: true})
+    navigate('/home')
   }
 
   return (

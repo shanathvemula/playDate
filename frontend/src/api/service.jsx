@@ -1,13 +1,16 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 import { notification } from 'antd';
+import { toast } from 'react-toastify';
 
 // Create axios instance with dynamic base URL
 const apiClient = axios.create({
     // baseURL: baseURL,
-    baseURL: '/api',
+    baseURL: 'http://127.0.0.1:8000/',
     headers: {
         'Content-Type': 'application/json',
+        // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
+        // 'Authorization': 'Bearer ' + Cookies.get('token'),
     }
 })
 
@@ -28,10 +31,12 @@ export const login = async (username, password) => {
             password,
         });
         openNotificationWithIcon('success', 'Login Successful', 'You have successfully logged in!');
+        // console.log("success", response)
+        // toast.success("Login Successful")
         return response.data;
     } catch (error){
-        // console.log("error", error.response.data.detail )
-        if (error.response.status === 404) {
+        console.log("error", error)
+        if (error.response.status === 401) {
             // Show specific error message if available
             openNotificationWithIcon('error', 'Login Failed', 'Invalid credentials');
         } else {
@@ -49,12 +54,14 @@ export const signup = async (username, password, first_name) => {
             first_name
         });
         openNotificationWithIcon('success', 'Signup Successful', 'Your account has been created successfully!');
+        window.location.reload()
         return response.data
     } catch (error){
-        console.log("error", error.response)
+        console.log("error", error.response.data)
         if (error.response && error.response.data) {
             // Show specific error message if available
             openNotificationWithIcon('error', 'Signup Failed', error.response.data.detail || 'Unknown error');
+            // return false
         } else {
             // Network or unexpected error
             openNotificationWithIcon('error', 'Network Error', 'Please try again later.');
@@ -62,7 +69,25 @@ export const signup = async (username, password, first_name) => {
     }
 }
 
-
+export const forgetPassword = async (username) => {
+    try {
+        const response = await apiClient.put('/User/signup/', {
+            username
+        });
+        openNotificationWithIcon('success', 'Reset mail sent', 'Reset mail sent successfully!');
+        window.location.reload()
+        return response.data
+    } catch (error) {
+        if (error.response && error.response.data) {
+            // Show specific error message if available
+            openNotificationWithIcon('error', 'Mail sent Failed', error.response.data.detail || 'Unknown error');
+            // return false
+        } else {
+            // Network or unexpected error
+            openNotificationWithIcon('error', 'Network Error', 'Please try again later.');
+        }
+    }
+}
 export const ClientInfo = async () => {
     const response = await apiClient.get('/Auth/site_management/')
     return response.data

@@ -1,4 +1,5 @@
 # Django Import
+import json
 import os
 from datetime import datetime, timedelta
 
@@ -46,6 +47,8 @@ from drf_spectacular.types import OpenApiTypes
 # django-phonenumber-field
 from phonenumber_field.phonenumber import PhoneNumber
 from phonenumber_field.phonenumber import to_python as parse_phone_number
+import phonenumbers
+from phonenumbers.phonenumberutil import NumberParseException
 
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
@@ -90,6 +93,13 @@ def validate_email_address(email):
     except ValidationError:
         return False
 
+def is_valid_phone_number(phone_number, region='IN'):
+    try:
+        parsed_number = phonenumbers.parse(phone_number, region)
+        return phonenumbers.is_valid_number(parsed_number)
+    except NumberParseException:
+        return False
+
 @method_decorator(csrf_exempt, name='dispatch')
 # @extend_schema
 class UserGET(APIView):
@@ -120,6 +130,28 @@ class SignUp(APIView):
     authentication_classes = []
     permission_classes = []
 
+    @staticmethod
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='token', description="Enter reset token", required=True, type=str)
+        ], summary="validating token", description="* This endpoint helps to validate the forget token"
+    )
+    def get(request, *args, **kwargs):
+        try:
+            token = request.GET.get('token')
+            data = eval(fernet.decrypt(eval("b'"+token+"'")).decode())
+            data['timeout'] = datetime.strptime(data['timeout'], '%Y-%m-%d %H:%M:%S.%f')
+            print(data)
+            if data['timeout']>datetime.now():
+                pass
+            # print(eval(fernet.decrypt("b'"+token+"'")))
+            return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json',
+                         status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
     @extend_schema(request=UserSignUpSerializer, summary="User SignUp", description="* This endpoint helps to sign up the user \n"
                                                                                     "* Make email will be null or empty string")
     def post(self, request, *args, **kwargs):
@@ -128,7 +160,7 @@ class SignUp(APIView):
             password = request.data.get('password')
             validate_password(password=data['password'], user=User)
             data['password'] = make_password(data['password'])
-
+            email=None
             if validate_email_address(data['username']):
                 data['email'] = data['username']
                 email = True
@@ -137,23 +169,26 @@ class SignUp(APIView):
                 email= False
             serializer = UserSignUpSerializer(data=data)
             if serializer.is_valid():
-                user = User(**data)
-                user.save()
-                if email:
-                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
-                              "r") as html:
-                        body = html.read()
-                    # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
-                    # logInURL = os.getenv("logInURL")
-                    # print(os.getenv('logoURL'))
-                    body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ app_name }}", os.getenv('app_name'))
-                            .replace("{{ first_name }}", data['first_name']).replace("{{ email }}",data['email'])
-                            .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}", str(datetime.now().year))
-                            .replace("{{ company_address }}", os.getenv("company_address"))
-                            .replace("{{ supportMail }}", os.getenv("supportMail")))
-                    send_mail(to=data['email'], subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
-                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
-                                    status=status.HTTP_201_CREATED)
+                if email is not None:
+                    user = User(**data)
+                    user.save()
+                    if email:
+                        with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
+                                  "r") as html:
+                            body = html.read()
+                        # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
+                        # logInURL = os.getenv("logInURL")
+                        # print(os.getenv('logoURL'))
+                        body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ app_name }}", os.getenv('app_name'))
+                                .replace("{{ first_name }}", data['first_name']).replace("{{ email }}",data['email'])
+                                .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}", str(datetime.now().year))
+                                .replace("{{ company_address }}", os.getenv("company_address"))
+                                .replace("{{ supportMail }}", os.getenv("supportMail")))
+                        send_mail(to=data['email'], subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
+                    return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
+                                        status=status.HTTP_201_CREATED)
+                return HttpResponse(JSONRenderer().render({"error":"Please provide the valid info. E-mail or phone number field not allow thw space"}),
+                                    content_type='application', status=status.HTTP_400_BAD_REQUEST)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
@@ -167,8 +202,9 @@ class SignUp(APIView):
             user = User.objects.get(username__exact=data['username'])
             if user:
                 if user.email:
-                    d = str({"email":user.username, "timeout": datetime.now()+timedelta(days=2)})
-                    encrptMessage = str(fernet.encrypt(d.encode()))
+                    d = str({"email":user.username, "timeout": str(datetime.now()-timedelta(days=2)), "password_reset":True})
+                    encrptMessage = str(fernet.encrypt(d.encode())).replace("b'",'').replace("'",'')
+                    # print(encrptMessage)
                     reset_link = os.getenv("serverURL")+"User/signup/?token="+encrptMessage
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "forget_password.html"),
                               "r") as html:

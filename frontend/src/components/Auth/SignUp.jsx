@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { signup } from '../../api/service';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = ({ setCurrentForm }) => {
   // States to manage password visibility and form inputs
