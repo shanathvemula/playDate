@@ -47,7 +47,8 @@ const SignUp = ({ setCurrentForm }) => {
     }
 
     // Submit form logic
-    const data = await signup(username, password, first_name)
+    const data = await signup(username, password, first_name, setCurrentForm)
+    // setCurrentForm('signIn')
     // Further form submission logic (e.g., API calls) goes here
   };
 

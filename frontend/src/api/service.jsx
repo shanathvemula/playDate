@@ -48,7 +48,7 @@ export const login = async (username, password) => {
     }
 }
 
-export const signup = async (username, password, first_name) => {
+export const signup = async (username, password, first_name, setCurrentForm) => {
     try {
         const response = await apiClient.post('/User/signup/', {
             username,
@@ -56,6 +56,7 @@ export const signup = async (username, password, first_name) => {
             first_name
         });
         openNotificationWithIcon('success', 'Signup Successful', 'Your account has been created successfully!');
+        setCurrentForm('signIn')
         return response.data
     } catch (error){
         console.log("error", error.response.data)
