@@ -11,7 +11,9 @@ const ForgetPassword = ({setCurrentForm}) => {
     }
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
         const data = await forgetPassword(username);
+        navigateSignIn()
     }
 
     return (
@@ -44,7 +46,7 @@ const ForgetPassword = ({setCurrentForm}) => {
         <div className="text-center mt-4">
         <p className="text-gray-500">
             Back to {' '}
-            <a href="#" onClick={navigateSignIn} className="text-blue-500">Sign In</a>
+            <a onClick={navigateSignIn} className="text-blue-500">Sign In</a>
         </p>
         </div>
     </div>

@@ -156,7 +156,7 @@ const SignUp = ({ setCurrentForm }) => {
         <div className="text-center mt-4">
           <p className="text-gray-500">
             Already have an account?{' '}
-            <a href="#" onClick={navigateSignIn} className="text-blue-500">
+            <a onClick={navigateSignIn} className="text-blue-500">
               Sign in
             </a>
           </p>

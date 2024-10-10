@@ -2,11 +2,13 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { notification } from 'antd';
 import { toast } from 'react-toastify';
+import { PiAppWindow } from "react-icons/pi";
+import Password from "antd/es/input/Password";
 
 // Create axios instance with dynamic base URL
 const apiClient = axios.create({
     // baseURL: baseURL,
-    baseURL: 'api/',
+    baseURL: '/api/',
     headers: {
         'Content-Type': 'application/json',
         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
@@ -54,7 +56,6 @@ export const signup = async (username, password, first_name) => {
             first_name
         });
         openNotificationWithIcon('success', 'Signup Successful', 'Your account has been created successfully!');
-        window.location.reload()
         return response.data
     } catch (error){
         console.log("error", error.response.data)
@@ -75,7 +76,6 @@ export const forgetPassword = async (username) => {
             username
         });
         openNotificationWithIcon('success', 'Reset mail sent', 'Reset mail sent successfully!');
-        window.location.reload()
         return response.data
     } catch (error) {
         if (error.response && error.response.data) {
@@ -84,10 +84,27 @@ export const forgetPassword = async (username) => {
             // return false
         } else {
             // Network or unexpected error
-            openNotificationWithIcon('error', 'Network Error', 'Please try again later.');
+            openNotificationWithIcon('error', 'Error', 'Please try again later.');
         }
     }
 }
+
+export const resetPassword = async (token, password, confirm_password) => {
+    try {
+        const response = await apiClient.get('/User/signup/',{
+            params: {
+                token,
+                password,
+                confirm_password
+            }
+        });
+        openNotificationWithIcon('success', 'Password update', 'Password updated successfully');
+        return response
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+        }
+    }
 export const ClientInfo = async () => {
     const response = await apiClient.get('/Auth/site_management/')
     return response.data

@@ -50,6 +50,9 @@ from phonenumber_field.phonenumber import to_python as parse_phone_number
 import phonenumbers
 from phonenumbers.phonenumberutil import NumberParseException
 
+# cryptography
+from cryptography.fernet import InvalidToken
+
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
@@ -135,14 +138,14 @@ class SignUp(APIView):
         parameters=[
             OpenApiParameter(name='token', description="Enter reset token", required=True, type=str),
             OpenApiParameter(name='password',description="Enter reset password", type=str),
-            OpenApiParameter(name='re_password', description="Enter Re-Password", type=str)
+            OpenApiParameter(name='confirm_password', description="Enter Re-Password", type=str)
         ], summary="validating token", description="* This endpoint helps to validate the forget token"
     )
     def get(request, *args, **kwargs):
         try:
             token = request.GET.get('token')
             password = request.GET.get('password')
-            re_password = request.GET.get('re_password')
+            confirm_password = request.GET.get('confirm_password')
             data = eval(fernet.decrypt(eval("b'"+token+"'")).decode())
             data['timeout'] = datetime.strptime(data['timeout'], '%Y-%m-%d %H:%M:%S.%f')
             # print(data)
@@ -152,7 +155,7 @@ class SignUp(APIView):
                                     content_type='application/json',
                                     status=status.HTTP_400_BAD_REQUEST)
             elif data['timeout']>datetime.now():
-                if password == re_password:
+                if password == confirm_password:
                     user = User.objects.filter(email__exact=data['email'])
                     validate_password(password=password, user=User)
                     hashed_password = make_password(password)
@@ -160,13 +163,15 @@ class SignUp(APIView):
                     return HttpResponse(JSONRenderer().render({"message": "Password updated successfully"}), content_type='application/json',
                                         status=status.HTTP_200_OK)
                 else:
-                    return HttpResponse(JSONRenderer().render({"error": "password and re-password has to be same."}), content_type='application/json',
+                    return HttpResponse(JSONRenderer().render({"Error": "password and confirm password has to be same."}), content_type='application/json',
                                         status=status.HTTP_400_BAD_REQUEST)
             else:
-                return HttpResponse(JSONRenderer().render({"error": "Reset link expired."}),
+                return HttpResponse(JSONRenderer().render({"Error": "Reset link expired."}),
                                     content_type='application/json',
                                     status=status.HTTP_400_BAD_REQUEST)
-
+        except InvalidToken:
+            return HttpResponse(JSONRenderer().render({"Error": "Invalid token"}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -225,7 +230,7 @@ class SignUp(APIView):
                     d = str({"email":user.username, "timeout": str(datetime.now()+timedelta(days=2)), "password_reset":True})
                     encrptMessage = str(fernet.encrypt(d.encode())).replace("b'",'').replace("'",'')
                     # print(encrptMessage)
-                    reset_link = os.getenv("serverURL")+"User/signup/?token="+encrptMessage
+                    reset_link = os.getenv("forget_password_url")+"?token="+encrptMessage
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "forget_password.html"),
                               "r") as html:
                         body = html.read()

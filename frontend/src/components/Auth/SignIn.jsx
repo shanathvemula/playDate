@@ -4,6 +4,8 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../../api/service';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import GoogleButton from 'react-google-button';
 
 const SignIn = ({setCurrentForm}) => {
   const [showPassword, setShowPassword] = useState(false); // State to control password visibility
@@ -25,6 +27,7 @@ const SignIn = ({setCurrentForm}) => {
   }
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
     const data = await login(username, password);
     // console.log(data,"data")
     Cookies.set("token", data.access, {expires: 1/24, secure: true})
@@ -79,22 +82,23 @@ const SignIn = ({setCurrentForm}) => {
           </div>
         </div>
         <div className="flex justify-between items-center mb-4">
-          <a href="#" onClick={navigateForgetPassword} className="text-blue-500 text-sm">Forgot Password?</a>
+          <a onClick={navigateForgetPassword} className="text-blue-500 text-sm">Forgot Password?</a>
         </div>
         <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300">
           Login
         </button>
         <div className="mt-4">
-          <button className="w-full bg-white border border-gray-300 py-2 rounded-lg flex items-center justify-center">
+          {/* <GoogleButton onClick={login} label="" style={{ width: '50px', height: '50px' }} /> */}
+          {/* <button className="w-full bg-white border border-gray-300 py-2 rounded-lg flex items-center justify-center">
             <img src="google-icon.png" alt="Google" className="w-5 h-5 mr-2" />
             Sign up with Google
-          </button>
+          </button> */}
         </div>
       </form>
       <div className="text-center mt-4">
         <p className="text-gray-500">
           Don’t have an account?{' '}
-          <a href="#" onClick={navigateSignUp} className="text-blue-500">Create New Account</a>
+          <a onClick={navigateSignUp} className="text-blue-500">Create New Account</a>
         </p>
       </div>
     </div>
