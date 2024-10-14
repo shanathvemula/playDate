@@ -4,8 +4,9 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { login } from '../../api/service';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
-import GoogleButton from 'react-google-button';
+
+import GoogleLoginButton from './GoogleLoginButton';
+
 
 const SignIn = ({setCurrentForm}) => {
   const [showPassword, setShowPassword] = useState(false); // State to control password visibility
@@ -88,7 +89,7 @@ const SignIn = ({setCurrentForm}) => {
           Login
         </button>
         <div className="mt-4">
-          {/* <GoogleButton onClick={login} label="" style={{ width: '50px', height: '50px' }} /> */}
+          {/* <GoogleButton onClick={login} label=" " style={{ width: '50px', height: '50px' }} /> */}
           {/* <button className="w-full bg-white border border-gray-300 py-2 rounded-lg flex items-center justify-center">
             <img src="google-icon.png" alt="Google" className="w-5 h-5 mr-2" />
             Sign up with Google

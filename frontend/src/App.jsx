@@ -34,6 +34,8 @@ import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import AuthPage from "./components/Auth/AuthPage";
 import Home from "./components/Home";
 import PasswordReset from "./components/Auth/PasswordReset";
+import GroundManagement from "./components/Admin/Ground";
+import UserManagement from "./components/Admin/User/User";
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
         <Route path='/' element={<AuthPage />} />
         <Route path="/home" element={<Home />} />
         <Route path='/passwordReset' element={<PasswordReset />} />
+        <Route path="/Admin/Ground" element={<GroundManagement />} />
+        <Route path='/Admin/User' element={<UserManagement />} />
       </Routes>
     </Router>
     // <div>

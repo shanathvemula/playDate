@@ -45,5 +45,6 @@ class UserConsumer(GenericAsyncAPIConsumer):
         initial_data = await self.get_initial_data()
         await self.send_json({
             'action': 'initial',
-            'data': initial_data
+            'data': initial_data,
+            'count': len(initial_data)
         })
