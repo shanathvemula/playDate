@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Switch from 'react-switch'; // Import react-switch for the toggle
-import DatePicker from 'react-datepicker'; // Import DatePicker for the DOB field
-import 'react-datepicker/dist/react-datepicker.css'; // Import the styles for the date picker
+// import DatePicker from 'react-datepicker'; // Import DatePicker for the DOB field
+// import 'react-datepicker/dist/react-datepicker.css'; // Import the styles for the date picker
+
+import { DatePicker } from "antd";
+
 
 const UserSidebarForm = ({
   isOpen,
@@ -23,25 +26,26 @@ const UserSidebarForm = ({
   useEffect(() => {
     if (editingUser) {
       setFormData({
-        username: editingUser.name,
+        // username: editingUser.name,
+        first_name: editingUser.first_name,
+        last_name: editingUser.last_name,
         email: editingUser.email,
         gender: editingUser.gender,
         age: editingUser.age,
         phone: editingUser.phone,
+        date_of_birth: editingUser.date_of_birth | '2024-10-11',
         is_active: editingUser.is_active,
-        profileImage: null, // Reset file upload for editing
-        date_of_birth: editingUser.date_of_birth ? new Date(editingUser.date_of_birth) : new Date(),
       });
     } else {
       setFormData({
-        username: '',
+        // username: '',
+        first_name: '',
+        last_name: '',
         email: '',
         gender: '',
         age: '',
         phone: '',
         is_active: true,
-        profileImage: null, // Reset for new user creation
-        date_of_birth: new Date(), // Set to today's date
       });
     }
   }, [editingUser]);
@@ -54,11 +58,8 @@ const UserSidebarForm = ({
     setFormData({ ...formData, profileImage: e.target.files[0] });
   };
 
-  const handleDateChange = (date) => {
-    setFormData({ ...formData, date_of_birth: date });
-  };
-
   const handleFormSubmit = (e) => {
+    console.log("formData", formData)
     e.preventDefault();
     onSubmit(formData);
     onClose();
@@ -183,20 +184,15 @@ const UserSidebarForm = ({
             </div>
 
             {/* Date of Birth (Date Picker) */}
-            <div className="mb-2">
+            {/* <div className="mb-2">
               <label className="block text-gray-700 text-sm font-medium mb-1">
                 Date of Birth
               </label>
-              <DatePicker
-                selected={formData.date_of_birth}
-                onChange={handleDateChange}
-                dateFormat="YYYY-MM-dd"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+              <DatePicker />
+            </div> */}
 
             {/* Profile Image */}
-            <div className="mb-2">
+            {/* <div className="mb-2">
               <label className="block text-gray-700 text-sm font-medium mb-1">
                 Profile Image
               </label>
@@ -214,10 +210,10 @@ const UserSidebarForm = ({
                 )}
               </div>
               <small className="text-gray-500 block">Max size: 1.5 MB</small>
-            </div>
+            </div> */}
 
             {/* Is Active (Toggle Switch) */}
-            <div className="mb-2 flex items-center">
+            {/* <div className="mb-2 flex items-center">
               <label className="text-gray-700 text-sm font-medium mr-2">
                 Is Active
               </label>
@@ -234,7 +230,7 @@ const UserSidebarForm = ({
                 checkedIcon={false}
                 uncheckedIcon={false}
               />
-            </div>
+            </div> */}
 
             {/* Submit and Cancel Buttons */}
             <div className="flex justify-end">
