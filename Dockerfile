@@ -1,4 +1,6 @@
-FROM python:3.12
+FROM python:latest
+
+ENV PYTHONUNBUFFERED True
 
 WORKDIR /usr/src/app
 COPY requirements.txt ./
