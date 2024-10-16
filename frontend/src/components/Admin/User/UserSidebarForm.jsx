@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Switch from 'react-switch'; // Import react-switch for the toggle
-// import DatePicker from 'react-datepicker'; // Import DatePicker for the DOB field
-// import 'react-datepicker/dist/react-datepicker.css'; // Import the styles for the date picker
-
-import { DatePicker } from "antd";
-
+import { DatePicker } from 'antd';
 
 const UserSidebarForm = ({
   isOpen,
@@ -13,32 +9,31 @@ const UserSidebarForm = ({
   editingUser,
 }) => {
   const [formData, setFormData] = useState({
-    username: '',
+    first_name: '',
+    last_name: '',
     email: '',
     gender: '',
     age: '',
     phone: '',
     is_active: true,
-    profileImage: null, // For file upload
+    profileImage: null,
     date_of_birth: new Date(), // Date of Birth field (default to today's date)
   });
 
   useEffect(() => {
     if (editingUser) {
       setFormData({
-        // username: editingUser.name,
         first_name: editingUser.first_name,
         last_name: editingUser.last_name,
         email: editingUser.email,
         gender: editingUser.gender,
         age: editingUser.age,
         phone: editingUser.phone,
-        date_of_birth: editingUser.date_of_birth | '2024-10-11',
+        date_of_birth: editingUser.date_of_birth || '2024-10-11',
         is_active: editingUser.is_active,
       });
     } else {
       setFormData({
-        // username: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -54,12 +49,7 @@ const UserSidebarForm = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, profileImage: e.target.files[0] });
-  };
-
   const handleFormSubmit = (e) => {
-    console.log("formData", formData)
     e.preventDefault();
     onSubmit(formData);
     onClose();
@@ -70,12 +60,12 @@ const UserSidebarForm = ({
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-end z-50">
       <div
-        className={`bg-white w-1/4 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`bg-white w-full sm:w-3/4 md:w-1/2 lg:w-1/3 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex bg-gray-200 flex justify-between items-center mb-1 p-2">
-          <h3 className="text-l font-semibold text-neutral-800">
+        <div className="flex justify-between items-center mb-1 p-4 bg-gray-200">
+          <h3 className="text-lg font-semibold text-neutral-800">
             {editingUser ? 'Edit User' : 'Create User'}
           </h3>
           <button
@@ -85,11 +75,11 @@ const UserSidebarForm = ({
             ✕
           </button>
         </div>
-        <div className='p-6'>
+        <div className="p-6 overflow-y-auto">
           <form onSubmit={handleFormSubmit}>
             {/* First Name */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 First Name
               </label>
               <input
@@ -104,8 +94,8 @@ const UserSidebarForm = ({
             </div>
 
             {/* Last Name */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Last Name
               </label>
               <input
@@ -120,8 +110,8 @@ const UserSidebarForm = ({
             </div>
 
             {/* Email */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Email
               </label>
               <input
@@ -136,8 +126,8 @@ const UserSidebarForm = ({
             </div>
 
             {/* Gender */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Gender
               </label>
               <select
@@ -154,8 +144,8 @@ const UserSidebarForm = ({
             </div>
 
             {/* Age */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Age
               </label>
               <input
@@ -169,8 +159,8 @@ const UserSidebarForm = ({
             </div>
 
             {/* Phone */}
-            <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Phone
               </label>
               <input
@@ -184,56 +174,19 @@ const UserSidebarForm = ({
             </div>
 
             {/* Date of Birth (Date Picker) */}
-            {/* <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-medium mb-2">
                 Date of Birth
               </label>
-              <DatePicker />
-            </div> */}
-
-            {/* Profile Image */}
-            {/* <div className="mb-2">
-              <label className="block text-gray-700 text-sm font-medium mb-1">
-                Profile Image
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  name="profileImage"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
-                />
-                {formData.profileImage && (
-                  <span className="ml-2 text-sm text-gray-600">
-                    {formData.profileImage.name}
-                  </span>
-                )}
-              </div>
-              <small className="text-gray-500 block">Max size: 1.5 MB</small>
-            </div> */}
-
-            {/* Is Active (Toggle Switch) */}
-            {/* <div className="mb-2 flex items-center">
-              <label className="text-gray-700 text-sm font-medium mr-2">
-                Is Active
-              </label>
-              <Switch
-                onChange={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    is_active: !prev.is_active,
-                  }))
-                }
-                checked={formData.is_active}
-                onColor="#4CAF50"
-                offColor="#F44336"
-                checkedIcon={false}
-                uncheckedIcon={false}
+              <DatePicker
+                value={formData.date_of_birth}
+                onChange={(date) => setFormData({ ...formData, date_of_birth: date })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md"
               />
-            </div> */}
+            </div>
 
             {/* Submit and Cancel Buttons */}
-            <div className="flex justify-end">
+            <div className="flex justify-end mt-4">
               <button
                 type="submit"
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2"

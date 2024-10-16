@@ -1,43 +1,28 @@
-// import React from 'react';
-// import CarouselComponent from './CarouselComponent'; // Import the CarouselComponent
-// import './App.css'; // Create a CSS file for styling
-
-// const App = () => (
-//   <div className="app-container">
-//     <div className="left-side">
-//       <CarouselComponent />
-//     </div>
-//     <div className="right-side">
-//       <h1>Right Side Content</h1>
-//       {/* You can add more content or components here */}
-//     </div>
-//   </div>
-// );
-
-// export default App;
-
-// import React from 'react';
-// import LoginPage from './LoginPage'; // Import the login page component
-
-// function App() {
-//   return (
-//     <div>
-//       <LoginPage />
-//     </div>
-//   );
-// }
-
-// export default App;
-
-import React from "react";
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AuthPage from "./components/Auth/AuthPage";
 import Home from "./components/Home";
 import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground";
 import UserManagement from "./components/Admin/User/User";
+import Loading from "./components/Loading"; // Import the Loading component
 
 function App() {
+  const [loading, setLoading] = useState(true); // Initialize loading state
+
+  // Simulate data loading or initialization
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false); // Stop loading after 2 seconds
+    }, 2000);
+
+    return () => clearTimeout(timer); // Cleanup timeout on unmount
+  }, []);
+
+  if (loading) {
+    return <Loading />; // Show loading component while loading
+  }
+
   return (
     <Router>
       <Routes>
@@ -48,10 +33,7 @@ function App() {
         <Route path='/Admin/User' element={<UserManagement />} />
       </Routes>
     </Router>
-    // <div>
-    //   <AuthPage />
-    // </div>
-  )
+  );
 }
 
 export default App;

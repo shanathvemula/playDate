@@ -9,11 +9,13 @@ const UserManagement = () => {
   const [userCount, setUserCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null); // To hold user data for editing
+  const [loading, setLoading] = useState(true); // Loading state
 
   let ws; // WebSocket reference
 
   // WebSocket connection setup
   useEffect(() => {
+    setLoading(true); // Start loading when the component mounts
     ws = new WebSocket('ws://127.0.0.1:8000/users');
 
     ws.onopen = () => {
@@ -24,13 +26,16 @@ const UserManagement = () => {
       try {
         const message = JSON.parse(event.data);
         handleWebSocketAction(message);
+        setLoading(false); // Stop loading once the data is received
       } catch (error) {
         console.error('Error parsing WebSocket data', error);
+        setLoading(false); // Stop loading in case of an error
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
+      setLoading(false); // Stop loading if there is an error
     };
 
     return () => {
@@ -110,6 +115,7 @@ const UserManagement = () => {
 
   // Handle form submission (create or update)
   const handleFormSubmit = (formData) => {
+    setLoading(true); // Start loading during form submission
     if (editingUser) {
       // Update existing user
       const updatedUser = { ...editingUser, ...formData };
@@ -119,10 +125,13 @@ const UserManagement = () => {
       const newUser = { ...formData, id: Date.now() };
       ws.send(JSON.stringify({ action: 'create', data: newUser }));
     }
+    setLoading(false); // Stop loading after form submission
   };
 
   const handleDelete = (id) => {
+    setLoading(true); // Start loading during delete
     ws.send(JSON.stringify({ action: 'delete', data: { id } }));
+    setLoading(false); // Stop loading after delete
   };
 
   return (
@@ -130,9 +139,9 @@ const UserManagement = () => {
       {/* Navbar */}
       <Navbar />
 
-      <div className="p-8 bg-gray-100 flex-grow">
+      <div className="p-4 md:p-8 bg-gray-100 flex-grow">
         {/* Header */}
-        <div className="bg-white p-4 mb-4 shadow-md rounded-md flex justify-between items-center">
+        <div className="bg-white p-4 mb-4 shadow-md rounded-md flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
             <h2 className="text-xl font-semibold">
               User details ({userCount})
@@ -142,8 +151,9 @@ const UserManagement = () => {
             </p>
           </div>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="mt-2 md:mt-0 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             onClick={handleCreateUser}
+            disabled={loading} // Disable button while loading
           >
             + New User
           </button>
@@ -151,55 +161,59 @@ const UserManagement = () => {
 
         {/* Table */}
         <div className="bg-white shadow-md rounded-md overflow-x-auto">
-          <table className="table-auto w-full text-left">
-            <thead className="bg-gray-200 text-gray-600">
-              <tr>
-                <th className="p-4">Id</th>
-                <th className="p-4">Name</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Gender</th>
-                <th className="p-4">Age</th>
-                <th className="p-4">Phone</th>
-                <th className="p-4">Is Active</th>
-                <th className="p-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(users) && users.length > 0 ? (
-                users.map(user => (
-                  <tr key={user.id} className="border-b">
-                    <td className="p-4">{user.id}</td>
-                    <td className="p-4">{user.name}</td>
-                    <td className="p-4">{user.email}</td>
-                    <td className="p-4">{user.gender}</td>
-                    <td className="p-4">{user.age}</td>
-                    <td className="p-4">{user.phone}</td>
-                    <td className="p-4">
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </td>
-                    <td className="p-2">
-                      <div className='flex space-x-3'>
-                        <FaEdit
-                          className="text-blue-600 cursor-pointer"
-                          onClick={() => handleEdit(user)}
-                        />
-                        <FaTrashAlt
-                          className="text-red-600 cursor-pointer ml-2"
-                          onClick={() => handleDelete(user.id)}
-                        />
-                      </div>
+          {loading ? (
+            <div className="text-center p-4">Loading...</div> // Show loading indicator
+          ) : (
+            <table className="table-auto w-full text-left">
+              <thead className="bg-gray-200 text-gray-600">
+                <tr>
+                  <th className="p-2 md:p-4">Id</th>
+                  <th className="p-2 md:p-4">Name</th>
+                  <th className="p-2 md:p-4">Email</th>
+                  <th className="p-2 md:p-4">Gender</th>
+                  <th className="p-2 md:p-4">Age</th>
+                  <th className="p-2 md:p-4">Phone</th>
+                  <th className="p-2 md:p-4">Is Active</th>
+                  <th className="p-2 md:p-4"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(users) && users.length > 0 ? (
+                  users.map(user => (
+                    <tr key={user.id} className="border-b">
+                      <td className="p-2 md:p-4">{user.id}</td>
+                      <td className="p-2 md:p-4">{user.name}</td>
+                      <td className="p-2 md:p-4">{user.email}</td>
+                      <td className="p-2 md:p-4">{user.gender}</td>
+                      <td className="p-2 md:p-4">{user.age}</td>
+                      <td className="p-2 md:p-4">{user.phone}</td>
+                      <td className="p-2 md:p-4">
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </td>
+                      <td className="p-2">
+                        <div className='flex space-x-2 md:space-x-3'>
+                          <FaEdit
+                            className="text-blue-600 cursor-pointer"
+                            onClick={() => handleEdit(user)}
+                          />
+                          <FaTrashAlt
+                            className="text-red-600 cursor-pointer ml-2"
+                            onClick={() => handleDelete(user.id)}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="p-4 text-center">
+                      No users found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="8" className="p-4 text-center">
-                    No users found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* User Sidebar Form Component */}
