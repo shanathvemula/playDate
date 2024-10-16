@@ -304,11 +304,11 @@ SPECTACULAR_SETTINGS = {
 # )
 
 # Email settings
-EMAIL_HOST = 'mail.phantomfx.org'
+EMAIL_HOST = "smtp.gmail.com" # 'mail.phantomfx.org'
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
-EMAIL_HOST_USER = 'shanathvemula@phantomfx.org'
-EMAIL_HOST_PASSWORD = 'Sh@n@th321'
+EMAIL_HOST_USER = "shanath1213@gmail.com" # 'shanathvemula@phantomfx.org'
+EMAIL_HOST_PASSWORD = "vddu hjhd qagh xchr" # 'Sh@n@th321'
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
