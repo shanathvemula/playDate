@@ -198,6 +198,7 @@ class SignUp(APIView):
                     user = User(**data)
                     user.save()
                     if email:
+                        print("email", email)
                         with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
                                   "r") as html:
                             body = html.read()
