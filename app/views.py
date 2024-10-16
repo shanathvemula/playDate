@@ -182,6 +182,7 @@ class SignUp(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
+            print("data", data)
             password = request.data.get('password')
             validate_password(password=data['password'], user=User)
             data['password'] = make_password(data['password'])
@@ -193,6 +194,7 @@ class SignUp(APIView):
                 data['phone'] = data['username']
                 email= False
             serializer = UserSignUpSerializer(data=data)
+            print("serializer:", serializer.is_valid(), serializer.errors)
             if serializer.is_valid():
                 if email is not None:
                     user = User(**data)
@@ -217,6 +219,7 @@ class SignUp(APIView):
                                     content_type='application', status=status.HTTP_400_BAD_REQUEST)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
