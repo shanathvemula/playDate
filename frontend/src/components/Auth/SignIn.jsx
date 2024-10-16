@@ -33,7 +33,7 @@ const SignIn = ({setCurrentForm}) => {
     // console.log(data,"data")
     Cookies.set("token", data.access, {expires: 1/24, secure: true})
     Cookies.set("refresh", data.refresh, {expires: 7, secure: true})
-    navigate('/home')
+    navigate('/Admin/User')
   }
 
   return (

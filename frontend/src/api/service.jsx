@@ -12,7 +12,7 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
-        // 'Authorization': 'Bearer ' + Cookies.get('token'),
+        'Authorization': 'Bearer ' + Cookies.get('token'),
     }
 })
 
@@ -106,6 +106,56 @@ export const resetPassword = async (token, password, confirm_password) => {
         openNotificationWithIcon('error', 'Error', error.response.data.Error);
         }
     }
+
+export const UserSidebarCreate = async (data) => {
+    try{
+        console.log("data", data)
+        const response = await apiClient.post('/User/user/', data)
+        console.log("response", response)
+        openNotificationWithIcon('success', 'User', 'User Create successfully');
+        return response
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
+export const getUserId = async (id, username) => {
+    try {
+        // console.log("username", username)
+        const response = await apiClient.get(`/User/user/?id=${id}`)
+        console.log("response", response)
+        return response
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
+export const updateUser = async (data) => {
+    try {
+        // console.log("data", data)
+        const response = await apiClient.put('User/user/', data)
+        // console.log("response", response)
+        openNotificationWithIcon('success', 'User', 'User Updated successfully')
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
+export const deleteUser = async (id) => {
+    try {
+        console.log("id", id)
+        const response = await apiClient.delete('User/user/', {
+            id,
+        })
+        console.log('response', response)
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
 export const ClientInfo = async () => {
     const response = await apiClient.get('/Auth/site_management/')
     return response.data

@@ -186,7 +186,7 @@ AUTH_PASSWORD_VALIDATORS = [
             "min_length_special": 1,
             "min_length_lower": 1,
             "min_length_upper": 1,
-            "special_characters": "~!@#$%^&*()_+{}\":;'[]"
+            "special_characters": "!@#$%^&*()_+~`|}{[]:;?><,./-="
         }
     }
 ]
@@ -233,7 +233,7 @@ REST_FRAMEWORK = {
 
 # Simple JWT Settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,

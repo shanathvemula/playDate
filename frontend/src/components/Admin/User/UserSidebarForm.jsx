@@ -1,24 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import Switch from 'react-switch'; // Import react-switch for the toggle
-import { DatePicker } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { UserSidebarCreate, updateUser } from '../../../api/service';
 
-const UserSidebarForm = ({
+const UserSidebarForm = React.memo(({
   isOpen,
   onClose,
   onSubmit,
   editingUser,
+  loading
 }) => {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     email: '',
     gender: '',
-    age: '',
     phone: '',
     is_active: true,
-    profileImage: null,
-    date_of_birth: new Date(), // Date of Birth field (default to today's date)
+    password: '', // Password will be generated but not shown in the form
   });
+
+  const formRef = useRef(null); // Reference to the form container
+
+  // Password generator function
+  const generatePassword = () => {
+    const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
+    const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '0123456789';
+    const specialChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
+    
+    // Ensuring at least one of each type
+    let password = '';
+    password += lowerChars[Math.floor(Math.random() * lowerChars.length)];
+    password += upperChars[Math.floor(Math.random() * upperChars.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += specialChars[Math.floor(Math.random() * specialChars.length)];
+
+    const allChars = lowerChars + upperChars + numbers + specialChars;
+    
+    // Generate remaining characters randomly from all available characters
+    for (let i = password.length; i < 10; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    // Shuffle the password to avoid predictable patterns
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+  };
 
   useEffect(() => {
     if (editingUser) {
@@ -27,10 +52,9 @@ const UserSidebarForm = ({
         last_name: editingUser.last_name,
         email: editingUser.email,
         gender: editingUser.gender,
-        age: editingUser.age,
         phone: editingUser.phone,
-        date_of_birth: editingUser.date_of_birth || '2024-10-11',
         is_active: editingUser.is_active,
+        password: '', // No password field when editing
       });
     } else {
       setFormData({
@@ -38,9 +62,9 @@ const UserSidebarForm = ({
         last_name: '',
         email: '',
         gender: '',
-        age: '',
         phone: '',
         is_active: true,
+        password: generatePassword(), // Generate a password for new users
       });
     }
   }, [editingUser]);
@@ -49,17 +73,50 @@ const UserSidebarForm = ({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    onSubmit(formData); // Submit form data, including the generated password
+    console.log("formData", formData)
+
+    if (editingUser){
+      editingUser.first_name=formData.first_name
+      editingUser.last_name=formData.last_name
+      editingUser.email=formData.email
+      editingUser.gender=formData.gender
+      editingUser.phone=formData.phone
+      delete editingUser.password;
+      // console.log("editingUser", editingUser)
+      const data = await updateUser(editingUser)
+    } else {
+      const data = await UserSidebarCreate(formData);
+    }
   };
+
+  // Close form when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (formRef.current && !formRef.current.contains(event.target)) {
+        onClose(); // Close the sidebar if clicked outside
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside); // Cleanup event listener
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-end z-50">
       <div
+        ref={formRef} // Attach the ref to the form container
         className={`bg-white w-full sm:w-3/4 md:w-1/2 lg:w-1/3 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -143,21 +200,6 @@ const UserSidebarForm = ({
               </select>
             </div>
 
-            {/* Age */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Age
-              </label>
-              <input
-                type="number"
-                name="age"
-                value={formData.age}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter age"
-              />
-            </div>
-
             {/* Phone */}
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -173,25 +215,16 @@ const UserSidebarForm = ({
               />
             </div>
 
-            {/* Date of Birth (Date Picker) */}
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-medium mb-2">
-                Date of Birth
-              </label>
-              <DatePicker
-                value={formData.date_of_birth}
-                onChange={(date) => setFormData({ ...formData, date_of_birth: date })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-
             {/* Submit and Cancel Buttons */}
             <div className="flex justify-end mt-4">
               <button
                 type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2"
+                disabled={loading} // Disable button while loading
+                className={`${
+                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                } text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2`}
               >
-                {editingUser ? 'Update User' : 'Create User'}
+                {loading ? 'Submitting...' : editingUser ? 'Update User' : 'Create User'}
               </button>
               <button
                 type="button"
@@ -206,6 +239,6 @@ const UserSidebarForm = ({
       </div>
     </div>
   );
-};
+});
 
 export default UserSidebarForm;

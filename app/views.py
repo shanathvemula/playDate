@@ -219,7 +219,7 @@ class SignUp(APIView):
                                     content_type='application', status=status.HTTP_400_BAD_REQUEST)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            raise e
+            # raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
@@ -265,12 +265,21 @@ class UserCRUD(APIView):
     @staticmethod
     @extend_schema(
         parameters=[
-            OpenApiParameter(name='username', description="Enter Username", required=True, type=str)
-        ], summary="Get User", description="* This endpoint provides the user details by using username")
+            OpenApiParameter(name='username', description="Enter Username", type=str),
+            OpenApiParameter(name='id', description="Enter Id", type=int),
+        ], summary="Get User", description="* This endpoint provides the user details by using username or id.")
     def get(request, *args, **kwargs):
         try:
-            username = request.GET.get('username')
-            user = User.objects.get(username__exact=username)
+            username = request.GET.get('username', None)
+            id = request.GET.get('id', None)
+            if username:
+                user = User.objects.get(username__exact=username)
+            elif id:
+                user = User.objects.get(id__exact=id)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "Please provide the username or id."}),
+                                    content_type='application/json',
+                                    status=status.HTTP_400_BAD_REQUEST)
             serializer = UserSerializerDepth(user).data
             user_permissions = []
             groups = []
@@ -292,11 +301,38 @@ class UserCRUD(APIView):
         try:
             data = request.data
             password = request.data.get('password')
+            email=None
+            if 'email' in data.keys() and data['email'] not in ['', None, ' ']:
+                data['username'] = data['email']
+                email=True
+            elif 'phone' in data.keys() and data['phone'] not in ['', None, ' ']:
+                data['username'] = data['phone']
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "PLease provide the email or phone number"}),
+                                    content_type='application/json',
+                                    status=status.HTTP_400_BAD_REQUEST)
             validate_password(password=data['password'], user=User)
             data['password'] = make_password(data['password'])
             serializer = UserSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
+                if email:
+                    print("email", email)
+                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Registration_template.html"),
+                              "r") as html:
+                        body = html.read()
+                    # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
+                    # logInURL = os.getenv("logInURL")
+                    # print(os.getenv('logoURL'))
+                    body = (body.replace("{{ logo_path }}", os.getenv('logoURL')).replace("{{ app_name }}",
+                                                                                          os.getenv('app_name'))
+                            .replace("{{ first_name }}", data['first_name']).replace("{{ email }}", data['email'])
+                            .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
+                                                                                      str(datetime.now().year))
+                            .replace("{{ company_address }}", os.getenv("company_address"))
+                            .replace("{{ supportMail }}", os.getenv("supportMail")))
+                    send_mail(to=data['email'],
+                              subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
                                     status=status.HTTP_201_CREATED)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
@@ -324,6 +360,17 @@ class UserCRUD(APIView):
                 serializer.save()
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=UserForgetPasswordSerializer, summary="Delete User", description=f"* Deleting User.\n"
+                                                                              f"* This endpoint helps to deleting "
+                                                                              f"user. \n ")
+    def delete(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            print(data)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

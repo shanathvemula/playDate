@@ -3,39 +3,48 @@ import { FaEdit, FaTrashAlt } from 'react-icons/fa'; // Importing Edit and Delet
 import Navbar from '../../Navbar';
 import Footer from '../../footer';
 import UserSidebarForm from './UserSidebarForm'; // Import the UserSidebarForm component
+import Skeleton from 'react-loading-skeleton'; // Optional loading skeleton package
+import { getUserId, deleteUser } from '../../../api/service';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null); // To hold user data for editing
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); // Loading state for WebSocket connection
+  const [formLoading, setFormLoading] = useState(false); // Loading state for form submission
+  const [errorMessage, setErrorMessage] = useState(''); // Error state for showing messages
+  const [webSocketLoading, setWebSocketLoading] = useState(true); // Loading state for WebSocket
 
   let ws; // WebSocket reference
 
   // WebSocket connection setup
   useEffect(() => {
     setLoading(true); // Start loading when the component mounts
+    setWebSocketLoading(true); // Start loading for WebSocket
+
     ws = new WebSocket('ws://127.0.0.1:8000/users');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
+      setWebSocketLoading(false); // Stop loading once connected
     };
 
     ws.onmessage = (event) => {
+      setLoading(true); // Start loading while processing the message
       try {
         const message = JSON.parse(event.data);
         handleWebSocketAction(message);
-        setLoading(false); // Stop loading once the data is received
       } catch (error) {
         console.error('Error parsing WebSocket data', error);
-        setLoading(false); // Stop loading in case of an error
+      } finally {
+        setLoading(false); // Stop loading once the message is processed
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      setLoading(false); // Stop loading if there is an error
+      setWebSocketLoading(false); // Stop WebSocket loading when error occurs
     };
 
     return () => {
@@ -108,111 +117,137 @@ const UserManagement = () => {
   };
 
   // Open sidebar for user editing
-  const handleEdit = (user) => {
-    setEditingUser(user); // Set the user to be edited
+  const handleEdit = async (user) => {
+    const data = await getUserId(user.id, user.username)
+    setEditingUser(data.data); // Set the user to be edited
     setIsSidebarOpen(true); // Open sidebar
   };
 
   // Handle form submission (create or update)
-  const handleFormSubmit = (formData) => {
-    setLoading(true); // Start loading during form submission
-    if (editingUser) {
-      // Update existing user
-      const updatedUser = { ...editingUser, ...formData };
-      ws.send(JSON.stringify({ action: 'update', data: updatedUser }));
-    } else {
-      // Create new user
-      const newUser = { ...formData, id: Date.now() };
-      ws.send(JSON.stringify({ action: 'create', data: newUser }));
+  const handleFormSubmit = async (formData) => {
+    setFormLoading(true); // Start loading during form submission
+    setErrorMessage(''); // Reset error message
+
+    try {
+      if (editingUser) {
+        // Update existing user
+        const updatedUser = { ...editingUser, ...formData };
+        ws.send(JSON.stringify({ action: 'update', data: updatedUser }));
+      } else {
+        // Create new user
+        const newUser = { ...formData, id: Date.now() };
+        ws.send(JSON.stringify({ action: 'create', data: newUser }));
+      }
+    } catch (error) {
+      setErrorMessage('Error submitting form, please try again.');
+    } finally {
+      setFormLoading(false); // Stop loading after form submission
+      setIsSidebarOpen(false); // Close the sidebar form
     }
-    setLoading(false); // Stop loading after form submission
   };
 
-  const handleDelete = (id) => {
-    setLoading(true); // Start loading during delete
-    ws.send(JSON.stringify({ action: 'delete', data: { id } }));
-    setLoading(false); // Stop loading after delete
+  const handleDelete = async (id) => {
+    setFormLoading(true); // Start loading during delete
+    setErrorMessage(''); // Reset error message
+
+    try {
+      const data = await deleteUser(id)
+      ws.send(JSON.stringify({ action: 'delete', data: { id } }));
+    } catch (error) {
+      setErrorMessage('Error deleting user, please try again.');
+    } finally {
+      setFormLoading(false); // Stop loading after delete
+    }
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-zinc-100">
       {/* Navbar */}
       <Navbar />
 
-      <div className="p-4 md:p-8 bg-gray-100 flex-grow">
+      <div className="p-4 md:p-8 flex-grow">
         {/* Header */}
-        <div className="bg-white p-4 mb-4 shadow-md rounded-md flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div className="bg-white p-6 mb-6 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h2 className="text-xl font-semibold">
-              User details ({userCount})
+            <h2 className="text-2xl font-bold text-sky-600">
+              User Management ({userCount})
             </h2>
-            <p className="text-gray-500">
-              Create and manage user information in Playdate
+            <p className="text-gray-600">
+              Manage and organize user information efficiently.
             </p>
           </div>
           <button
-            className="mt-2 md:mt-0 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            className="mt-4 md:mt-0 bg-sky-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-sky-600 transition"
             onClick={handleCreateUser}
-            disabled={loading} // Disable button while loading
+            disabled={formLoading || loading} // Disable button while loading
           >
-            + New User
+            + Add New User
           </button>
         </div>
 
         {/* Table */}
         <div className="bg-white shadow-md rounded-md overflow-x-auto">
-          {loading ? (
-            <div className="text-center p-4">Loading...</div> // Show loading indicator
+          {loading || webSocketLoading ? (
+            <div className="p-6">
+              <Skeleton height={40} count={5} /> {/* Show skeleton loader */}
+            </div>
           ) : (
-            <table className="table-auto w-full text-left">
-              <thead className="bg-gray-200 text-gray-600">
-                <tr>
-                  <th className="p-2 md:p-4">Id</th>
-                  <th className="p-2 md:p-4">Name</th>
-                  <th className="p-2 md:p-4">Email</th>
-                  <th className="p-2 md:p-4">Gender</th>
-                  <th className="p-2 md:p-4">Age</th>
-                  <th className="p-2 md:p-4">Phone</th>
-                  <th className="p-2 md:p-4">Is Active</th>
-                  <th className="p-2 md:p-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(users) && users.length > 0 ? (
-                  users.map(user => (
-                    <tr key={user.id} className="border-b">
-                      <td className="p-2 md:p-4">{user.id}</td>
-                      <td className="p-2 md:p-4">{user.name}</td>
-                      <td className="p-2 md:p-4">{user.email}</td>
-                      <td className="p-2 md:p-4">{user.gender}</td>
-                      <td className="p-2 md:p-4">{user.age}</td>
-                      <td className="p-2 md:p-4">{user.phone}</td>
-                      <td className="p-2 md:p-4">
-                        {user.is_active ? 'Active' : 'Inactive'}
-                      </td>
-                      <td className="p-2">
-                        <div className='flex space-x-2 md:space-x-3'>
-                          <FaEdit
-                            className="text-blue-600 cursor-pointer"
-                            onClick={() => handleEdit(user)}
-                          />
-                          <FaTrashAlt
-                            className="text-red-600 cursor-pointer ml-2"
-                            onClick={() => handleDelete(user.id)}
-                          />
-                        </div>
+            <>
+              {/* {errorMessage && (
+                <div className="text-red-500 text-center mb-4">{errorMessage}</div>
+              )} */}
+              <table className="table-auto w-full text-left">
+                <thead className="bg-stone-300 text-gray-700">
+                  <tr>
+                    <th className="p-3 font-medium">ID</th>
+                    <th className="p-3 font-medium">Name</th>
+                    <th className="p-3 font-medium">Email</th>
+                    <th className="p-3 font-medium">Gender</th>
+                    <th className="p-3 font-medium">Age</th>
+                    <th className="p-3 font-medium">Phone</th>
+                    <th className="p-3 font-medium">Status</th>
+                    <th className="p-3 font-medium text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(users) && users.length > 0 ? (
+                    users.map(user => (
+                      <tr key={user.id} className="hover:bg-gray-50 transition">
+                        <td className="p-3">{user.id}</td>
+                        <td className="p-3">{user.name}</td>
+                        <td className="p-3">{user.email}</td>
+                        <td className="p-3">{user.gender}</td>
+                        <td className="p-3">{user.age}</td>
+                        <td className="p-3">{user.phone}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
+                            {user.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <div className='flex space-x-4 justify-end'>
+                            <FaEdit
+                              className="text-blue-600 cursor-pointer hover:text-sky-600"
+                              onClick={() => handleEdit(user)}
+                            />
+                            <FaTrashAlt
+                              className="text-red-600 cursor-pointer hover:text-red-700"
+                              onClick={() => handleDelete(user.id)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="p-4 text-center text-gray-500">
+                        No users found.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="8" className="p-4 text-center">
-                      No users found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
 
@@ -222,6 +257,7 @@ const UserManagement = () => {
           onClose={() => setIsSidebarOpen(false)}
           onSubmit={handleFormSubmit}
           editingUser={editingUser}
+          loading={formLoading} // Pass loading state to the form
         />
       </div>
 

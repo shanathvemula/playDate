@@ -11,7 +11,8 @@ from django.contrib.auth.models import User
 GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
 User.add_to_class('dob', models.DateField(blank=True, null=True))
 User.add_to_class('gender', models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True))
-User.add_to_class('age', models.IntegerField(validators=[MinValueValidator(10), MaxValueValidator(100)], default=0))
+User.add_to_class('age', models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], blank=True
+                                             , null=True, default=0))
 User.add_to_class('phone', PhoneNumberField(region='IN', blank=True, null=True, unique=True))
 User.add_to_class('alternate_phone', PhoneNumberField(region='IN', blank=True, null=True))
 User.add_to_class('photo', models.ImageField(blank=True, null=True))
