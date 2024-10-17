@@ -1,50 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa'; // Importing Edit and Delete icons
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Navbar from '../../Navbar';
 import Footer from '../../footer';
-import UserSidebarForm from './UserSidebarForm'; // Import the UserSidebarForm component
-import Skeleton from 'react-loading-skeleton'; // Optional loading skeleton package
+import Sidebar from '../Sidebar'; // Import Sidebar component
+import UserSidebarForm from './UserSidebarForm';
+import Skeleton from 'react-loading-skeleton';
 import { getUserId, deleteUser } from '../../../api/service';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [userCount, setUserCount] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState(null); // To hold user data for editing
-  const [loading, setLoading] = useState(true); // Loading state for WebSocket connection
-  const [formLoading, setFormLoading] = useState(false); // Loading state for form submission
-  const [errorMessage, setErrorMessage] = useState(''); // Error state for showing messages
-  const [webSocketLoading, setWebSocketLoading] = useState(true); // Loading state for WebSocket
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For main sidebar
+  const [isUserFormOpen, setIsUserFormOpen] = useState(false); // For user form sidebar
+  const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [webSocketLoading, setWebSocketLoading] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
-  let ws; // WebSocket reference
+  let ws;
 
   // WebSocket connection setup
   useEffect(() => {
-    setLoading(true); // Start loading when the component mounts
-    setWebSocketLoading(true); // Start loading for WebSocket
+    setLoading(true);
+    setWebSocketLoading(true);
 
     ws = new WebSocket('ws://127.0.0.1:8000/users');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
-      setWebSocketLoading(false); // Stop loading once connected
+      setWebSocketLoading(false);
     };
 
     ws.onmessage = (event) => {
-      setLoading(true); // Start loading while processing the message
+      setLoading(true);
       try {
         const message = JSON.parse(event.data);
         handleWebSocketAction(message);
       } catch (error) {
         console.error('Error parsing WebSocket data', error);
       } finally {
-        setLoading(false); // Stop loading once the message is processed
+        setLoading(false);
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      setWebSocketLoading(false); // Stop WebSocket loading when error occurs
+      setWebSocketLoading(false);
     };
 
     return () => {
@@ -55,11 +59,10 @@ const UserManagement = () => {
   const handleWebSocketAction = (message) => {
     switch (message.action) {
       case 'initial':
-        // Initial data load
         if (Array.isArray(message.data)) {
           const processedUsers = message.data.map(user => ({
             id: user.id,
-            name: user.first_name || user.username, // Use first name or username
+            name: user.first_name || user.username,
             email: user.email || 'N/A',
             gender: user.gender || 'N/A',
             age: user.age || 'N/A',
@@ -71,7 +74,6 @@ const UserManagement = () => {
         }
         break;
       case 'create':
-        // Create new user
         const newUser = {
           id: message.data.id,
           name: message.data.first_name || message.data.username,
@@ -85,7 +87,6 @@ const UserManagement = () => {
         setUserCount(prevCount => prevCount + 1);
         break;
       case 'update':
-        // Update existing user
         setUsers(prevUsers => prevUsers.map(user =>
           user.id === message.data.id
             ? {
@@ -101,7 +102,6 @@ const UserManagement = () => {
         ));
         break;
       case 'delete':
-        // Delete user
         setUsers(prevUsers => prevUsers.filter(user => user.id !== message.data.id));
         setUserCount(prevCount => prevCount - 1);
         break;
@@ -110,159 +110,181 @@ const UserManagement = () => {
     }
   };
 
-  // Open sidebar for user creation
   const handleCreateUser = () => {
-    setEditingUser(null); // No user being edited
-    setIsSidebarOpen(true); // Open sidebar
+    setEditingUser(null);
+    setIsUserFormOpen(true); // Open user form sidebar
   };
 
-  // Open sidebar for user editing
   const handleEdit = async (user) => {
-    const data = await getUserId(user.id, user.username)
-    setEditingUser(data.data); // Set the user to be edited
-    setIsSidebarOpen(true); // Open sidebar
+    const data = await getUserId(user.id, user.username);
+    setEditingUser(data.data);
+    setIsUserFormOpen(true); // Open user form sidebar
   };
 
-  // Handle form submission (create or update)
   const handleFormSubmit = async (formData) => {
-    setFormLoading(true); // Start loading during form submission
-    setErrorMessage(''); // Reset error message
+    setFormLoading(true);
+    setErrorMessage('');
 
     try {
       if (editingUser) {
-        // Update existing user
         const updatedUser = { ...editingUser, ...formData };
         ws.send(JSON.stringify({ action: 'update', data: updatedUser }));
       } else {
-        // Create new user
         const newUser = { ...formData, id: Date.now() };
         ws.send(JSON.stringify({ action: 'create', data: newUser }));
       }
     } catch (error) {
       setErrorMessage('Error submitting form, please try again.');
     } finally {
-      setFormLoading(false); // Stop loading after form submission
-      setIsSidebarOpen(false); // Close the sidebar form
+      setFormLoading(false);
+      setIsUserFormOpen(false); // Close user form sidebar
     }
   };
 
-  const handleDelete = async (id) => {
-    setFormLoading(true); // Start loading during delete
-    setErrorMessage(''); // Reset error message
+  const confirmDelete = (id) => {
+    setSelectedUserId(id);
+    setIsDeleteModalOpen(true); // Open the delete confirmation modal
+  };
 
+  const handleDelete = async () => {
+    setFormLoading(true);
+    setErrorMessage('');
+    
     try {
-      const data = await deleteUser(id)
-      ws.send(JSON.stringify({ action: 'delete', data: { id } }));
+      await deleteUser(selectedUserId);
+      ws.send(JSON.stringify({ action: 'delete', data: { id: selectedUserId } }));
     } catch (error) {
       setErrorMessage('Error deleting user, please try again.');
     } finally {
-      setFormLoading(false); // Stop loading after delete
+      setFormLoading(false);
+      setIsDeleteModalOpen(false); // Close the delete modal
     }
+  };
+
+  // Toggle the sidebar between open and closed
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-100">
-      {/* Navbar */}
+      {/* Navbar at the top, full-width */}
       <Navbar />
 
-      <div className="p-4 md:p-8 flex-grow">
-        {/* Header */}
-        <div className="bg-white p-6 mb-6 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-sky-600">
-              User Management ({userCount})
-            </h2>
-            <p className="text-gray-600">
-              Manage and organize user information efficiently.
-            </p>
-          </div>
-          <button
-            className="mt-4 md:mt-0 bg-sky-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-sky-600 transition"
-            onClick={handleCreateUser}
-            disabled={formLoading || loading} // Disable button while loading
-          >
-            + Add New User
-          </button>
-        </div>
-
-        {/* Table */}
-        <div className="bg-white shadow-md rounded-md overflow-x-auto">
-          {loading || webSocketLoading ? (
-            <div className="p-6">
-              <Skeleton height={40} count={5} /> {/* Show skeleton loader */}
+      {/* Sidebar and Content */}
+      <div className="flex flex-grow">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> {/* Sidebar Component */}
+        
+        <div className={`flex-grow transition-all duration-300`}>
+          <div className="p-4 md:p-8 flex-grow">
+            <div className="bg-white p-6 mb-6 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-sky-600">User Management ({userCount})</h2>
+                <p className="text-gray-600">Manage and organize user information efficiently.</p>
+              </div>
+              <button
+                className="mt-4 md:mt-0 bg-sky-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:bg-sky-600 transition"
+                onClick={handleCreateUser}
+                disabled={formLoading || loading}
+              >
+                + Add New User
+              </button>
             </div>
-          ) : (
-            <>
-              {/* {errorMessage && (
-                <div className="text-red-500 text-center mb-4">{errorMessage}</div>
-              )} */}
-              <table className="table-auto w-full text-left">
-                <thead className="bg-stone-300 text-gray-700">
-                  <tr>
-                    <th className="p-3 font-medium">ID</th>
-                    <th className="p-3 font-medium">Name</th>
-                    <th className="p-3 font-medium">Email</th>
-                    <th className="p-3 font-medium">Gender</th>
-                    <th className="p-3 font-medium">Age</th>
-                    <th className="p-3 font-medium">Phone</th>
-                    <th className="p-3 font-medium">Status</th>
-                    <th className="p-3 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.isArray(users) && users.length > 0 ? (
-                    users.map(user => (
-                      <tr key={user.id} className="hover:bg-gray-50 transition">
-                        <td className="p-3">{user.id}</td>
-                        <td className="p-3">{user.name}</td>
-                        <td className="p-3">{user.email}</td>
-                        <td className="p-3">{user.gender}</td>
-                        <td className="p-3">{user.age}</td>
-                        <td className="p-3">{user.phone}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
-                            {user.is_active ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right">
-                          <div className='flex space-x-4 justify-end'>
-                            <FaEdit
-                              className="text-blue-600 cursor-pointer hover:text-sky-600"
-                              onClick={() => handleEdit(user)}
-                            />
-                            <FaTrashAlt
-                              className="text-red-600 cursor-pointer hover:text-red-700"
-                              onClick={() => handleDelete(user.id)}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" className="p-4 text-center text-gray-500">
-                        No users found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </>
-          )}
-        </div>
 
-        {/* User Sidebar Form Component */}
-        <UserSidebarForm
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          onSubmit={handleFormSubmit}
-          editingUser={editingUser}
-          loading={formLoading} // Pass loading state to the form
-        />
+            <div className="bg-white shadow-md rounded-md overflow-x-auto">
+              {loading || webSocketLoading ? (
+                <div className="p-6">
+                  <Skeleton height={40} count={5} />
+                </div>
+              ) : (
+                <table className="table-auto w-full text-left">
+                  <thead className="bg-stone-300 text-gray-700">
+                    <tr>
+                      <th className="p-3 font-medium">ID</th>
+                      <th className="p-3 font-medium">Name</th>
+                      <th className="p-3 font-medium">Email</th>
+                      <th className="p-3 font-medium">Gender</th>
+                      <th className="p-3 font-medium">Age</th>
+                      <th className="p-3 font-medium">Phone</th>
+                      <th className="p-3 font-medium">Status</th>
+                      <th className="p-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Array.isArray(users) && users.length > 0 ? (
+                      users.map(user => (
+                        <tr key={user.id} className="hover:bg-gray-50 transition">
+                          <td className="p-3">{user.id}</td>
+                          <td className="p-3">{user.name}</td>
+                          <td className="p-3">{user.email}</td>
+                          <td className="p-3">{user.gender}</td>
+                          <td className="p-3">{user.age}</td>
+                          <td className="p-3">{user.phone}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
+                              {user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right">
+                            <div className='flex space-x-4 justify-end'>
+                              <FaEdit
+                                className="text-blue-600 cursor-pointer hover:text-sky-600"
+                                onClick={() => handleEdit(user)}
+                              />
+                              <FaTrashAlt
+                                className="text-red-600 cursor-pointer hover:text-red-700"
+                                onClick={() => confirmDelete(user.id)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" className="p-4 text-center text-gray-500">No users found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <UserSidebarForm
+              isOpen={isUserFormOpen} // Control for the User form sidebar
+              onClose={() => setIsUserFormOpen(false)}
+              onSubmit={handleFormSubmit}
+              editingUser={editingUser}
+              loading={formLoading}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Footer */}
+      {/* Footer at the bottom */}
       <Footer />
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h3 className="text-lg font-bold mb-4">Are you sure you want to delete this user?</h3>
+            <div className="flex justify-center space-x-4">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md shadow hover:bg-red-700"
+                onClick={handleDelete}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="bg-gray-300 px-4 py-2 rounded-md shadow hover:bg-gray-400"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

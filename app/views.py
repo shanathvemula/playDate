@@ -364,14 +364,21 @@ class UserCRUD(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(request=UserForgetPasswordSerializer, summary="Delete User", description=f"* Deleting User.\n"
-                                                                              f"* This endpoint helps to deleting "
-                                                                              f"user. \n ")
+
+    @extend_schema(
+        parameters=[
+            # OpenApiParameter(name='username', description="Enter Username", type=str),
+            OpenApiParameter(name='id', description="Enter Id", type=int),
+        ], summary="Delete User", description="* This endpoint helps to deleting user.")
     def delete(self, request, *args, **kwargs):
         try:
-            data = request.data
-            print(data)
+            id = request.GET.get('id')
+            user = User.objects.get(id__exact=id)
+            user.delete()
+            return HttpResponse(JSONRenderer().render({"message": "Deleted Successfully"}), content_type='application/json',
+                                status=status.HTTP_200_OK)
         except Exception as e:
+            # raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 

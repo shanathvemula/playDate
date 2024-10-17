@@ -16,6 +16,8 @@ const apiClient = axios.create({
     }
 })
 
+console.log("Cookies.get('token')", 'Bearer ' + Cookies.get('token'))
+
 // Notification utility function
 const openNotificationWithIcon = (type, message, description) => {
     notification[type]({
@@ -146,11 +148,10 @@ export const updateUser = async (data) => {
 
 export const deleteUser = async (id) => {
     try {
-        console.log("id", id)
-        const response = await apiClient.delete('User/user/', {
-            id,
-        })
-        console.log('response', response)
+        // console.log("id", id)
+        const response = await apiClient.delete(`/User/user/?id=${id}`)
+        // console.log('response', response)
+        openNotificationWithIcon('success', 'User', 'User Deleted successfully')
     } catch (error) {
         // console.log('Error fetching data:', error.response.data.Error);
         openNotificationWithIcon('error', 'Error', error.response.data.Error);

@@ -90,6 +90,15 @@ const UserSidebarForm = React.memo(({
     } else {
       const data = await UserSidebarCreate(formData);
     }
+    setFormData({
+      first_name: '',
+      last_name: '',
+      email: '',
+      gender: '',
+      phone: '',
+      is_active: true,
+      password: generatePassword(), // Generate a password for new users
+    });
   };
 
   // Close form when clicking outside
