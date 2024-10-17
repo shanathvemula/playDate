@@ -179,7 +179,7 @@ const UserManagement = () => {
           <div className="p-4 md:p-8 flex-grow">
             <div className="bg-white p-6 mb-6 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
-                <h2 className="text-2xl font-bold text-sky-600">User Management ({userCount})</h2>
+                <h2 className="text-2xl font-bold text-neutral-800">User Management ({userCount})</h2>
                 <p className="text-gray-600">Manage and organize user information efficiently.</p>
               </div>
               <button
@@ -198,7 +198,7 @@ const UserManagement = () => {
                 </div>
               ) : (
                 <table className="table-auto w-full text-left">
-                  <thead className="bg-stone-300 text-gray-700">
+                  <thead className="bg-neutral-300 text-gray-700">
                     <tr>
                       <th className="p-3 font-medium">ID</th>
                       <th className="p-3 font-medium">Name</th>

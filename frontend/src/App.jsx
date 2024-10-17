@@ -4,7 +4,7 @@ import AuthPage from "./components/Auth/AuthPage";
 import Home from "./components/Home";
 import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground";
-import UserManagement from "./components/Admin/User/User";
+import UserManagement from "./components/Admin/User/UserManagement";
 import Loading from "./components/Loading"; // Import the Loading component
 
 function App() {
