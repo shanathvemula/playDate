@@ -4,8 +4,12 @@ import SignIn from "./SignIn";
 import RightSide from "./RightSide";
 import ForgetPassword from "./ForgetPassword";
 import CarouselComponent from "../CarouselComponent";
+import Cookies from 'js-cookie';
+import { getUserToken } from "../../api/service";
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
+    const navigate = useNavigate();
     // List of image sources for the carousel
     const imageSrcList = [
         'https://via.placeholder.com/1920x1080.png?text=Slide+1',
@@ -22,12 +26,22 @@ const AuthPage = () => {
         setCurrentForm(form);
     };
 
+    const handleonLoad = async () => {
+        const user = await getUserToken()
+        console.log("user", user.user_type)
+        if (user.user_type==='Admin') {
+            navigate('/Admin/User')
+        } else {
+            navigate('/home')
+        } 
+    }
+
     return (
-        <div className="min-h-screen flex justify-center items-center bg-gray-100">
+        <div className="min-h-screen flex justify-center items-center bg-gray-100" >
             <div className="container mx-auto p-4 md:p-10">
                 <div className="flex flex-col md:flex-row bg-white rounded-lg overflow-hidden">
                     {/* Form section */}
-                    <div className="w-full md:w-1/3 p-6 flex items-center justify-center">
+                    <div className="w-full md:w-1/3 p-6 flex items-center justify-center" onLoad={handleonLoad}>
                         {currentForm === 'signIn' && (
                             <SignIn setCurrentForm={setCurrentForm} onSwitchForm={handleFormSwitch} />
                         )}

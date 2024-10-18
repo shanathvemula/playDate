@@ -41,7 +41,7 @@ const SignIn = ({setCurrentForm}) => {
 
   return (
     <div>
-      <div className="text-center mb-6 ">
+      <div className="text-center mb-6 " >
         <img
           src="http://69.197.176.103:8000/media/logo/Logo_without_background.png" // Add your logo here
           alt="Logo"

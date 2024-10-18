@@ -12,11 +12,65 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
-        'Authorization': 'Bearer ' + Cookies.get('token'),
+        // 'Authorization': 'Bearer ' + Cookies.get('token'),
     }
 })
 
+// Add request interceptor
+apiClient.interceptors.request.use(
+    async (config) => {
+      const accessToken = Cookies.get('token');
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
 
+  // Add response interceptor
+apiClient.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    async (error) => {
+      const originalRequest = error.config;
+  
+      if (error.response.status === 401 && originalRequest.url === 'Auth/token/refresh_token/') {
+        window.location.href = '/'; // Redirect to login if refresh fails
+        return Promise.reject(error);
+      }
+  
+      if (error.response.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        const refreshToken = Cookies.get('refresh');
+  
+        if (refreshToken) {
+          return apiClient
+            .post('Auth/token/refresh_token/', { refresh: refreshToken })
+            .then((response) => {
+              Cookies.set('token',response.data.access, {expires:1/1440, sameSite:'strict'})
+              apiClient.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
+              originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
+              return apiClient(originalRequest);
+            })
+            .catch((err) => {
+              console.log('Refresh token failed:', err);
+              window.location.href = '';
+              return Promise.reject(err);
+            });
+        } else {
+          window.location.href = '/';
+        }
+      }
+  
+      return Promise.reject(error);
+    }
+  );
+
+  
 // Notification utility function
 const openNotificationWithIcon = (type, message, description) => {
     notification[type]({
@@ -95,12 +149,10 @@ export const forgetPassword = async (username) => {
 
 export const resetPassword = async (token, password, confirm_password) => {
     try {
-        const response = await apiClient.get('/User/signup/',{
-            params: {
+        const response = await apiClient.patch('/User/signup/',{
                 token,
                 password,
                 confirm_password
-            }
         });
         openNotificationWithIcon('success', 'Password update', 'Password updated successfully');
         return response
@@ -162,6 +214,19 @@ export const deleteUser = async (id) => {
     } catch (error) {
         // console.log('Error fetching data:', error.response.data.Error);
         openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
+export const getUserToken = async () => {
+    try {
+        // console.log("id", id)
+        const response = await apiClient.get("/User/signup/")
+        // console.log('response', response)
+        // openNotificationWithIcon('success', 'User', 'User Deleted successfully')
+        return response.data
+    } catch (error) {
+        console.log('Error fetching data:', error.response.data.Error);
+        // openNotificationWithIcon('error', 'Error', error.response.data.Error);
     }
 }
 export const ClientInfo = async () => {

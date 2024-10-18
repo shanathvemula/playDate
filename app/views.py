@@ -38,6 +38,7 @@ from rest_framework.permissions import (IsAdminUser, IsAuthenticated, DjangoMode
 # REST Framework simplejwt
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+# from rest_framework_simplejwt.tokens import AccessToken
 
 # drf_spectacular
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, extend_schema_view, \
@@ -57,7 +58,7 @@ import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
                             SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer,
-                            UserForgetPasswordSerializer)
+                            UserForgetPasswordSerializer, ForgetPasswordSerializer)
 from playDate.settings import BASE_DIR
 from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT, fernet
 
@@ -134,18 +135,35 @@ class SignUp(APIView):
     permission_classes = []
 
     @staticmethod
-    @extend_schema(
-        parameters=[
-            OpenApiParameter(name='token', description="Enter reset token", required=True, type=str),
-            OpenApiParameter(name='password',description="Enter reset password", type=str),
-            OpenApiParameter(name='confirm_password', description="Enter Re-Password", type=str)
-        ], summary="validating token", description="* This endpoint helps to validate the forget token"
-    )
+    @extend_schema(exclude=True)
     def get(request, *args, **kwargs):
         try:
-            token = request.GET.get('token')
-            password = request.GET.get('password')
-            confirm_password = request.GET.get('confirm_password')
+            token = request.headers['Authorization'].split(' ')[-1]
+            access_token_obj = AccessToken(token)
+            user = User.objects.get(id__exact=access_token_obj['user_id'])
+            data = UserSerializer(user).data
+            return HttpResponse(JSONRenderer().render(data),
+                                content_type='application/json',
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            # raise e
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+    @extend_schema(
+        # parameters=[
+        #     OpenApiParameter(name='token', description="Enter reset token", required=True, type=str),
+        #     OpenApiParameter(name='password',description="Enter reset password", type=str),
+        #     OpenApiParameter(name='confirm_password', description="Enter Re-Password", type=str)
+        # ],
+        request=ForgetPasswordSerializer, summary="validating Forgot token and update password",
+        description="* This endpoint helps to validate the forget token"
+    )
+    def patch(request, *args, **kwargs):
+        try:
+            data = request.data
+            token = data['token']
+            password = data['password']
+            confirm_password = data['confirm_password']
             data = eval(fernet.decrypt(eval("b'"+token+"'")).decode())
             data['timeout'] = datetime.strptime(data['timeout'], '%Y-%m-%d %H:%M:%S.%f')
             # print(data)
@@ -511,3 +529,27 @@ class SiteManagementView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# from rest_framework_simplejwt.tokens import AccessToken
+# from django.contrib.auth.models import User
+#
+# @extend_schema()
+# class UserToken(APIView):
+#     permission_classes = []
+#     authentication_classes = [JWTAuthentication]
+#     serializer_class = UserSerializer
+#
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             token = request.headers['Authorization'].split(' ')[-1]
+#             access_token_obj = AccessToken(token)
+#             user = User.objects.get(id__exact=access_token_obj['user_id'])
+#             data = UserSerializer(user).data
+#             return HttpResponse(JSONRenderer().render(data),
+#                                 content_type='application/json',
+#                                 status=status.HTTP_200_OK)
+#         except Exception as e:
+#             # raise e
+#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+#                                 status=status.HTTP_400_BAD_REQUEST)

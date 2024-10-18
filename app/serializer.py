@@ -49,6 +49,11 @@ class UserForgetPasswordSerializer(ModelSerializer):
         model = User
         fields = ('username', 'id')
 
+class ForgetPasswordSerializer(Serializer):
+    token = serializers.CharField(max_length=2000)
+    password = serializers.CharField(max_length=128)
+    confirm_password = serializers.CharField(max_length=128)
+
 class GroupSerializer(ModelSerializer):
     class Meta:
         model = Group
