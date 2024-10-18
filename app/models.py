@@ -19,6 +19,7 @@ User.add_to_class('photo', models.ImageField(blank=True, null=True))
 User.add_to_class('address', models.JSONField(default=dict, blank=True, null=True))
 User.add_to_class('skills', models.JSONField(default=dict, blank=True, null=True))
 User.add_to_class('json', models.JSONField(default=dict, blank=True, null=True))
+User.add_to_class('user_type', models.CharField(max_length=20, default="End User"))
 
 
 # from mongoengine import Document, StringField, IntField

@@ -16,7 +16,6 @@ const apiClient = axios.create({
     }
 })
 
-console.log("Cookies.get('token')", 'Bearer ' + Cookies.get('token'))
 
 // Notification utility function
 const openNotificationWithIcon = (type, message, description) => {
@@ -35,6 +34,8 @@ export const login = async (username, password) => {
             password,
         });
         openNotificationWithIcon('success', 'Login Successful', 'You have successfully logged in!');
+        Cookies.set("token", response.data.access, {expires: 1/24, secure: true})
+        Cookies.set("refresh", response.data.refresh, {expires: 7, secure: true})
         // console.log("success", response)
         // toast.success("Login Successful")
         return response.data;
@@ -125,8 +126,14 @@ export const UserSidebarCreate = async (data) => {
 export const getUserId = async (id, username) => {
     try {
         // console.log("username", username)
-        const response = await apiClient.get(`/User/user/?id=${id}`)
-        console.log("response", response)
+        let response=''
+        if (id!=='') {
+            response = await apiClient.get(`/User/user/?id=${id}`)
+        }
+        else {
+            response = await apiClient.get(`/User/user/?username=${username}`)
+        }
+        // console.log("response", response)
         return response
     } catch (error) {
         // console.log('Error fetching data:', error.response.data.Error);

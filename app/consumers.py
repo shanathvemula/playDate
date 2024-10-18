@@ -38,7 +38,7 @@ class UserConsumer(GenericAsyncAPIConsumer):
     @database_sync_to_async
     def get_initial_data(self):
         # Fetch initial user data from the database
-        return UserSerializer(User.objects.all(), many=True).data
+        return UserSerializer(User.objects.all().order_by('-id'), many=True).data
 
     async def send_initial_data(self):
         # Send the initial user data after connection

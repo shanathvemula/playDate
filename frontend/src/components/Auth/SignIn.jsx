@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { login } from '../../api/service';
+import { login, getUserId } from '../../api/service';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,10 +30,13 @@ const SignIn = ({setCurrentForm}) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = await login(username, password);
-    // console.log(data,"data")
-    Cookies.set("token", data.access, {expires: 1/24, secure: true})
-    Cookies.set("refresh", data.refresh, {expires: 7, secure: true})
-    navigate('/Admin/User')
+    const user = await getUserId('', username);
+    // console.log("User", user.data.user_type)
+    if (user.data.user_type==='Admin'){
+      navigate('/Admin/User')
+    } else {
+      navigate('/home')
+    } 
   }
 
   return (

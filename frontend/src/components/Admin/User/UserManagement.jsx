@@ -83,7 +83,7 @@ const UserManagement = () => {
           phone: message.data.phone || 'N/A',
           is_active: message.data.is_active
         };
-        setUsers(prevUsers => [...prevUsers, newUser]);
+        setUsers(prevUsers => [newUser, ...prevUsers]);
         setUserCount(prevCount => prevCount + 1);
         break;
       case 'update':

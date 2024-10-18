@@ -211,7 +211,8 @@ class SignUp(APIView):
                                 .replace("{{ first_name }}", data['first_name']).replace("{{ email }}",data['email'])
                                 .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}", str(datetime.now().year))
                                 .replace("{{ company_address }}", os.getenv("company_address"))
-                                .replace("{{ supportMail }}", os.getenv("supportMail")))
+                                .replace("{{ supportMail }}", os.getenv("supportMail"))
+                                .replace("<li><strong>Password:</strong> {{ password }}</li>", ''))
                         send_mail(to=data['email'], subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
                     return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
                                         status=status.HTTP_201_CREATED)
@@ -330,6 +331,7 @@ class UserCRUD(APIView):
                             .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
                                                                                       str(datetime.now().year))
                             .replace("{{ company_address }}", os.getenv("company_address"))
+                            .replace("{{ password }}", password)
                             .replace("{{ supportMail }}", os.getenv("supportMail")))
                     send_mail(to=data['email'],
                               subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
