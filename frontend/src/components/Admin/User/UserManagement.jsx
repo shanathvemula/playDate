@@ -10,7 +10,7 @@ import { getUserId, deleteUser } from '../../../api/service';
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [userCount, setUserCount] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For main sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For main sidebar
   const [isUserFormOpen, setIsUserFormOpen] = useState(false); // For user form sidebar
   const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -169,17 +169,18 @@ const UserManagement = () => {
   return (
     <div className="flex flex-col min-h-screen bg-zinc-100">
       {/* Navbar at the top, full-width */}
-      <Navbar />
+      {/* <Navbar /> */}
 
       {/* Sidebar and Content */}
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> {/* Sidebar Component */}
         
         <div className={`flex-grow transition-all duration-300`}>
+          <Navbar />
           <div className="p-4 md:p-8 flex-grow">
-            <div className="bg-white p-6 mb-6 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="bg-white p-4 mb-4 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
               <div>
-                <h2 className="text-2xl font-bold text-neutral-800">User Management ({userCount})</h2>
+                <h2 className="text-xl font-semibold text-neutral-800">User Management ({userCount})</h2>
                 <p className="text-gray-600">Manage and organize user information efficiently.</p>
               </div>
               <button

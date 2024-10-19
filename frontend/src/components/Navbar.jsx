@@ -28,7 +28,8 @@ const Navbar = () => {
   }, [theme]);
 
   return (
-    <nav className="bg-white dark:bg-gray-900 p-4 flex justify-between items-center shadow-md">
+    <nav className="bg-zink-100 dark:bg-gray-900 p-4 flex justify-between items-center">
+      {/* <nav className="bg-white dark:bg-gray-900 p-4 flex justify-between items-center shadow-md"> */}
       {/* Logo Section */}
       <div className="flex items-center">
         <img
@@ -42,7 +43,7 @@ const Navbar = () => {
       <div className="flex items-center">
         <button
           onClick={toggleTheme}
-          className="bg-blue-500 text-white p-2 rounded-full mr-4 dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center"
+          className="bg-sky-600 text-white p-2 rounded-full mr-4 dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center"
         >
           {theme === 'light' ? (
             <FaMoon />
@@ -64,11 +65,11 @@ const Navbar = () => {
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
               <ul className="py-1 text-gray-700 dark:text-gray-200">
-                <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">Profile</li>
-                <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex" onClick={toggleTheme}>{ theme === 'light' ? "Dark Mode" : "Light Mode" }
+                <li className="px-4 py-2 -gray-100 dark:hover:bg-sky-500 cursor-pointer">Profile</li>
+                <li className="px-4 py-2 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer flex" onClick={toggleTheme}>{ theme === 'light' ? "Dark Mode" : "Light Mode" }
                   <button
                     onClick={toggleTheme}
-                    className="bg-blue-500 text-white p-1 rounded-full mr-4 dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center"
+                    className="bg-sky-600 text-white p-1 rounded-full mr-4 dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center"
                   >
                     {theme === 'light' ? (
                       <FaMoon />
@@ -77,8 +78,8 @@ const Navbar = () => {
                     )}
                   </button>
                 </li>
-                <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">Settings</li>
-                <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">Logout</li>
+                <li className="px-4 py-2 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer">Settings</li>
+                <li className="px-4 py-2 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer">Logout</li>
               </ul>
             </div>
           )}

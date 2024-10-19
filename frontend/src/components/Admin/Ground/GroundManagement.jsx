@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'; // Importing Edit and Delete icons
-import Navbar from '../Navbar';
-import Footer from '../footer';
+import Navbar from '../../Navbar';
+import Footer from '../../footer';
+import Sidebar from '../Sidebar';
+import Skeleton from 'react-loading-skeleton';
 
 const GroundManagement = () => {
   const [grounds, setGrounds] = useState([
@@ -42,6 +44,7 @@ const GroundManagement = () => {
       status: false,
     },
   ]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For main sidebar
 
   const toggleStatus = (index) => {
     setGrounds((prevGrounds) =>
@@ -61,22 +64,29 @@ const GroundManagement = () => {
     alert(`Delete ground with ID: ${id}`);
   };
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      {/* Navbar */}
-      <Navbar />
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
-      <div className="p-8 bg-gray-100 flex-grow">
-        {/* Header */}
-        <div className="bg-white p-4 mb-4 shadow-md rounded-md flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold">Ground details (434)</h2>
-            <p className="text-gray-500">Create and manage ground information in Playdate</p>
+  return (
+    <div className="flex flex-col min-h-screen bg-zinc-100">
+      {/* Navbar at the top, full-width */}
+      {/* <Navbar /> */}
+
+      <div className="flex  flex-grow">
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> {/* Sidebar Component */}
+        <div className={`flex-grow transition-all duration-300`}>
+          <Navbar />
+          <div className="p-4 md:p-8 flex-grow">
+          <div className="bg-white p-4 mb-4 shadow-md rounded-md flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-semibold">Ground details (434)</h2>
+              <p className="text-gray-500">Create and manage ground information in Playdate</p>
+            </div>
+            <button className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-500">
+              + New Ground
+            </button>
           </div>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-            + New Ground
-          </button>
-        </div>
 
         {/* Table */}
         <div className="bg-white shadow-md rounded-md overflow-x-auto">
@@ -139,7 +149,9 @@ const GroundManagement = () => {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
+      </div>
       </div>
 
       {/* Footer */}

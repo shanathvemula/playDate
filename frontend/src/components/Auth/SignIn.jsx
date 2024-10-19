@@ -88,7 +88,7 @@ const SignIn = ({setCurrentForm}) => {
         <div className="flex justify-between items-center mb-4">
           <a onClick={navigateForgetPassword} className="text-blue-500 text-sm">Forgot Password?</a>
         </div>
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300">
+        <button type="submit" className="w-full bg-sky-600 text-white py-2 rounded-lg hover:bg-sky-500 transition duration-300">
           Login
         </button>
         <div className="mt-4">

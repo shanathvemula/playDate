@@ -52,7 +52,7 @@ const LoginPage = () => {
                   />
                 </div>
               </div>
-              <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300">
+              <button className="w-full bg-sky-600 text-white py-2 rounded-lg hover:bg-sky-500 transition duration-300">
                 Sign up
               </button>
               <div className="mt-4">

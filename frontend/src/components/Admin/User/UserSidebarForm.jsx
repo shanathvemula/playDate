@@ -17,6 +17,7 @@ const UserSidebarForm = React.memo(({
     is_active: true,
     password: '', // Password will be generated but not shown in the form
   });
+  const [userType, setUserType] = useState('End User')
 
   const formRef = useRef(null); // Reference to the form container
 
@@ -241,6 +242,31 @@ const UserSidebarForm = React.memo(({
                   <option value="End User">End User</option>
                 </select>
             </div>
+            {/* <div className='mb-4'>
+              <div className='flex item-center'>
+              <span className="text-gray-500 font-medium pr-4">User Type</span>
+                <div className="flex border border-gray-300 rounded-md overflow-hidden">
+                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300
+                    ${userType === 'Admin' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200 text-sm'} border-r border-gray-300`}
+                    onClick={() => setUserType('Admin')}
+                  >
+                      Admin
+                  </button>
+                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300 boader
+                    ${userType === 'Ground Manager' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200 text-sm'} border-r border-gray-300`}
+                    onClick={() => setUserType('Ground Manager')}
+                  >
+                      Ground Manager
+                  </button>
+                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300
+                    ${userType === 'End User' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200'} border-r border-gray-300`}
+                    onClick={() => setUserType('End User')}
+                  >
+                      End User
+                  </button>
+                </div>
+              </div> 
+            </div>*/}
 
             {/* Submit and Cancel Buttons */}
             <div className="flex justify-end mt-4">
@@ -248,7 +274,7 @@ const UserSidebarForm = React.memo(({
                 type="submit"
                 disabled={loading} // Disable button while loading
                 className={`${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'
                 } text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2`}
               >
                 {loading ? 'Submitting...' : editingUser ? 'Update User' : 'Create User'}

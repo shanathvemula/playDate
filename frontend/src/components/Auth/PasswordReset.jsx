@@ -98,7 +98,7 @@ function PasswordReset() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition-colors"
+            className="w-full bg-sky-600 text-white py-3 rounded hover:bg-sky-500 transition-colors"
           >
             Reset password
           </button>
