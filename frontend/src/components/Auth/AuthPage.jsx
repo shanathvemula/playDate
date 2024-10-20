@@ -31,9 +31,11 @@ const AuthPage = () => {
         console.log("user", user.user_type)
         if (user.user_type==='Admin') {
             navigate('/Admin/User')
-        } else {
+        } else if (user.data.user_type==='Ground Manager') {
             navigate('/home')
-        } 
+        } else {
+            console.log("End User")
+        }
     }
 
     return (
