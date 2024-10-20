@@ -34,8 +34,10 @@ const SignIn = ({setCurrentForm}) => {
     // console.log("User", user.data.user_type)
     if (user.data.user_type==='Admin'){
       navigate('/Admin/User')
-    } else {
+    } else if (user.data.user_type==='Ground Manager') {
       navigate('/home')
+    } else {
+      console.log('')
     } 
   }
 
