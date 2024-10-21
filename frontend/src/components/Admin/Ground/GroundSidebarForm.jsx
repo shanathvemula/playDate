@@ -510,8 +510,10 @@ const GroundSidebarForm = React.memo(({
                   Pending
                 </button>
               </div>
-            </div>
+            
+            {/* Add more form fields as per your existing logic */}
 
+            {/* Submit and Cancel buttons */}
             <div className="flex justify-end mt-4">
               <button
                 type="submit"
@@ -530,6 +532,8 @@ const GroundSidebarForm = React.memo(({
                 Cancel
               </button>
             </div>
+            </div>
+            <br /><br />
           </form>
         </div>
       </div>
