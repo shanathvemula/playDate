@@ -3,15 +3,15 @@ import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Navbar from '../../Navbar';
 import Footer from '../../footer';
 import Sidebar from '../Sidebar';
-import GroundSidebarForm from './GroundSidebarForm'; 
+import GroundSidebarForm from './GroundSidebarForm'; // Import GroundSidebarForm
 import Skeleton from 'react-loading-skeleton';
 
 const GroundManagement = () => {
   const [grounds, setGrounds] = useState([]);
   const [groundCount, setGroundCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
-  const [isGroundFormOpen, setIsGroundFormOpen] = useState(false); 
-  const [editingGround, setEditingGround] = useState(null); 
+  const [isGroundFormOpen, setIsGroundFormOpen] = useState(false); // State to open/close form
+  const [editingGround, setEditingGround] = useState(null); // State for editing ground
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [webSocketLoading, setWebSocketLoading] = useState(true);
@@ -150,7 +150,7 @@ const GroundManagement = () => {
         <div className={`flex-grow transition-all duration-300`}>
           <Navbar />
           <div className="p-4 md:p-8 flex-grow">
-            <div className="bg-white p-4 mb-4 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="bg-white p-4 mb-4 shadow-md rounded-md flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-semibold">Ground details ({groundCount})</h2>
                 <p className="text-gray-500">Create and manage ground information in Playdate</p>
