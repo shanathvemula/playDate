@@ -31,7 +31,7 @@ class GroundConsumer(GenericAsyncAPIConsumer):
 
     @database_sync_to_async
     def get_initial_data(self):
-        return GroundsSerializer(Grounds.objects.all(), many=True).data
+        return GroundsSerializer(Grounds.objects.all().order_by('-id'), many=True).data
 
     async def send_initial_json(self):
         initial_data = await self.get_initial_data()

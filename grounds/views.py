@@ -84,7 +84,7 @@ class Ground(APIView):
     def put(self, request, *args, **kwargs):
         try:
             data= request.data
-            ground = Grounds.objects.get(name=data['name'])
+            ground = Grounds.objects.get(id__exact=data['id'])
             serializer = GroundsSerializer(ground, data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -93,3 +93,21 @@ class Ground(APIView):
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            # OpenApiParameter(name='username', description="Enter Username", type=str),
+            OpenApiParameter(name='id', description="Enter Id", type=int),
+        ], summary="Delete Ground", description=f"* This endpoint helps to deleting user.\n"
+    )
+    def delete(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            ground = Grounds.objects.get(id__exact=id)
+            ground.delete()
+            return HttpResponse(JSONRenderer().render({"message": "Deleted Successfully"}), content_type='application/json',
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            # raise e
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                            status=status.HTTP_400_BAD_REQUEST)

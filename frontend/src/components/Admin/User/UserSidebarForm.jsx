@@ -55,6 +55,7 @@ const UserSidebarForm = React.memo(({
         gender: editingUser.gender,
         phone: editingUser.phone,
         is_active: editingUser.is_active,
+        user_type: editingUser.user_type,
         password: '', // No password field when editing
       });
     } else {
@@ -65,6 +66,7 @@ const UserSidebarForm = React.memo(({
         gender: '',
         phone: '',
         is_active: true,
+        user_type: '',
         password: generatePassword(), // Generate a password for new users
       });
     }
@@ -85,6 +87,7 @@ const UserSidebarForm = React.memo(({
       editingUser.email=formData.email
       editingUser.gender=formData.gender
       editingUser.phone=formData.phone
+      editingUser.user_type=formData.user_type
       delete editingUser.password;
       // console.log("editingUser", editingUser)
       const data = await updateUser(editingUser)
@@ -98,6 +101,7 @@ const UserSidebarForm = React.memo(({
       gender: '',
       phone: '',
       is_active: true,
+      user_type: '',
       password: generatePassword(), // Generate a password for new users
     });
   };

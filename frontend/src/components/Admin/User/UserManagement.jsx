@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Navbar from '../../Navbar';
 import Footer from '../../footer';
-import Sidebar from '../Sidebar'; // Import Sidebar component
+import Sidebar from '../Sidebar';
 import UserSidebarForm from './UserSidebarForm';
 import Skeleton from 'react-loading-skeleton';
 import { getUserId, deleteUser } from '../../../api/service';
@@ -10,8 +10,8 @@ import { getUserId, deleteUser } from '../../../api/service';
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [userCount, setUserCount] = useState(0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // For main sidebar
-  const [isUserFormOpen, setIsUserFormOpen] = useState(false); // For user form sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserFormOpen, setIsUserFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
@@ -20,14 +20,16 @@ const UserManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
   let ws;
 
-  // WebSocket connection setup
   useEffect(() => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    ws = new WebSocket('ws://69.197.176.103:8000/users');
+    ws = new WebSocket('ws://127.0.0.1:8000/users');
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -67,7 +69,8 @@ const UserManagement = () => {
             gender: user.gender || 'N/A',
             age: user.age || 'N/A',
             phone: user.phone || 'N/A',
-            is_active: user.is_active
+            is_active: user.is_active,
+            user_type: user.user_type,
           }));
           setUsers(processedUsers);
           setUserCount(processedUsers.length);
@@ -81,7 +84,8 @@ const UserManagement = () => {
           gender: message.data.gender || 'N/A',
           age: message.data.age || 'N/A',
           phone: message.data.phone || 'N/A',
-          is_active: message.data.is_active
+          is_active: message.data.is_active,
+          user_type: message.data.user_type
         };
         setUsers(prevUsers => [newUser, ...prevUsers]);
         setUserCount(prevCount => prevCount + 1);
@@ -96,7 +100,8 @@ const UserManagement = () => {
                 gender: message.data.gender || 'N/A',
                 age: message.data.age || 'N/A',
                 phone: message.data.phone || 'N/A',
-                is_active: message.data.is_active
+                is_active: message.data.is_active,
+                user_type: message.data.user_type
               }
             : user
         ));
@@ -110,15 +115,40 @@ const UserManagement = () => {
     }
   };
 
+  // Sorting function
+  const sortedUsers = React.useMemo(() => {
+    let sortableUsers = [...users];
+    if (sortConfig.key !== null) {
+      sortableUsers.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableUsers;
+  }, [users, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
   const handleCreateUser = () => {
     setEditingUser(null);
-    setIsUserFormOpen(true); // Open user form sidebar
+    setIsUserFormOpen(true);
   };
 
   const handleEdit = async (user) => {
     const data = await getUserId(user.id, user.username);
     setEditingUser(data.data);
-    setIsUserFormOpen(true); // Open user form sidebar
+    setIsUserFormOpen(true);
   };
 
   const handleFormSubmit = async (formData) => {
@@ -137,19 +167,19 @@ const UserManagement = () => {
       setErrorMessage('Error submitting form, please try again.');
     } finally {
       setFormLoading(false);
-      setIsUserFormOpen(false); // Close user form sidebar
+      setIsUserFormOpen(false);
     }
   };
 
   const confirmDelete = (id) => {
     setSelectedUserId(id);
-    setIsDeleteModalOpen(true); // Open the delete confirmation modal
+    setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
     setFormLoading(true);
     setErrorMessage('');
-    
+
     try {
       await deleteUser(selectedUserId);
       ws.send(JSON.stringify({ action: 'delete', data: { id: selectedUserId } }));
@@ -157,24 +187,18 @@ const UserManagement = () => {
       setErrorMessage('Error deleting user, please try again.');
     } finally {
       setFormLoading(false);
-      setIsDeleteModalOpen(false); // Close the delete modal
+      setIsDeleteModalOpen(false);
     }
   };
 
-  // Toggle the sidebar between open and closed
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-100">
-      {/* Navbar at the top, full-width */}
-      {/* <Navbar /> */}
-
-      {/* Sidebar and Content */}
       <div className="flex flex-grow">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> {/* Sidebar Component */}
-        
+        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className={`flex-grow transition-all duration-300`}>
           <Navbar />
           <div className="p-4 md:p-8 flex-grow">
@@ -201,19 +225,20 @@ const UserManagement = () => {
                 <table className="table-auto w-full text-left">
                   <thead className="bg-neutral-300 text-gray-700">
                     <tr>
-                      <th className="p-3 font-medium">ID</th>
-                      <th className="p-3 font-medium">Name</th>
-                      <th className="p-3 font-medium">Email</th>
-                      <th className="p-3 font-medium">Gender</th>
-                      <th className="p-3 font-medium">Age</th>
-                      <th className="p-3 font-medium">Phone</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('id')}>ID</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('name')}>Name</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('email')}>Email</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('gender')}>Gender</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('age')}>Age</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('phone')}>Phone</th>
+                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('user_type')}>User Type</th>
                       <th className="p-3 font-medium">Status</th>
                       <th className="p-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {Array.isArray(users) && users.length > 0 ? (
-                      users.map(user => (
+                    {sortedUsers.length > 0 ? (
+                      sortedUsers.map(user => (
                         <tr key={user.id} className="hover:bg-gray-50 transition">
                           <td className="p-3">{user.id}</td>
                           <td className="p-3">{user.name}</td>
@@ -221,6 +246,7 @@ const UserManagement = () => {
                           <td className="p-3">{user.gender}</td>
                           <td className="p-3">{user.age}</td>
                           <td className="p-3">{user.phone}</td>
+                          <td className='p-3'>{user.user_type}</td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
                               {user.is_active ? 'Active' : 'Inactive'}
@@ -242,7 +268,7 @@ const UserManagement = () => {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="8" className="p-4 text-center text-gray-500">No users found.</td>
+                        <td colSpan="9" className="p-4 text-center text-gray-500">No users found.</td>
                       </tr>
                     )}
                   </tbody>
@@ -251,7 +277,7 @@ const UserManagement = () => {
             </div>
 
             <UserSidebarForm
-              isOpen={isUserFormOpen} // Control for the User form sidebar
+              isOpen={isUserFormOpen}
               onClose={() => setIsUserFormOpen(false)}
               onSubmit={handleFormSubmit}
               editingUser={editingUser}
@@ -261,10 +287,8 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* Footer at the bottom */}
       <Footer />
 
-      {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center">

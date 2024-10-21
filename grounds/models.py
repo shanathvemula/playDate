@@ -1,8 +1,10 @@
+from enum import unique
 from random import choices
 from tokenize import blank_re
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 from datetime import datetime
 
@@ -12,10 +14,13 @@ maintenanceStatus = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('P
 
 
 class Grounds(models.Model):
-    name = models.CharField(max_length=500, unique=True)
+    ground_name = models.CharField(max_length=500, unique=False)
+    game = models.CharField(max_length=150)
+    # ground_type = models.CharField(max_length=150)
     location = models.CharField(max_length=500, blank=True, null=True)
-    Arena = models.JSONField(default=dict, blank=True, null=True)
-    address = models.JSONField(default=dict, blank=True, null=True)
+    capacity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    surface_type = models.CharField(max_length=250)
+    ground_images = models.JSONField(default=dict, blank=True, null=True)
     locker_rooms = models.BooleanField(default=False)
     washrooms = models.BooleanField(default=False)
     lighting = models.BooleanField(default=False)  # Floodlights availability for night matches
@@ -25,6 +30,8 @@ class Grounds(models.Model):
     last_maintenance_date = models.DateTimeField(blank=True, null=True)
     next_maintenance_date = models.DateTimeField(blank=True, null=True)
     maintenance_status = models.CharField(max_length=20, choices=maintenanceStatus)
+    # Arena = models.JSONField(default=dict, blank=True, null=True)
+    address = models.JSONField(default=dict, blank=True, null=True)
     created = models.DateTimeField(default=datetime.now())
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
