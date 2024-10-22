@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MdFileUpload, MdOutlineClose } from "react-icons/md";
-import { GroundSidebarCreate } from '../../../api/service';
+import { MdFileUpload, MdOutlineClose  } from "react-icons/md";
 
 const GroundSidebarForm = React.memo(({
   isOpen,
@@ -29,7 +28,7 @@ const GroundSidebarForm = React.memo(({
     next_maintenance_date: '',
     maintenance_team_contact: '',
     maintenance_status: 'Scheduled',
-    created_by:JSON.parse(localStorage.getItem("user")).data.id
+    created:JSON.parse(localStorage.getItem("user")).data.id
   });
 
   const [arenaVisibility, setArenaVisibility] = useState([true]);
@@ -58,10 +57,11 @@ const GroundSidebarForm = React.memo(({
         next_maintenance_date: editingGround.next_maintenance_date,
         maintenance_team_contact: editingGround.maintenance_team_contact,
         maintenance_status: editingGround.maintenance_status,
-        created_by:JSON.parse(localStorage.getItem("user")).data.id
+        created:JSON.parse(localStorage.getItem("user")).data.id
       });
       setArenaVisibility(editingGround.arenas ? editingGround.arenas.map(() => false) : [true]);
     } else {
+      // Reset form to default values in create mode
       setFormData({
         ground_name: '',
         location: '',
@@ -82,7 +82,7 @@ const GroundSidebarForm = React.memo(({
         next_maintenance_date: '',
         maintenance_team_contact: '',
         maintenance_status: 'Scheduled',
-        created_by:JSON.parse(localStorage.getItem("user")).data.id
+        created:JSON.parse(localStorage.getItem("user")).data.id
       });
       setArenaVisibility([true]);
     }
@@ -98,13 +98,9 @@ const GroundSidebarForm = React.memo(({
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Updated handleFileChange to append new images instead of replacing existing ones
   const handleFileChange = (index, e) => {
     const newArenas = [...formData.arenas];
-    newArenas[index].ground_images = [
-      ...newArenas[index].ground_images, 
-      ...Array.from(e.target.files)
-    ];
+    newArenas[index].ground_images = Array.from(e.target.files);
     setFormData({ ...formData, arenas: newArenas });
   };
 
@@ -112,7 +108,6 @@ const GroundSidebarForm = React.memo(({
     e.preventDefault();
     onSubmit(formData);
     console.log("formData", formData);
-    await GroundSidebarCreate(formData);
   };
 
   const handleRemoveImage = (arenaIndex, imageIndex) => {
@@ -257,8 +252,13 @@ const GroundSidebarForm = React.memo(({
                         value={arena.game || formData.game}
                         onChange={(e) => handleInputChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder='Enter Game Ex. cricket, Football'
-                      />
+                        placeholder='Enate Game Ex. cricket, Football'
+                      >
+                        {/* <option value="">Choose Game</option>
+                        <option value="Cricket">Cricket</option>
+                        <option value="Football">Football</option>
+                        <option value="Badminton">Badminton</option> */}
+                      </input>
                     </div>
 
                     {/* Ground Type */}
@@ -299,8 +299,25 @@ const GroundSidebarForm = React.memo(({
                         onChange={(e) => handleInputChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder='Enter Surface Type'
-                      />
+                      >
+                        {/* <option value="Grass">Grass</option>
+                        <option value="Synthetic">Synthetic</option> */}
+                      </input>
                     </div>
+
+                    {/* Availability Status */}
+                    {/* <div className="mb-4">
+                      <label className="block text-gray-700 text-sm font-medium mb-2">Availability Status</label>
+                      <select
+                        name="availability_status"
+                        value={arena.availability_status}
+                        onChange={(e) => handleInputChange(index, e)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="Available">Available</option>
+                        <option value="Not Available">Not Available</option>
+                      </select>
+                    </div> */}
 
                     {/* Ground Images */}
                     <div className="mb-4">

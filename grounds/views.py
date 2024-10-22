@@ -1,3 +1,5 @@
+import json
+
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -60,13 +62,24 @@ class Ground(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            serializer = GroundsSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
-                                    status=status.HTTP_201_CREATED)
-            return HttpResponse(JSONRenderer().render(serializer.errors), content_type='application/json',
-                                status=status.HTTP_400_BAD_REQUEST)
+            arenas = data.pop('arenas',[])
+            datas = []
+            errors = []
+            for i in arenas:
+                datas.append({**data, **i})
+                serializer = GroundsSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    errors.append({**serializer.errors})
+                    # errors.append(i['game'])
+            if errors:
+                return HttpResponse(JSONRenderer().render({"Error": errors}), content_type='application/json',
+                                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return HttpResponse(JSONRenderer().render({"data": "Grounds Created Successfully"}),
+                                    content_type='application/json',
+                                    status=status.HTTP_201_created)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

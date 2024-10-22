@@ -229,6 +229,18 @@ export const getUserToken = async () => {
         // openNotificationWithIcon('error', 'Error', error.response.data.Error);
     }
 }
+
+export const GroundSidebarCreate = async (data) => {
+    try {
+        const response = await apiClient.post('/Grounds/ground/', data)
+        openNotificationWithIcon('success', 'Ground', 'Ground Create successfully');
+        return response
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
 export const ClientInfo = async () => {
     const response = await apiClient.get('/Auth/site_management/')
     return response.data

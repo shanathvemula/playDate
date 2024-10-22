@@ -32,6 +32,8 @@ const SignIn = ({setCurrentForm}) => {
     const data = await login(username, password);
     const user = await getUserId('', username);
     // console.log("User", user.data.user_type)
+    localStorage.setItem("user", JSON.stringify(user));
+    // console.log("kk", JSON.parse(localStorage.getItem("user")).data.id)
     if (user.data.user_type==='Admin'){
       navigate('/Admin/User')
     } else if (user.data.user_type==='Ground Manager') {
