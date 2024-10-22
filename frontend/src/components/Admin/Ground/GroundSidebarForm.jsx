@@ -22,7 +22,7 @@ const GroundSidebarForm = React.memo(({
     wash_rooms: 'Available',
     lighting_night: 'Available',
     parking_facility: 'Available',
-    scoreboard_type: 'Digital', // Initial scoreboard_type value
+    scoreboard_type: 'Digital',
     last_maintenance_date: '',
     next_maintenance_date: '',
     maintenance_team_contact: '',
@@ -50,13 +50,37 @@ const GroundSidebarForm = React.memo(({
         wash_rooms: editingGround.wash_rooms,
         lighting_night: editingGround.lighting_night,
         parking_facility: editingGround.parking_facility,
-        scoreboard_type: editingGround.scoreboard_type || 'Digital', // Load scoreboard_type value
+        scoreboard_type: editingGround.scoreboard_type || 'Digital',
         last_maintenance_date: editingGround.last_maintenance_date,
         next_maintenance_date: editingGround.next_maintenance_date,
         maintenance_team_contact: editingGround.maintenance_team_contact,
         maintenance_status: editingGround.maintenance_status,
       });
       setArenaVisibility(editingGround.arenas ? editingGround.arenas.map(() => false) : [true]);
+    } else {
+      // Reset form to default values in create mode
+      setFormData({
+        ground_name: '',
+        location: '',
+        arenas: [{
+          game: '',
+          ground_type: '',
+          capacity: '',
+          surface_type: '',
+          availability_status: 'Available',
+          ground_images: [],
+        }],
+        locker_room: 'Available',
+        wash_rooms: 'Available',
+        lighting_night: 'Available',
+        parking_facility: 'Available',
+        scoreboard_type: 'Digital',
+        last_maintenance_date: '',
+        next_maintenance_date: '',
+        maintenance_team_contact: '',
+        maintenance_status: 'Scheduled',
+      });
+      setArenaVisibility([true]);
     }
   }, [editingGround]);
 
@@ -78,7 +102,8 @@ const GroundSidebarForm = React.memo(({
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData); 
+    onSubmit(formData);
+    console.log("formData", formData);
   };
 
   const addArenaForm = () => {
@@ -118,7 +143,6 @@ const GroundSidebarForm = React.memo(({
     });
   };
 
-  // Toggle for scoreboard_type
   const toggleScoreboardType = () => {
     setFormData({
       ...formData,
@@ -129,7 +153,7 @@ const GroundSidebarForm = React.memo(({
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (formRef.current && !formRef.current.contains(event.target)) {
-        onClose(); 
+        onClose();
       }
     };
 
@@ -150,8 +174,11 @@ const GroundSidebarForm = React.memo(({
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-end z-50">
       <div
         ref={formRef}
-        className={`bg-white w-full sm:w-3/4 md:w-1/2 lg:w-1/3 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`bg-white w-full sm:w-3/4 md:w-1/2 lg:w-1/3 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        } flex flex-col`}
       >
+        {/* Header */}
         <div className="flex justify-between items-center mb-1 p-4 bg-gray-200">
           <h3 className="text-lg font-semibold text-neutral-800">
             {editingGround ? 'Edit Ground' : 'Create Ground'}
@@ -209,18 +236,19 @@ const GroundSidebarForm = React.memo(({
                   <>
                     {/* Game */}
                     <div className="mb-4">
-                      <label className="block text-gray-700 text-sm font-medium mb-2">Select Game</label>
-                      <select
+                      <label className="block text-gray-700 text-sm font-medium mb-2">Game</label>
+                      <input
                         name="game"
-                        value={arena.game}
+                        value={arena.game || formData.game}
                         onChange={(e) => handleInputChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder='Enate Game Ex. cricket, Football'
                       >
-                        <option value="">Choose Game</option>
+                        {/* <option value="">Choose Game</option>
                         <option value="Cricket">Cricket</option>
                         <option value="Football">Football</option>
-                        <option value="Badminton">Badminton</option>
-                      </select>
+                        <option value="Badminton">Badminton</option> */}
+                      </input>
                     </div>
 
                     {/* Ground Type */}
@@ -248,25 +276,27 @@ const GroundSidebarForm = React.memo(({
                         onChange={(e) => handleInputChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow shadow-sm"
                         placeholder="Enter Ground Capacity"
+                        min={2}
                       />
                     </div>
 
                     {/* Surface Type */}
                     <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-medium mb-2">Surface Type</label>
-                      <select
+                      <input
                         name="surface_type"
                         value={arena.surface_type}
                         onChange={(e) => handleInputChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder='Enter Surface Type'
                       >
-                        <option value="Grass">Grass</option>
-                        <option value="Synthetic">Synthetic</option>
-                      </select>
+                        {/* <option value="Grass">Grass</option>
+                        <option value="Synthetic">Synthetic</option> */}
+                      </input>
                     </div>
 
                     {/* Availability Status */}
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                       <label className="block text-gray-700 text-sm font-medium mb-2">Availability Status</label>
                       <select
                         name="availability_status"
@@ -277,7 +307,7 @@ const GroundSidebarForm = React.memo(({
                         <option value="Available">Available</option>
                         <option value="Not Available">Not Available</option>
                       </select>
-                    </div>
+                    </div> */}
 
                     {/* Ground Images */}
                     <div className="mb-4">
@@ -289,6 +319,20 @@ const GroundSidebarForm = React.memo(({
                         onChange={(e) => handleFileChange(index, e)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 transition-shadow shadow-sm"
                       />
+                      <ul className="mt-2 space-y-1">
+                        {arena.ground_images.map((image, imageIndex) => (
+                          <li key={imageIndex} className="flex items-center justify-between">
+                            <span>{image.name}</span>
+                            <button
+                              type="button"
+                              className="text-red-500 hover:text-red-700 text-sm"
+                              onClick={() => handleRemoveImage(index, imageIndex)}
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
 
                     {/* Remove Arena Button */}
@@ -309,7 +353,7 @@ const GroundSidebarForm = React.memo(({
             <button
               type="button"
               onClick={addArenaForm}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-4 transition-all"
+              className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-500 mb-4 transition-all"
             >
               + Add More Arena
             </button>
@@ -324,7 +368,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('locker_room')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.locker_room === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -333,7 +377,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('locker_room')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.locker_room === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -349,7 +393,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('wash_rooms')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.wash_rooms === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -358,7 +402,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('wash_rooms')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.wash_rooms === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -374,7 +418,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('lighting_night')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.lighting_night === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -383,7 +427,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('lighting_night')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.lighting_night === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -399,7 +443,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('parking_facility')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.parking_facility === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -408,7 +452,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => toggleFacility('parking_facility')}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.parking_facility === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -424,7 +468,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={toggleScoreboardType} // Toggle function for scoreboard type
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.scoreboard_type === 'Digital' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -433,7 +477,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={toggleScoreboardType} // Toggle function for scoreboard type
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.scoreboard_type === 'Manual' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -485,7 +529,7 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, maintenance_status: 'Scheduled' })}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.maintenance_status === 'Scheduled' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
@@ -503,38 +547,36 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, maintenance_status: 'Pending' })}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
                     formData.maintenance_status === 'Pending' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Pending
                 </button>
               </div>
-            
-            {/* Add more form fields as per your existing logic */}
-
-            {/* Submit and Cancel buttons */}
-            <div className="flex justify-end mt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className={`${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'
-                } text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2`}
-              >
-                {loading ? 'Submitting...' : editingGround ? 'Update Ground' : 'Create Ground'}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200"
-              >
-                Cancel
-              </button>
             </div>
-            </div>
-            <br /><br />
           </form>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-gray-200 flex-shrink-0 flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`${
+                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'
+              } text-white px-4 py-2 rounded-md mr-2`}
+              onClick={handleFormSubmit}
+            >
+              {loading ? 'Submitting...' : editingGround ? 'Update Ground' : 'Create Ground'}
+            </button>
         </div>
       </div>
     </div>

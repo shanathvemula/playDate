@@ -105,8 +105,8 @@ const GroundManagement = () => {
   const handleEdit = (id) => {
     const groundToEdit = grounds.find((ground) => ground.id === id);
     if (groundToEdit) {
-      setEditingGround(groundToEdit);
-      setIsGroundFormOpen(true);
+      setEditingGround(groundToEdit); // Pass the ground to edit
+      setIsGroundFormOpen(true); // Open form for editing
     }
   };
 
@@ -143,6 +143,12 @@ const GroundManagement = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  // Function to open form in create mode
+  const openCreateGroundForm = () => {
+    setEditingGround(null); // Reset editing ground to null for create mode
+    setIsGroundFormOpen(true); // Open form
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-100">
       <div className="flex flex-grow">
@@ -157,9 +163,9 @@ const GroundManagement = () => {
               </div>
               <button
                 className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-500"
-                onClick={() => setIsGroundFormOpen(true)}
+                onClick={openCreateGroundForm} // Open the form in create mode
               >
-                + New Ground
+                + Add New Ground
               </button>
             </div>
 
@@ -178,8 +184,8 @@ const GroundManagement = () => {
                       <th className="p-4">Location</th>
                       <th className="p-4">Capacity</th>
                       <th className="p-4">Surface Type</th>
-                      <th className="p-4">Availability Status</th>
-                      <th className="p-4">Status</th>
+                      <th className="p-4">Maintrnance Status</th>
+                      <th className="p-4">Maintrnance Contact</th>
                       <th className="p-4">Actions</th>
                     </tr>
                   </thead>
@@ -192,9 +198,9 @@ const GroundManagement = () => {
                         <td className="p-4">{ground.location}</td>
                         <td className="p-4">{ground.capacity}</td>
                         <td className="p-4">{ground.surface_type}</td>
-                        <td className="p-4">Availability Status</td>
-                        <td className="p-4">
-                          <div className="flex items-center">
+                        <td className="p-4">{ground.maintenance_status}</td>
+                        <td className="p-4">{ground.maintenance_team_contact}
+                          {/* <div className="flex items-center">
                             <div
                               onClick={() => toggleStatus(index)}
                               className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in ${
@@ -208,13 +214,13 @@ const GroundManagement = () => {
                               />
                             </div>
                             <span className="ml-2">{ground.status ? 'Active' : 'Disabled'}</span>
-                          </div>
+                          </div> */}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center space-x-2">
                             <FaEdit
                               className="text-blue-600 cursor-pointer"
-                              onClick={() => handleEdit(ground.id)}
+                              onClick={() => handleEdit(ground.id)} // Open the form in edit mode
                             />
                             <FaTrashAlt
                               className="text-red-600 cursor-pointer"
@@ -239,7 +245,7 @@ const GroundManagement = () => {
         isOpen={isGroundFormOpen}
         onClose={() => setIsGroundFormOpen(false)}
         onSubmit={handleFormSubmit}
-        editingGround={editingGround}
+        editingGround={editingGround} // Pass null for create mode
         loading={formLoading}
       />
     </div>

@@ -30,11 +30,12 @@ class Grounds(models.Model):
     last_maintenance_date = models.DateTimeField(blank=True, null=True)
     next_maintenance_date = models.DateTimeField(blank=True, null=True)
     maintenance_status = models.CharField(max_length=20, choices=maintenanceStatus)
+    maintenance_team_contact = models.CharField(max_length=200)
     # Arena = models.JSONField(default=dict, blank=True, null=True)
     address = models.JSONField(default=dict, blank=True, null=True)
     created = models.DateTimeField(default=datetime.now())
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_active = models.BooleanField(default=True)
+    # is_active = models.BooleanField(default=True)
     ground_images = models.JSONField(default=dict, blank=True, null=True)
 
     class Meta:

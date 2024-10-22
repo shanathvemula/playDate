@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { UserSidebarCreate, updateUser } from '../../../api/service';
 
 const UserSidebarForm = React.memo(({
@@ -8,103 +8,68 @@ const UserSidebarForm = React.memo(({
   editingUser,
   loading
 }) => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     first_name: '',
     last_name: '',
     email: '',
     gender: '',
     phone: '',
     is_active: true,
+    user_type: 'Select User Type',
     password: '', // Password will be generated but not shown in the form
-  });
-  const [userType, setUserType] = useState('End User')
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const formRef = useRef(null); // Reference to the form container
 
   // Password generator function
-  const generatePassword = () => {
+  const generatePassword = useCallback(() => {
     const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
     const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '0123456789';
     const specialChars = '!@#$%^&*()_+~`|}{[]:;?><,./-=';
-    
-    // Ensuring at least one of each type
-    let password = '';
-    password += lowerChars[Math.floor(Math.random() * lowerChars.length)];
-    password += upperChars[Math.floor(Math.random() * upperChars.length)];
-    password += numbers[Math.floor(Math.random() * numbers.length)];
-    password += specialChars[Math.floor(Math.random() * specialChars.length)];
 
     const allChars = lowerChars + upperChars + numbers + specialChars;
-    
-    // Generate remaining characters randomly from all available characters
-    for (let i = password.length; i < 10; i++) {
-      password += allChars[Math.floor(Math.random() * allChars.length)];
-    }
+    let password = [lowerChars, upperChars, numbers, specialChars]
+      .map((chars) => chars[Math.floor(Math.random() * chars.length)])
+      .join('') + Array.from({ length: 6 }, () =>
+        allChars[Math.floor(Math.random() * allChars.length)]
+      ).join('');
 
-    // Shuffle the password to avoid predictable patterns
     return password.split('').sort(() => 0.5 - Math.random()).join('');
-  };
+  }, []);
 
   useEffect(() => {
     if (editingUser) {
-      setFormData({
-        first_name: editingUser.first_name,
-        last_name: editingUser.last_name,
-        email: editingUser.email,
-        gender: editingUser.gender,
-        phone: editingUser.phone,
-        is_active: editingUser.is_active,
-        user_type: editingUser.user_type,
-        password: '', // No password field when editing
-      });
+      setFormData({ ...editingUser, password: '' });
     } else {
-      setFormData({
-        first_name: '',
-        last_name: '',
-        email: '',
-        gender: '',
-        phone: '',
-        is_active: true,
-        user_type: '',
-        password: generatePassword(), // Generate a password for new users
-      });
+      setFormData({ ...initialFormData, password: generatePassword() });
     }
-  }, [editingUser]);
+  }, [editingUser, generatePassword]);
 
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleInputChange = useCallback((e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [e.target.name]: e.target.value,
+    }));
+  }, []);
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    onSubmit(formData); // Submit form data, including the generated password
-    console.log("formData", formData)
+  const handleFormSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      onSubmit(formData);
 
-    if (editingUser){
-      editingUser.first_name=formData.first_name
-      editingUser.last_name=formData.last_name
-      editingUser.email=formData.email
-      editingUser.gender=formData.gender
-      editingUser.phone=formData.phone
-      editingUser.user_type=formData.user_type
-      delete editingUser.password;
-      // console.log("editingUser", editingUser)
-      const data = await updateUser(editingUser)
-    } else {
-      const data = await UserSidebarCreate(formData);
-    }
-    setFormData({
-      first_name: '',
-      last_name: '',
-      email: '',
-      gender: '',
-      phone: '',
-      is_active: true,
-      user_type: '',
-      password: generatePassword(), // Generate a password for new users
-    });
-  };
+      if (editingUser) {
+        await updateUser({ ...formData, password: undefined });
+      } else {
+        await UserSidebarCreate(formData);
+      }
+
+      setFormData({ ...initialFormData, password: generatePassword() });
+    },
+    [formData, editingUser, generatePassword, initialFormData, onSubmit]
+  );
 
   // Close form when clicking outside
   useEffect(() => {
@@ -130,11 +95,12 @@ const UserSidebarForm = React.memo(({
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-end z-50">
       <div
-        ref={formRef} // Attach the ref to the form container
+        ref={formRef}
         className={`bg-white w-full sm:w-3/4 md:w-1/2 lg:w-1/3 h-full shadow-lg transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        } flex flex-col`}
       >
+        {/* Header */}
         <div className="flex justify-between items-center mb-1 p-4 bg-gray-200">
           <h3 className="text-lg font-semibold text-neutral-800">
             {editingUser ? 'Edit User' : 'Create User'}
@@ -146,7 +112,9 @@ const UserSidebarForm = React.memo(({
             ✕
           </button>
         </div>
-        <div className="p-6 overflow-y-auto">
+
+        {/* Form */}
+        <div className="flex-grow overflow-y-auto p-4">
           <form onSubmit={handleFormSubmit}>
             {/* First Name */}
             <div className="mb-4">
@@ -235,7 +203,7 @@ const UserSidebarForm = React.memo(({
                 User Type
               </label>
               <select 
-                name="User Type" 
+                name="user_type"
                 value={formData.user_type} 
                 onChange={handleInputChange}
                 className='w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
@@ -244,54 +212,30 @@ const UserSidebarForm = React.memo(({
                   <option value="Admin">Admin</option>
                   <option value="Ground Manager">Ground Manager</option>
                   <option value="End User">End User</option>
-                </select>
-            </div>
-            {/* <div className='mb-4'>
-              <div className='flex item-center'>
-              <span className="text-gray-500 font-medium pr-4">User Type</span>
-                <div className="flex border border-gray-300 rounded-md overflow-hidden">
-                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300
-                    ${userType === 'Admin' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200 text-sm'} border-r border-gray-300`}
-                    onClick={() => setUserType('Admin')}
-                  >
-                      Admin
-                  </button>
-                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300 boader
-                    ${userType === 'Ground Manager' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200 text-sm'} border-r border-gray-300`}
-                    onClick={() => setUserType('Ground Manager')}
-                  >
-                      Ground Manager
-                  </button>
-                  <button className={`flex-1 py-0.5 px-2 text-center transition-colors duration-300
-                    ${userType === 'End User' ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-200'} border-r border-gray-300`}
-                    onClick={() => setUserType('End User')}
-                  >
-                      End User
-                  </button>
-                </div>
-              </div> 
-            </div>*/}
-
-            {/* Submit and Cancel Buttons */}
-            <div className="flex justify-end mt-4">
-              <button
-                type="submit"
-                disabled={loading} // Disable button while loading
-                className={`${
-                  loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'
-                } text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2`}
-              >
-                {loading ? 'Submitting...' : editingUser ? 'Update User' : 'Create User'}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200"
-              >
-                Cancel
-              </button>
+              </select>
             </div>
           </form>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-gray-200 flex-shrink-0 flex justify-end space-x-2">
+          <button
+            type="submit"
+            disabled={loading}
+            onClick={handleFormSubmit}
+            className={`${
+              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'
+            } text-white px-4 py-2 rounded-md focus:ring-2 focus:ring-blue-500 transition duration-200 mr-2`}
+          >
+            {loading ? 'Submitting...' : editingUser ? 'Update User' : 'Create User'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
