@@ -16,7 +16,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth
+from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth, ArenaSerializer
 
 from django.core.files.storage import default_storage
 
@@ -64,9 +64,21 @@ class Ground(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data= request.data
-            print("data", data.keys())
-
-            return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json')
+            print("data", data['Arena'])
+            user = data['created_by']
+            Arena = data['Arena']
+            data['created_by'] = user['id']
+            data['Arena'] = []
+            serializer = GroundsSerializer(data=data, partial=True)
+            if serializer.is_valid():
+                # arenaSerializer = ArenaSerializer(data=Arena, many=True)
+                # if arenaSerializer.is_valid():
+                #     arenaSerializer.save()
+                # print(arenaSerializer.data)
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+            # return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json')
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

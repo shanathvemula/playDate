@@ -43,7 +43,7 @@ class Grounds(models.Model):
     address = models.JSONField(default=dict, blank=True, null=True)
     created = models.DateTimeField(default=datetime.now())
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    Arena = models.ManyToManyField(Arena)
+    Arena = models.ManyToManyField(Arena, blank=True, null=True)
     # is_active = models.BooleanField(default=True)
 
     class Meta:
