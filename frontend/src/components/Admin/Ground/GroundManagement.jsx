@@ -180,12 +180,12 @@ const GroundManagement = () => {
                     <tr>
                       <th className="p-4">Ground ID</th>
                       <th className="p-4">Ground Name</th>
-                      <th className="p-4">Game</th>
                       <th className="p-4">Location</th>
-                      <th className="p-4">Capacity</th>
-                      <th className="p-4">Surface Type</th>
                       <th className="p-4">Maintrnance Status</th>
                       <th className="p-4">Maintrnance Contact</th>
+                      <th className="p-4">Parking Facility</th>
+                      <th className="p-4">Wash Rooms</th>
+                      <th className="p-4">Locker Room</th>
                       <th className="p-4">Actions</th>
                     </tr>
                   </thead>
@@ -194,12 +194,13 @@ const GroundManagement = () => {
                       <tr key={ground.id} className="border-b">
                         <td className="p-4">{ground.id}</td>
                         <td className="p-4">{ground.ground_name}</td>
-                        <td className="p-4">{ground.game}</td>
                         <td className="p-4">{ground.location}</td>
-                        <td className="p-4">{ground.capacity}</td>
-                        <td className="p-4">{ground.surface_type}</td>
                         <td className="p-4">{ground.maintenance_status}</td>
-                        <td className="p-4">{ground.maintenance_team_contact}
+                        <td className="p-4">{ground.maintenance_team_contact}</td>
+                        <td className="p-4">{ground.parking_facility ? "Available" : "Not Available" }</td>                     
+                        <td className="p-4">{ground.wash_rooms ? "Available" : "Not Available"}</td>
+                        <td className="p-4">{ground.locker_room ? "Available" : "Not Available"}</td>
+                        
                           {/* <div className="flex items-center">
                             <div
                               onClick={() => toggleStatus(index)}
@@ -215,7 +216,6 @@ const GroundManagement = () => {
                             </div>
                             <span className="ml-2">{ground.status ? 'Active' : 'Disabled'}</span>
                           </div> */}
-                        </td>
                         <td className="p-4">
                           <div className="flex items-center space-x-2">
                             <FaEdit

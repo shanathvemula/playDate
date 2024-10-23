@@ -70,6 +70,71 @@ apiClient.interceptors.response.use(
     }
   );
 
+// const multipartAPIClient = axios.create({
+//     // For Multimedia Files
+//     baseURL: '/api/',
+//     headers: {
+//         'Content-Type': 'multipart/form-data',
+//         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
+//         // 'Authorization': 'Bearer ' + Cookies.get('token'),
+//     }
+// })
+
+// // Add request interceptor
+// multipartAPIClient.interceptors.request.use(
+//     async (config) => {
+//       const accessToken = Cookies.get('token');
+//       if (accessToken) {
+//         config.headers.Authorization = `Bearer ${accessToken}`;
+//       }
+//       return config;
+//     },
+//     (error) => {
+//       return Promise.reject(error);
+//     }
+//   );
+
+// // Add response interceptor
+// multipartAPIClient.interceptors.response.use(
+//     (response) => {
+//       return response;
+//     },
+//     async (error) => {
+//       const originalRequest = error.config;
+  
+//       if (error.response.status === 401 && originalRequest.url === 'Auth/token/refresh_token/') {
+//         window.location.href = '/'; // Redirect to login if refresh fails
+//         return Promise.reject(error);
+//       }
+  
+//       if (error.response.status === 401 && !originalRequest._retry) {
+//         originalRequest._retry = true;
+//         const refreshToken = Cookies.get('refresh');
+  
+//         if (refreshToken) {
+//           return apiClient
+//             .post('Auth/token/refresh_token/', { refresh: refreshToken })
+//             .then((response) => {
+//               Cookies.set('token',response.data.access, {expires:1/1440, sameSite:'strict'})
+//               apiClient.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
+//               originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
+//               return apiClient(originalRequest);
+//             })
+//             .catch((err) => {
+//               console.log('Refresh token failed:', err);
+//               window.location.href = '';
+//               return Promise.reject(err);
+//             });
+//         } else {
+//           window.location.href = '/';
+//         }
+//       }
+  
+//       return Promise.reject(error);
+//     }
+//   );
+
+
   
 // Notification utility function
 const openNotificationWithIcon = (type, message, description) => {

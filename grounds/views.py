@@ -16,7 +16,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from grounds.serializers import Grounds, GroundsSerializer
+from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth
+
+from django.core.files.storage import default_storage
 
 
 # Create your views here.
@@ -46,10 +48,10 @@ class Ground(APIView):
             name=request.GET.get('Name')
             if name:
                 ground=Grounds.objects.get(name__exact=name)
-                return HttpResponse(JSONRenderer().render(GroundsSerializer(ground).data))
+                return HttpResponse(JSONRenderer().render(GroundsSerializerDepth(ground).data))
             else:
                 ground=Grounds.objects.all().order_by('-created')
-                return HttpResponse(JSONRenderer().render(GroundsSerializer(ground, many=True).data))
+                return HttpResponse(JSONRenderer().render(GroundsSerializerDepth(ground, many=True).data))
         except Grounds.DoesNotExist:
             return HttpResponse(JSONRenderer().render({"Error": "Provide valid Ground name"}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -58,28 +60,13 @@ class Ground(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
-        request=GroundsSerializer, summary="Adding Ground", description="This endpoint helps to create a Ground")
+        request=GroundsSerializerDepth, summary="Adding Ground", description="This endpoint helps to create a Ground")
     def post(self, request, *args, **kwargs):
         try:
-            data = request.data
-            arenas = data.pop('arenas',[])
-            datas = []
-            errors = []
-            for i in arenas:
-                datas.append({**data, **i})
-                serializer = GroundsSerializer(data=data)
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    errors.append({**serializer.errors})
-                    # errors.append(i['game'])
-            if errors:
-                return HttpResponse(JSONRenderer().render({"Error": errors}), content_type='application/json',
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return HttpResponse(JSONRenderer().render({"data": "Grounds Created Successfully"}),
-                                    content_type='application/json',
-                                    status=status.HTTP_201_created)
+            data= request.data
+            print("data", data.keys())
+
+            return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json')
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)

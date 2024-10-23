@@ -12,7 +12,7 @@ const GroundSidebarForm = React.memo(({
   const [formData, setFormData] = useState({
     ground_name: '',
     location: '',
-    arenas: [{
+    Arena: [{
       game: '',
       ground_type: '',
       capacity: '',
@@ -20,16 +20,16 @@ const GroundSidebarForm = React.memo(({
       availability_status: 'Available',
       ground_images: [],
     }],
-    locker_room: 'Available',
-    wash_rooms: 'Available',
-    lighting_night: 'Available',
-    parking_facility: 'Available',
+    locker_room: true,
+    wash_rooms: true,
+    lighting_night: true,
+    parking_facility: true,
     scoreboard_type: 'Digital',
     last_maintenance_date: '',
     next_maintenance_date: '',
     maintenance_team_contact: '',
     maintenance_status: 'Scheduled',
-    created_by:JSON.parse(localStorage.getItem("user")).data.id
+    created_by:JSON.parse(localStorage.getItem("user")).data
   });
 
   const [arenaVisibility, setArenaVisibility] = useState([true]);
@@ -41,7 +41,7 @@ const GroundSidebarForm = React.memo(({
       setFormData({
         ground_name: editingGround.ground_name,
         location: editingGround.location,
-        arenas: editingGround.arenas || [{
+        Arena: editingGround.Arena || [{
           game: '',
           ground_type: '',
           capacity: '',
@@ -54,18 +54,22 @@ const GroundSidebarForm = React.memo(({
         lighting_night: editingGround.lighting_night,
         parking_facility: editingGround.parking_facility,
         scoreboard_type: editingGround.scoreboard_type || 'Digital',
-        last_maintenance_date: editingGround.last_maintenance_date,
-        next_maintenance_date: editingGround.next_maintenance_date,
+        last_maintenance_date:  editingGround.last_maintenance_date 
+        ? new Date(editingGround.last_maintenance_date).toISOString().split('T')[0]
+        : '',
+        next_maintenance_date: editingGround.next_maintenance_date 
+        ? new Date(editingGround.next_maintenance_date).toISOString().split('T')[0]
+        : '',
         maintenance_team_contact: editingGround.maintenance_team_contact,
         maintenance_status: editingGround.maintenance_status,
-        created_by:JSON.parse(localStorage.getItem("user")).data.id
+        created_by:JSON.parse(localStorage.getItem("user")).data
       });
-      setArenaVisibility(editingGround.arenas ? editingGround.arenas.map(() => false) : [true]);
+      setArenaVisibility(editingGround.Arena ? editingGround.Arena.map(() => false) : [true]);
     } else {
       setFormData({
         ground_name: '',
         location: '',
-        arenas: [{
+        Arena: [{
           game: '',
           ground_type: '',
           capacity: '',
@@ -73,23 +77,23 @@ const GroundSidebarForm = React.memo(({
           availability_status: 'Available',
           ground_images: [],
         }],
-        locker_room: 'Available',
-        wash_rooms: 'Available',
-        lighting_night: 'Available',
-        parking_facility: 'Available',
+        locker_room: true,
+        wash_rooms: true,
+        lighting_night: true,
+        parking_facility: true,
         scoreboard_type: 'Digital',
         last_maintenance_date: '',
         next_maintenance_date: '',
         maintenance_team_contact: '',
         maintenance_status: 'Scheduled',
-        created_by:JSON.parse(localStorage.getItem("user")).data.id
+        created_by:JSON.parse(localStorage.getItem("user")).data
       });
       setArenaVisibility([true]);
     }
   }, [editingGround]);
 
   const handleInputChange = (index, e) => {
-    const newArenas = [...formData.arenas];
+    const newArenas = [...formData.Arena];
     newArenas[index][e.target.name] = e.target.value;
     setFormData({ ...formData, arenas: newArenas });
   };
@@ -100,7 +104,7 @@ const GroundSidebarForm = React.memo(({
 
   // Updated handleFileChange to append new images instead of replacing existing ones
   const handleFileChange = (index, e) => {
-    const newArenas = [...formData.arenas];
+    const newArenas = [...formData.Arena];
     newArenas[index].ground_images = [
       ...newArenas[index].ground_images, 
       ...Array.from(e.target.files)
@@ -108,15 +112,94 @@ const GroundSidebarForm = React.memo(({
     setFormData({ ...formData, arenas: newArenas });
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-    console.log("formData", formData);
-    await GroundSidebarCreate(formData);
+//   const handleFormSubmit = async (e) => {
+//     e.preventDefault();
+
+//     // Create a new arenas array with additional data for each arena
+//     const updatedArenas = formData.arenas.map((arena) => ({
+//         ...arena,
+//         locker_room: formData.locker_room,
+//         wash_rooms: formData.wash_rooms,
+//         lighting_night: formData.lighting_night,
+//         parking_facility: formData.parking_facility,
+//         scoreboard_type: formData.scoreboard_type,
+//         last_maintenance_date: formData.last_maintenance_date,
+//         next_maintenance_date: formData.next_maintenance_date,
+//         maintenance_team_contact: formData.maintenance_team_contact,
+//         maintenance_status: formData.maintenance_status,
+//     }));
+
+//     // Update the formData with the new arenas array
+//     const finalFormData = {
+//         updatedArenas,
+//     };
+
+//     // Pass the finalFormData to the API
+//     console.log("finalFormData", finalFormData); // To check the final data structure
+//     await GroundSidebarCreate(finalFormData);
+
+//     onSubmit(finalFormData);
+// };
+
+  // Helper function to convert image file to Base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+  
+    const finalFormData = {
+      ...formData,
+      last_maintenance_date: formData.last_maintenance_date 
+        ? new Date(formData.last_maintenance_date).toISOString()
+        : '',
+      next_maintenance_date: formData.next_maintenance_date 
+        ? new Date(formData.next_maintenance_date).toISOString()
+        : '',
+        Arena: await Promise.all(
+        formData.Arena.map(async (arena) => {
+          const base64Images = await Promise.all(
+            arena.ground_images.map(async (file) => {
+              const base64 = await fileToBase64(file); // Convert each file to Base64
+              return {
+                name: file.name, // Add image name
+                base64: base64  // Add Base64 string
+              };
+            })
+          );
+  
+          return {
+            ...arena,
+            ground_images: base64Images  // Replace file objects with objects containing name and Base64
+          };
+        })
+      ),
+    };
+  
+    onSubmit(finalFormData);
+    console.log("finalFormData", finalFormData); // To check the final data structure
+    // Uncomment the next line to actually send the data via API
+    await GroundSidebarCreate(finalFormData);
+  };
+  
+  
+
+  // const handleFormSubmit = async (e) => {
+  //   e.preventDefault();
+  //   onSubmit(formData);
+  //   console.log("formData", formData);
+  //   // await GroundSidebarCreate(formData);
+  // };
+
+
   const handleRemoveImage = (arenaIndex, imageIndex) => {
-    const newArenas = [...formData.arenas];
+    const newArenas = [...formData.Arena];
     newArenas[arenaIndex].ground_images.splice(imageIndex, 1); // Remove the image at the specified index
     setFormData({ ...formData, arenas: newArenas }); // Update the form data
   };
@@ -124,7 +207,7 @@ const GroundSidebarForm = React.memo(({
   const addArenaForm = () => {
     setFormData({
       ...formData,
-      arenas: [...formData.arenas, {
+      Arena: [...formData.Arena, {
         game: '',
         ground_type: '',
         capacity: '',
@@ -133,8 +216,9 @@ const GroundSidebarForm = React.memo(({
         ground_images: [],
       }],
     });
-    setArenaVisibility([...arenaVisibility.map(() => false), true]);
+    setArenaVisibility([...arenaVisibility, true]); // Make sure to add true for the new arena
   };
+  
 
   const toggleArenaVisibility = (index) => {
     const newVisibility = [...arenaVisibility];
@@ -143,7 +227,7 @@ const GroundSidebarForm = React.memo(({
   };
 
   const removeArenaForm = (index) => {
-    const newArenas = [...formData.arenas];
+    const newArenas = [...formData.Arena];
     newArenas.splice(index, 1);
     const newVisibility = [...arenaVisibility];
     newVisibility.splice(index, 1);
@@ -154,7 +238,7 @@ const GroundSidebarForm = React.memo(({
   const toggleFacility = (facility) => {
     setFormData({
       ...formData,
-      [facility]: formData[facility] === 'Available' ? 'Not Available' : 'Available',
+      [facility]: formData[facility] === true ? false : true,
     });
   };
 
@@ -238,7 +322,7 @@ const GroundSidebarForm = React.memo(({
             </div>
 
             {/* Arena Information */}
-            {formData.arenas.map((arena, index) => (
+            {formData.Arena.map((arena, index) => (
               <div key={index} className="border p-4 mb-4 rounded-md bg-gray-50 shadow-sm">
                 <h4
                   className="font-semibold text-gray-600 mb-2 cursor-pointer flex justify-between items-center"
@@ -324,7 +408,7 @@ const GroundSidebarForm = React.memo(({
                         <div className='flex items-center space-x-2'><MdFileUpload /> <p className='text-white'>Upload Images</p></div>
                       </button>
                       <ul className="mt-2 space-y-1">
-                        {arena.ground_images.map((image, imageIndex) => (
+                        {(arena.ground_images || []).map((image, imageIndex) => (
                           <li key={imageIndex} className="flex items-center justify-between object-cover border-2 border-gray-300 rounded-md px-4 py">
                             <span>{image.name}</span>
                             <button
@@ -340,7 +424,7 @@ const GroundSidebarForm = React.memo(({
                     </div>
 
                     {/* Remove Arena Button */}
-                    {formData.arenas.length > 1 && (
+                    {formData.Arena.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeArenaForm(index)}
@@ -373,7 +457,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('locker_room')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
-                    formData.locker_room === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    formData.locker_room ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Available
@@ -382,7 +466,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('locker_room')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
-                    formData.locker_room === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    !formData.locker_room ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Not Available
@@ -398,7 +482,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('wash_rooms')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
-                    formData.wash_rooms === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    formData.wash_rooms ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Available
@@ -407,7 +491,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('wash_rooms')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
-                    formData.wash_rooms === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    !formData.wash_rooms ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Not Available
@@ -423,7 +507,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('lighting_night')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
-                    formData.lighting_night === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    formData.lighting_night ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Available
@@ -432,7 +516,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('lighting_night')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
-                    formData.lighting_night === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    !formData.lighting_night ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Not Available
@@ -448,7 +532,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('parking_facility')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
-                    formData.parking_facility === 'Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    formData.parking_facility ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Available
@@ -457,7 +541,7 @@ const GroundSidebarForm = React.memo(({
                   type="button"
                   onClick={() => toggleFacility('parking_facility')}
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
-                    formData.parking_facility === 'Not Available' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                    !formData.parking_facility ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Not Available
@@ -471,7 +555,7 @@ const GroundSidebarForm = React.memo(({
               <div className="flex">
                 <button
                   type="button"
-                  onClick={toggleScoreboardType} // Toggle function for scoreboard type
+                  onClick={() => setFormData({ ...formData, scoreboard_type: 'Digital' })} // scoreboard_type Toggle function for scoreboard type
                   className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-l-lg ${
                     formData.scoreboard_type === 'Digital' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
@@ -480,12 +564,21 @@ const GroundSidebarForm = React.memo(({
                 </button>
                 <button
                   type="button"
-                  onClick={toggleScoreboardType} // Toggle function for scoreboard type
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
+                  onClick={() => setFormData({ ...formData, scoreboard_type: 'Manual' })}  // Toggle function for scoreboard type
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
                     formData.scoreboard_type === 'Manual' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Manual
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, scoreboard_type: 'Not Avaliable' })} // Toggle function for scoreboard type
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
+                    formData.scoreboard_type === 'Not Avaliable' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                  }`}
+                >
+                  Not Avaliable
                 </button>
               </div>
             </div>
@@ -551,11 +644,20 @@ const GroundSidebarForm = React.memo(({
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, maintenance_status: 'Pending' })}
-                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 ${
                     formData.maintenance_status === 'Pending' ? 'bg-black text-white' : 'bg-white text-gray-400'
                   }`}
                 >
                   Pending
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, maintenance_status: 'Not Scheduled' })}
+                  className={`flex-1 py-1 px-2 text-center transition-colors duration-300 border border-gray-300 rounded-r-lg ${
+                    formData.maintenance_status === 'Not Scheduled' ? 'bg-black text-white' : 'bg-white text-gray-400'
+                  }`}
+                >
+                  Not Scheduled
                 </button>
               </div>
             </div>
