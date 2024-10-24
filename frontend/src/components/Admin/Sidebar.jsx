@@ -8,11 +8,13 @@ const Sidebar = memo(({ isOpen, toggleSidebar }) => {
     const navigate = useNavigate();
 
     const handleOnClickuser = () => {
-        navigate('/Admin/User')
+        // navigate('/Admin/User')
+        window.location.href = '/Admin/User';
     }
 
     const handleOnClickGrounds = () => {
-        navigate('/Admin/Ground')
+        // navigate('/Admin/Ground')
+        window.location.href = '/Admin/Ground';
     }
 
   return (

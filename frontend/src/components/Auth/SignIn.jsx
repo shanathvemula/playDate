@@ -35,9 +35,11 @@ const SignIn = ({setCurrentForm}) => {
     localStorage.setItem("user", JSON.stringify(user));
     // console.log("kk", JSON.parse(localStorage.getItem("user")).data.id)
     if (user.data.user_type==='Admin'){
-      navigate('/Admin/User')
+      // navigate('/Admin/User')
+      window.location.href = '/Admin/User';
     } else if (user.data.user_type==='Ground Manager') {
-      navigate('/home')
+      // navigate('/home')
+      window.location.href = '/home';
     } else {
       console.log('End User')
     } 

@@ -30,9 +30,11 @@ const AuthPage = () => {
         const user = await getUserToken()
         console.log("user", user.user_type)
         if (user.user_type==='Admin') {
-            navigate('/Admin/User')
+            // navigate('/Admin/User')
+            window.location.href = '/Admin/User';
         } else if (user.data.user_type==='Ground Manager') {
-            navigate('/home')
+            // navigate('/home')
+            window.location.href = '/home';
         } else {
             console.log("End User")
         }
