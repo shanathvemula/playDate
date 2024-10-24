@@ -20,9 +20,6 @@ const UserManagement = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
 
-  // Sorting state
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-
   let ws;
 
   useEffect(() => {
@@ -115,31 +112,6 @@ const UserManagement = () => {
     }
   };
 
-  // Sorting function
-  const sortedUsers = React.useMemo(() => {
-    let sortableUsers = [...users];
-    if (sortConfig.key !== null) {
-      sortableUsers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableUsers;
-  }, [users, sortConfig]);
-
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-
   const handleCreateUser = () => {
     setEditingUser(null);
     setIsUserFormOpen(true);
@@ -196,10 +168,10 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-100">
+    <div className="flex flex-col min-h-screen bg-zinc-100 dark:bg-gray-900">
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className={`flex-grow transition-all duration-300`}>
+        <div className="flex-grow transition-all duration-300">
           <Navbar />
           <div className="p-4 md:p-8 flex-grow">
             <div className="bg-white p-4 mb-4 shadow-lg rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center">
@@ -216,7 +188,8 @@ const UserManagement = () => {
               </button>
             </div>
 
-            <div className="bg-white shadow-md rounded-md overflow-x-auto">
+            {/* Table for larger screens */}
+            <div className="bg-white shadow-md rounded-md overflow-x-auto hidden sm:block">
               {loading || webSocketLoading ? (
                 <div className="p-6">
                   <Skeleton height={40} count={5} />
@@ -225,20 +198,20 @@ const UserManagement = () => {
                 <table className="table-auto w-full text-left">
                   <thead className="bg-neutral-300 text-gray-700">
                     <tr>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('id')}>ID</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('name')}>Name</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('email')}>Email</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('gender')}>Gender</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('age')}>Age</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('phone')}>Phone</th>
-                      <th className="p-3 font-medium cursor-pointer" onClick={() => requestSort('user_type')}>User Type</th>
+                      <th className="p-3 font-medium">ID</th>
+                      <th className="p-3 font-medium">Name</th>
+                      <th className="p-3 font-medium">Email</th>
+                      <th className="p-3 font-medium">Gender</th>
+                      <th className="p-3 font-medium">Age</th>
+                      <th className="p-3 font-medium">Phone</th>
+                      <th className="p-3 font-medium">User Type</th>
                       <th className="p-3 font-medium">Status</th>
                       <th className="p-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedUsers.length > 0 ? (
-                      sortedUsers.map(user => (
+                    {users.length > 0 ? (
+                      users.map(user => (
                         <tr key={user.id} className="hover:bg-gray-50 transition">
                           <td className="p-3">{user.id}</td>
                           <td className="p-3">{user.name}</td>
@@ -246,14 +219,14 @@ const UserManagement = () => {
                           <td className="p-3">{user.gender}</td>
                           <td className="p-3">{user.age}</td>
                           <td className="p-3">{user.phone}</td>
-                          <td className='p-3'>{user.user_type}</td>
+                          <td className="p-3">{user.user_type}</td>
                           <td className="p-3">
                             <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
                               {user.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </td>
                           <td className="p-3 text-right">
-                            <div className='flex space-x-4 justify-end'>
+                            <div className="flex space-x-4 justify-end">
                               <FaEdit
                                 className="text-blue-600 cursor-pointer hover:text-sky-600"
                                 onClick={() => handleEdit(user)}
@@ -276,6 +249,47 @@ const UserManagement = () => {
               )}
             </div>
 
+            {/* Cards for small screens */}
+            <div className="block sm:hidden">
+              {loading || webSocketLoading ? (
+                <div className="p-6">
+                  <Skeleton height={40} count={5} />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4">
+                  {users.length > 0 ? (
+                    users.map(user => (
+                      <div key={user.id} className="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition">
+                        <h3 className="text-lg font-semibold text-neutral-800">{user.name}</h3>
+                        <p className="text-gray-600">Email: {user.email}</p>
+                        <p className="text-gray-600">Gender: {user.gender}</p>
+                        <p className="text-gray-600">Age: {user.age}</p>
+                        <p className="text-gray-600">Phone: {user.phone}</p>
+                        <p className="text-gray-600">User Type: {user.user_type}</p>
+                        <div className="flex justify-between items-center mt-4">
+                          <span className={`px-2 py-1 rounded-md text-sm ${user.is_active ? 'bg-sky-600 text-white' : 'bg-red-100 text-red-700'}`}>
+                            {user.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                          <div className="flex space-x-4">
+                            <FaEdit
+                              className="text-blue-600 cursor-pointer hover:text-sky-600"
+                              onClick={() => handleEdit(user)}
+                            />
+                            <FaTrashAlt
+                              className="text-red-600 cursor-pointer hover:text-red-700"
+                              onClick={() => confirmDelete(user.id)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500">No users found.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <UserSidebarForm
               isOpen={isUserFormOpen}
               onClose={() => setIsUserFormOpen(false)}
@@ -291,7 +305,7 @@ const UserManagement = () => {
 
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-full max-w-sm mx-auto">
             <h3 className="text-lg font-bold mb-4">Are you sure you want to delete this user?</h3>
             <div className="flex justify-center space-x-4">
               <button
