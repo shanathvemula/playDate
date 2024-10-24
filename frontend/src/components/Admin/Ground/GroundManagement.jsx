@@ -73,7 +73,6 @@ const GroundManagement = () => {
 
   const handleWebSocketAction = useCallback(
     (message) => {
-      console.log("message", message.action)
       switch (message.action) {
         case 'initial':
           if (Array.isArray(message.data)) {
@@ -82,7 +81,6 @@ const GroundManagement = () => {
           }
           break;
         case 'create':
-          console.log("message", message)
           setGrounds((prevGrounds) => [message.data, ...prevGrounds]);
           setGroundCount((prevCount) => prevCount + 1);
           break;
