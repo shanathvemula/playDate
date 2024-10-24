@@ -5,7 +5,7 @@ import Footer from '../../footer';
 import Sidebar from '../Sidebar';
 import GroundSidebarForm from './GroundSidebarForm'; // Import GroundSidebarForm
 import Skeleton from 'react-loading-skeleton';
-
+import { GroundDelete } from '../../../api/service';
 const GroundManagement = () => {
   const [grounds, setGrounds] = useState([]);
   const [groundCount, setGroundCount] = useState(0);
@@ -36,18 +36,20 @@ const GroundManagement = () => {
     [grounds]
   );
 
+  let ws;
+
   useEffect(() => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    wsRef.current = new WebSocket('ws://127.0.0.1:8000/grounds');
+    ws = new WebSocket('ws://127.0.0.1:8000/grounds');
 
-    wsRef.current.onopen = () => {
+    ws.onopen = () => {
       console.log('Connected to WebSocket server');
       setWebSocketLoading(false);
     };
 
-    wsRef.current.onmessage = (event) => {
+    ws.onmessage = (event) => {
       setLoading(true);
       try {
         const message = JSON.parse(event.data);
@@ -59,18 +61,19 @@ const GroundManagement = () => {
       }
     };
 
-    wsRef.current.onerror = (error) => {
+    ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       setWebSocketLoading(false);
     };
 
     return () => {
-      wsRef.current.close();
+      ws.close();
     };
   }, []);
 
   const handleWebSocketAction = useCallback(
     (message) => {
+      console.log("message", message.action)
       switch (message.action) {
         case 'initial':
           if (Array.isArray(message.data)) {
@@ -79,6 +82,7 @@ const GroundManagement = () => {
           }
           break;
         case 'create':
+          console.log("message", message)
           setGrounds((prevGrounds) => [message.data, ...prevGrounds]);
           setGroundCount((prevCount) => prevCount + 1);
           break;
@@ -110,15 +114,8 @@ const GroundManagement = () => {
     }
   };
 
-  const handleDelete = (id) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({
-          action: 'delete',
-          data: { id },
-        })
-      );
-    }
+  const handleDelete = async (id) => {
+    await GroundDelete(id);
   };
 
   const handleFormSubmit = (formData) => {
@@ -147,6 +144,11 @@ const GroundManagement = () => {
   const openCreateGroundForm = () => {
     setEditingGround(null); // Reset editing ground to null for create mode
     setIsGroundFormOpen(true); // Open form
+  };
+
+  // Function to combine games from the Arena array
+  const getCombinedGames = (arena) => {
+    return arena.map(a => a.game).join(', '); // Combine game names with comma separator
   };
 
   return (
@@ -181,8 +183,9 @@ const GroundManagement = () => {
                       <th className="p-4">Ground ID</th>
                       <th className="p-4">Ground Name</th>
                       <th className="p-4">Location</th>
-                      <th className="p-4">Maintrnance Status</th>
-                      <th className="p-4">Maintrnance Contact</th>
+                      <th className="p-4">Games</th> {/* New column for combined games */}
+                      <th className="p-4">Maintenance Status</th>
+                      <th className="p-4">Maintenance Contact</th>
                       <th className="p-4">Parking Facility</th>
                       <th className="p-4">Wash Rooms</th>
                       <th className="p-4">Locker Room</th>
@@ -195,27 +198,13 @@ const GroundManagement = () => {
                         <td className="p-4">{ground.id}</td>
                         <td className="p-4">{ground.ground_name}</td>
                         <td className="p-4">{ground.location}</td>
+                        <td className="p-4">{getCombinedGames(ground.Arena)}</td> {/* Display combined games */}
                         <td className="p-4">{ground.maintenance_status}</td>
                         <td className="p-4">{ground.maintenance_team_contact}</td>
                         <td className="p-4">{ground.parking_facility ? "Available" : "Not Available" }</td>                     
                         <td className="p-4">{ground.wash_rooms ? "Available" : "Not Available"}</td>
                         <td className="p-4">{ground.locker_room ? "Available" : "Not Available"}</td>
                         
-                          {/* <div className="flex items-center">
-                            <div
-                              onClick={() => toggleStatus(index)}
-                              className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in ${
-                                ground.status ? 'bg-blue-600' : 'bg-gray-300'
-                              }`}
-                            >
-                              <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-in ${
-                                  ground.status ? 'translate-x-6' : 'translate-x-1'
-                                }`}
-                              />
-                            </div>
-                            <span className="ml-2">{ground.status ? 'Active' : 'Disabled'}</span>
-                          </div> */}
                         <td className="p-4">
                           <div className="flex items-center space-x-2">
                             <FaEdit

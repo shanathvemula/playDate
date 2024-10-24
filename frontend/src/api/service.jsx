@@ -306,6 +306,29 @@ export const GroundSidebarCreate = async (data) => {
     }
 }
 
+export const GroundSidebarUpdate = async (data) => {
+    try {
+        const response = await apiClient.put('/Grounds/ground/', data)
+        openNotificationWithIcon('success', 'Ground', 'Ground Updated successfully');
+        return response
+    } catch (error) {
+        // console.log('Error fetching data:', error.response.data.Error);
+        openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+}
+
+export const GroundDelete = async (id) =>{
+    try{
+        const response = await apiClient.delete(`/Grounds/ground/?id=${id}`)
+        // console.log('response', response)
+        openNotificationWithIcon('success', 'Ground', 'Ground Deleted successfully')
+    } catch (error){
+         // console.log('Error fetching data:', error.response.data.Error);
+         openNotificationWithIcon('error', 'Error', error.response.data.Error);
+    }
+
+}
+
 export const ClientInfo = async () => {
     const response = await apiClient.get('/Auth/site_management/')
     return response.data

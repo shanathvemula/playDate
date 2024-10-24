@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MdFileUpload, MdOutlineClose } from "react-icons/md";
-import { GroundSidebarCreate } from '../../../api/service';
+import { GroundSidebarCreate, GroundSidebarUpdate } from '../../../api/service';
 
 const GroundSidebarForm = React.memo(({
   isOpen,
@@ -38,6 +38,7 @@ const GroundSidebarForm = React.memo(({
 
   useEffect(() => {
     if (editingGround) {
+      console.log('Editing Ground:', editingGround);
       setFormData({
         ground_name: editingGround.ground_name,
         location: editingGround.location,
@@ -145,6 +146,7 @@ const GroundSidebarForm = React.memo(({
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
+      console.log("reader", reader, file)
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result);
       reader.onerror = (error) => reject(error);
@@ -156,37 +158,50 @@ const GroundSidebarForm = React.memo(({
   
     const finalFormData = {
       ...formData,
-      last_maintenance_date: formData.last_maintenance_date 
+      last_maintenance_date: formData.last_maintenance_date
         ? new Date(formData.last_maintenance_date).toISOString()
         : '',
-      next_maintenance_date: formData.next_maintenance_date 
+      next_maintenance_date: formData.next_maintenance_date
         ? new Date(formData.next_maintenance_date).toISOString()
         : '',
-        Arena: await Promise.all(
-        formData.Arena.map(async (arena) => {
+      Arena: await Promise.all(
+        formData.Arena.map(async (arena, arenaIndex) => {
+          // Handle ground images - check if they are already Base64 or new files
           const base64Images = await Promise.all(
-            arena.ground_images.map(async (file) => {
-              const base64 = await fileToBase64(file); // Convert each file to Base64
-              return {
-                name: file.name, // Add image name
-                base64: base64  // Add Base64 string
-              };
+            arena.ground_images.map(async (image) => {
+              if (image.base64) {
+                // If the image already has a Base64 string, it's an existing image
+                return image;
+              } else if (image instanceof File) {
+                // If it's a new file, convert it to Base64
+                const base64 = await fileToBase64(image);
+                return {
+                  name: image.name,  // Add image name
+                  base64: base64     // Add Base64 string
+                };
+              }
+              return null; // Just in case there's an unexpected type
             })
           );
   
+          // Filter out any nulls (in case of unexpected image types)
+          const validImages = base64Images.filter(image => image !== null);
+  
           return {
             ...arena,
-            ground_images: base64Images  // Replace file objects with objects containing name and Base64
+            ground_images: validImages // Use the valid images (Base64 strings)
           };
         })
       ),
     };
   
     onSubmit(finalFormData);
-    console.log("finalFormData", finalFormData); // To check the final data structure
-    // Uncomment the next line to actually send the data via API
-    await GroundSidebarCreate(finalFormData);
-  };
+    if (editingGround){
+      await GroundSidebarUpdate({...finalFormData, id:editingGround.id});
+    } else {
+      await GroundSidebarCreate(finalFormData);
+    }
+  };  
   
   
 

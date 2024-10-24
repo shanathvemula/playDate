@@ -66,9 +66,9 @@ class Ground(APIView):
             data= request.data
             print("data", data['Arena'])
             user = data['created_by']
-            Arena = data['Arena']
+            # Arena = data['Arena']
             data['created_by'] = user['id']
-            data['Arena'] = []
+            # data['Arena'] = []
             serializer = GroundsSerializer(data=data, partial=True)
             if serializer.is_valid():
                 # arenaSerializer = ArenaSerializer(data=Arena, many=True)
@@ -96,6 +96,7 @@ class Ground(APIView):
     def put(self, request, *args, **kwargs):
         try:
             data= request.data
+            data['created_by'] = data['created_by']['id']
             ground = Grounds.objects.get(id__exact=data['id'])
             serializer = GroundsSerializer(ground, data=data, partial=True)
             if serializer.is_valid():
