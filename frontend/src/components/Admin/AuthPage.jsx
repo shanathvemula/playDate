@@ -9,7 +9,7 @@ import { getUserToken } from "../../api/service";
 import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
-    const navigate = usewindow.);
+    const navigate = useNavigate();
     // List of image sources for the carousel
     const imageSrcList = [
         'https://via.placeholder.com/1920x1080.png?text=Slide+1',
@@ -30,11 +30,11 @@ const AuthPage = () => {
         const user = await getUserToken()
         console.log("user", user.user_type)
         if (user.user_type==='Admin') {
-            // window.'/Admin/User')
-            window.location.href = '/Admin/User';
+            navigate('/Admin/User');
+            // window.location.href = '/Admin/User';
         } else if (user.data.user_type==='Ground Manager') {
-            // window.'/home')
-            window.location.href = '/home';
+            navigate('/home');
+            // window.location.href = '/home';
         } else {
             console.log("End User")
         }

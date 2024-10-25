@@ -37,13 +37,11 @@ const GroundManagement = () => {
     [grounds]
   );
 
-  let ws;
-
   useEffect(() => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    ws = new WebSocket('ws://127.0.0.1:8000/grounds'); // 'ws://69.197.176.103:8000/grounds'
+    const ws = new WebSocket('ws://127.0.0.1:8000/grounds'); 
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -150,10 +148,11 @@ const GroundManagement = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-100">
+      {/* Main content area */}
       <div className="flex flex-grow">
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="flex-grow transition-all duration-300">
-          <Navbar />
+        <div className="flex-grow transition-all duration-300 flex flex-col">
+          <Navbar  className='mt-auto'/>
           <div className="p-4 md:p-8 flex-grow">
             <div className="bg-white p-4 mb-4 shadow-md rounded-md flex justify-between items-center">
               <div>
@@ -168,56 +167,58 @@ const GroundManagement = () => {
               </button>
             </div>
 
-            {/* Table for larger screens */}
+            {/* Table for larger screens with horizontal scroll */}
             <div className="bg-white shadow-md rounded-md overflow-x-auto hidden sm:block">
               {loading || webSocketLoading ? (
                 <div className="p-6">
                   <Skeleton height={40} count={5} />
                 </div>
               ) : (
-                <table className="table-auto w-full text-left">
-                  <thead className="bg-gray-200 text-gray-600">
-                    <tr>
-                      <th className="p-4">Ground ID</th>
-                      <th className="p-4">Ground Name</th>
-                      <th className="p-4">Location</th>
-                      <th className="p-4">Games</th> 
-                      <th className="p-4">Maintenance Status</th>
-                      <th className="p-4">Maintenance Contact</th>
-                      <th className="p-4">Parking Facility</th>
-                      <th className="p-4">Wash Rooms</th>
-                      <th className="p-4">Locker Room</th>
-                      <th className="p-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {grounds.map((ground, index) => (
-                      <tr key={ground.id} className="border-b">
-                        <td className="p-4">{ground.id}</td>
-                        <td className="p-4">{ground.ground_name}</td>
-                        <td className="p-4">{ground.location}</td>
-                        <td className="p-4">{getCombinedGames(ground.Arena)}</td>
-                        <td className="p-4">{ground.maintenance_status}</td>
-                        <td className="p-4">{ground.maintenance_team_contact}</td>
-                        <td className="p-4">{ground.parking_facility ? "Available" : "Not Available" }</td>                     
-                        <td className="p-4">{ground.wash_rooms ? "Available" : "Not Available"}</td>
-                        <td className="p-4">{ground.locker_room ? "Available" : "Not Available"}</td>
-                        <td className="p-4">
-                          <div className="flex items-center space-x-2">
-                            <FaEdit
-                              className="text-blue-600 cursor-pointer"
-                              onClick={() => handleEdit(ground.id)} 
-                            />
-                            <FaTrashAlt
-                              className="text-red-600 cursor-pointer"
-                              onClick={() => handleDelete(ground.id)}
-                            />
-                          </div>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="table-auto w-full text-left min-w-full">
+                    <thead className="bg-gray-200 text-gray-600">
+                      <tr>
+                        <th className="p-4">Ground ID</th>
+                        <th className="p-4">Ground Name</th>
+                        <th className="p-4">Location</th>
+                        <th className="p-4">Games</th> 
+                        <th className="p-4">Maintenance Status</th>
+                        <th className="p-4">Maintenance Contact</th>
+                        <th className="p-4">Parking Facility</th>
+                        <th className="p-4">Wash Rooms</th>
+                        <th className="p-4">Locker Room</th>
+                        <th className="p-4">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {grounds.map((ground, index) => (
+                        <tr key={ground.id} className="border-b">
+                          <td className="p-4">{ground.id}</td>
+                          <td className="p-4">{ground.ground_name}</td>
+                          <td className="p-4">{ground.location}</td>
+                          <td className="p-4">{getCombinedGames(ground.Arena)}</td>
+                          <td className="p-4">{ground.maintenance_status}</td>
+                          <td className="p-4">{ground.maintenance_team_contact}</td>
+                          <td className="p-4">{ground.parking_facility ? "Available" : "Not Available" }</td>                     
+                          <td className="p-4">{ground.wash_rooms ? "Available" : "Not Available"}</td>
+                          <td className="p-4">{ground.locker_room ? "Available" : "Not Available"}</td>
+                          <td className="p-4">
+                            <div className="flex items-center space-x-2">
+                              <FaEdit
+                                className="text-blue-600 cursor-pointer"
+                                onClick={() => handleEdit(ground.id)} 
+                              />
+                              <FaTrashAlt
+                                className="text-red-600 cursor-pointer"
+                                onClick={() => handleDelete(ground.id)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
 
@@ -266,7 +267,10 @@ const GroundManagement = () => {
         </div>
       </div>
 
-      <Footer />
+      {/* Footer */}
+      <div className="mt-auto">
+        <Footer />
+      </div>
 
       <GroundSidebarForm
         isOpen={isGroundFormOpen}

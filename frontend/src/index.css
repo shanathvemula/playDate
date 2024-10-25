@@ -2,3 +2,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add these styles if they don't exist */
+html, body {
+    @apply bg-zinc-100 dark:bg-gray-900 text-black dark:text-white min-h-screen;
+  }
+  
