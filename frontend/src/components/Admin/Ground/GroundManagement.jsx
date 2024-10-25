@@ -43,7 +43,7 @@ const GroundManagement = () => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    ws = new WebSocket('ws://69.197.176.103:8000/grounds');
+    ws = new WebSocket('ws://127.0.0.1:8000/grounds'); // 'ws://69.197.176.103:8000/grounds'
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -232,7 +232,8 @@ const GroundManagement = () => {
                   {grounds.length > 0 ? (
                     grounds.map(ground => (
                       <div key={ground.id} className="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition">
-                        <h3 className="text-lg font-semibold text-neutral-800">{ground.ground_name}</h3>
+                        <h3 className="text-lg font-semibold text-neutral-800">{ground.id}</h3>
+                        <p className="text-gray-600">Ground Name: {ground.ground_name}</p>
                         <p className="text-gray-600">Location: {ground.location}</p>
                         <p className="text-gray-600">Games: {getCombinedGames(ground.Arena)}</p>
                         <p className="text-gray-600">Maintenance Status: {ground.maintenance_status}</p>

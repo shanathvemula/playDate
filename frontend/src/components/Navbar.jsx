@@ -90,7 +90,12 @@ const Navbar = () => {
 
         {/* Hamburger Menu for Mobile */}
         <button className="block md:hidden text-white" onClick={toggleMobileMenu}>
-          <FaBars size={24} />
+        <img
+            src="https://via.placeholder.com/150"
+            alt="Profile"
+            className="h-8 w-8 rounded-full cursor-pointer"
+            onClick={toggleDropdown}
+          />
         </button>
       </div>
 
@@ -99,12 +104,12 @@ const Navbar = () => {
         <div className="absolute top-16 left-0 w-full bg-white dark:bg-gray-900 shadow-md md:hidden">
           <ul className="flex flex-col items-start p-4">
             <li
-              className="py-2 px-4 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer flex items-center justify-between"
+              className="py-2 px-4 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer flex items-center justify-between w-full"
               onClick={toggleTheme}
             >
               {theme === 'light' ? "Dark Mode" : "Light Mode"}
               <button
-                className="ml-2 bg-sky-600 text-white p-1 rounded-full dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center"
+                className="ml-2 bg-sky-600 text-white p-1 rounded-full dark:bg-gray-800 dark:text-gray-200 flex items-center justify-center "
               >
                 {theme === 'light' ? <FaMoon /> : <FaSun />}
               </button>
@@ -112,7 +117,7 @@ const Navbar = () => {
             {menuItems.map((item, idx) => (
               <li
                 key={idx}
-                className="py-2 px-4 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer"
+                className="py-2 px-4 hover:bg-sky-500 dark:hover:bg-sky-500 cursor-pointer w-full"
                 onClick={item.action}
               >
                 {item.label}

@@ -24,8 +24,8 @@ const GoogleLoginButton = () => {
           localStorage.setItem('token', data.access_token);
           localStorage.setItem('username', data.username);
           message.success('Login Success');
-          // navigate('/home'); // Use navigate instead of window.location.href
-          window.location.href = '/home';
+          navigate('/home'); // Use navigate instead of window.location.href
+          // window.location.href = '/home';
         })
       )
       .catch((error) => {

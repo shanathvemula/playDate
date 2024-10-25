@@ -1,3 +1,5 @@
+from email.policy import default
+
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.postgres.fields import ArrayField
@@ -20,6 +22,16 @@ User.add_to_class('address', models.JSONField(default=dict, blank=True, null=Tru
 User.add_to_class('skills', models.JSONField(default=dict, blank=True, null=True))
 User.add_to_class('json', models.JSONField(default=dict, blank=True, null=True))
 User.add_to_class('user_type', models.CharField(max_length=20, default="End User"))
+
+def GenUserCode():
+    user = User.objects.all().order_by('user_code').last()
+    if not user:
+        return 'USR' + '0000001'
+    return 'USR' + str(int(user.user_code[4:])+1).zfill(7)
+
+User.add_to_class('user_code', models.CharField(default=GenUserCode, max_length=50, unique=True, blank=True))
+
+
 
 
 # from mongoengine import Document, StringField, IntField

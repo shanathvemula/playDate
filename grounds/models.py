@@ -26,7 +26,14 @@ class Arena(models.Model):
     class Meta:
         db_table = 'arena'
 
+def GenGroundId():
+    ground = Grounds.objects.all().order_by('id').last()
+    if not ground:
+        return "GRD" + '0000001'
+    return 'GRD' + str(int(ground.id[4:]) + 1).zfill(7)
+
 class Grounds(models.Model):
+    id = models.CharField(max_length=50, primary_key=True, default=GenGroundId)
     ground_name = models.CharField(max_length=500, unique=False)
     location = models.CharField(max_length=500, blank=True, null=True)
     locker_room = models.BooleanField(default=False)

@@ -35,8 +35,8 @@ function PasswordReset() {
       
       if (response.status===200){
         // Optionally, navigate the user after a successful reset
-        // navigate('/');
-        window.location.href = '/';
+        navigate('/');
+        // window.location.href = '/';
       }
     } catch (error) {
       console.error('Error resetting password:', error.data.response);

@@ -26,7 +26,7 @@ const UserManagement = () => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    ws = new WebSocket('ws://69.197.176.103:8000/users');
+    ws = new WebSocket('ws://127.0.0.1:8000/users'); // 'ws://69.197.176.103:8000/users'
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
@@ -68,6 +68,7 @@ const UserManagement = () => {
             phone: user.phone || 'N/A',
             is_active: user.is_active,
             user_type: user.user_type,
+            user_code: user.user_code,
           }));
           setUsers(processedUsers);
           setUserCount(processedUsers.length);
@@ -82,7 +83,8 @@ const UserManagement = () => {
           age: message.data.age || 'N/A',
           phone: message.data.phone || 'N/A',
           is_active: message.data.is_active,
-          user_type: message.data.user_type
+          user_type: message.data.user_type,
+          user_code: message.data.user_code
         };
         setUsers(prevUsers => [newUser, ...prevUsers]);
         setUserCount(prevCount => prevCount + 1);
@@ -98,7 +100,8 @@ const UserManagement = () => {
                 age: message.data.age || 'N/A',
                 phone: message.data.phone || 'N/A',
                 is_active: message.data.is_active,
-                user_type: message.data.user_type
+                user_type: message.data.user_type,
+                user_code: message.data.user_code
               }
             : user
         ));
@@ -198,7 +201,7 @@ const UserManagement = () => {
                 <table className="table-auto w-full text-left">
                   <thead className="bg-neutral-300 text-gray-700">
                     <tr>
-                      <th className="p-3 font-medium">ID</th>
+                      <th className="p-3 font-medium">Code</th>
                       <th className="p-3 font-medium">Name</th>
                       <th className="p-3 font-medium">Email</th>
                       <th className="p-3 font-medium">Gender</th>
@@ -213,7 +216,7 @@ const UserManagement = () => {
                     {users.length > 0 ? (
                       users.map(user => (
                         <tr key={user.id} className="hover:bg-gray-50 transition">
-                          <td className="p-3">{user.id}</td>
+                          <td className="p-3">{user.user_code}</td>
                           <td className="p-3">{user.name}</td>
                           <td className="p-3">{user.email}</td>
                           <td className="p-3">{user.gender}</td>
@@ -260,7 +263,8 @@ const UserManagement = () => {
                   {users.length > 0 ? (
                     users.map(user => (
                       <div key={user.id} className="bg-white p-4 rounded-lg shadow-md hover:bg-gray-50 transition">
-                        <h3 className="text-lg font-semibold text-neutral-800">{user.name}</h3>
+                        <h3 className="text-lg font-semibold text-neutral-800">{user.user_code}</h3>
+                        <p className="text-gray-600">Name: {user.name}</p>
                         <p className="text-gray-600">Email: {user.email}</p>
                         <p className="text-gray-600">Gender: {user.gender}</p>
                         <p className="text-gray-600">Age: {user.age}</p>
