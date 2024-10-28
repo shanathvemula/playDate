@@ -48,11 +48,8 @@ User.add_to_class('user_code', models.CharField(default=GenUserCode, max_length=
 class SiteManagement(models.Model):
     name = models.CharField(max_length=50, unique=True)
     copyright = models.CharField(max_length=50)
-    logo = models.ImageField(blank=True, null=True)
-    slideshow = ArrayField(
-        models.JSONField(),
-        size=10, blank=True, null=True
-    )
+    logo = models.TextField(blank=True, null=True)
+    slideshow = models.JSONField(blank=True, null=True),
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

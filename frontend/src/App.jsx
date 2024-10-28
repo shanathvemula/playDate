@@ -6,6 +6,7 @@ import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground/GroundManagement";
 import UserManagement from "./components/Admin/User/UserManagement";
 import Loading from "./components/Loading"; // Import the Loading component
+import Form from "./components/Form/Form";
 
 function App() {
   const [loading, setLoading] = useState(true); // Initialize loading state
@@ -31,6 +32,7 @@ function App() {
         <Route path='/passwordReset' element={<PasswordReset />} />
         <Route path="/Admin/Ground" element={<GroundManagement />} />
         <Route path='/Admin/User' element={<UserManagement />} />
+        <Route path="/form" element={<Form />} />
       </Routes>
     </Router>
   );

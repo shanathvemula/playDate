@@ -57,7 +57,7 @@ from cryptography.fernet import InvalidToken
 import playDate.settings
 from app.serializer import (User, UserSerializer, Group, GroupSerializer, Permission, PermissionSerializer,
                             ContentType, ContentTypeSerializer, UserSerializerDepth, PermissionsSerializer,
-                            SiteManagement, SiteManagementSerializer, SiteManagementsSerializer, UserSignUpSerializer,
+                            SiteManagement, SiteManagementsSerializer, UserSignUpSerializer,
                             UserForgetPasswordSerializer, ForgetPasswordSerializer)
 from playDate.settings import BASE_DIR
 from playDate.settings import EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_HOST, EMAIL_PORT, fernet
@@ -492,44 +492,11 @@ class SiteManagementCRUD(APIView):
             return Response({"error":str(e)}, content_type='application/json', status=status.HTTP_404_NOT_FOUND)
 
 
-class SiteManagementView(APIView):
-    authentication_classes = []
+class SiteManagementLC(ListCreateAPIView):
+    queryset = SiteManagement.objects.all()
+    serializer_class = SiteManagementsSerializer
     permission_classes = []
-    parser_classes = (MultiPartParser, FormParser)
-    serializer_class = SiteManagementSerializer
-
-    @extend_schema(parameters=[
-        OpenApiParameter(name='Name', description='Enter Name of the Site', type=str, default='')
-    ], summary="Get Site details", description="This endpoint provides the Site details")
-    def get(self, request, *args, **kwargs):
-        name = request.query_params.get("name")
-        site_managements = SiteManagement.objects.get(name=name)
-        serializer = SiteManagementSerializer(site_managements)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        data = request.data.copy()  # Make a mutable copy of the request data
-        serializer = SiteManagementSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        try:
-            site_management = SiteManagement.objects.get(pk=pk)
-        except SiteManagement.DoesNotExist:
-            return Response({"error": "SiteManagement not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        data = request.data.copy()  # Make a mutable copy of the request data
-        serializer = SiteManagementSerializer(site_management, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    authentication_classes = []
 
 import csv
 import pandas as pd

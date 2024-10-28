@@ -330,6 +330,17 @@ export const GroundDelete = async (id) =>{
 }
 
 export const ClientInfo = async () => {
-    const response = await apiClient.get('/Auth/site_management/')
+    const response = await apiClient.get('/User/SiteManagement/')
     return response.data
 }
+
+export const ClientInfoPost = async (formData) => {
+    try {
+      const response = await apiClient.post('/User/SiteManagement/', formData);
+      console.log(response.data);
+      return { open: true, message: 'Form submitted successfully!', severity: 'success' };
+    } catch (error) {
+      console.error(error);
+      return { open: true, message: 'Failed to submit the form.', severity: 'error' };
+    }
+  };

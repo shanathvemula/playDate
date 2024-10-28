@@ -5,7 +5,7 @@ from djangochannelsrestframework.permissions import IsAuthenticated
 from channels.db import database_sync_to_async
 
 from app.models import SiteManagement
-from app.serializer import UserSerializer, User, SiteManagementsSerializer, SiteManagementSerializer
+from app.serializer import UserSerializer, User, SiteManagementsSerializer
 
 import json
 
@@ -50,44 +50,36 @@ class UserConsumer(GenericAsyncAPIConsumer):
             'count': len(initial_data)
         })
 
-class SiteManagementsConsumer(GenericAsyncAPIConsumer):
+class SiteManagementConsumer(GenericAsyncAPIConsumer):
+    queryset = SiteManagement.objects.all()
     serializer_class = SiteManagementsSerializer
+    permission_classes = []
 
     @model_observer(SiteManagement)
     async def model_changed(self, message, observer=None, **kwargs):
         await self.send_json(message)
 
     @model_changed.serializer
-    def model_serializer(self, instance, action, **kwargs):
-        site = SiteManagementSerializer(instance=instance).data
-        for i in site():
-            if i['slideshow']:
-                i['slideshow'] = ['/media/' + x['path'] for x in i['slideshow'][0]]
-        return {'action': action.value, 'data':site}
+    def model_serialize(self, instance, action, **kwargs):
+        return dict(SiteManagementsSerializer(instance=instance).data)
 
     async def connect(self, **kwargs):
-        await super(SiteManagementsConsumer, self).connect()
-        await self.send_initial_data()
+        # if self.scope["user"].is_anonymous:
+        #     # await self.close()
+        # else:
         await self.model_changed.subscribe()
+        await super(SiteManagementConsumer, self).connect()
+        await self.send_initial_data()
+
+    @database_sync_to_async
+    def get_initial_data(self):
+        queryset = SiteManagement.objects.all()
+        return SiteManagementsSerializer(queryset, many=True).data
+
+    async def send_initial_data(self):
+        data = await self.get_initial_data()
+        await self.send_json(data[0])
 
     async def disconnect(self, code):
         await self.model_changed.unsubscribe()
         await super().disconnect(code)
-
-    @database_sync_to_async
-    def get_initial_data(self):
-        # Fetch initial user data from the database
-        return SiteManagementsSerializer(SiteManagement.objects.all(), many=True).data
-
-    async def send_initial_data(self):
-        # Send the initial user data after connection
-        initial_data = await self.get_initial_data()
-        for i in initial_data:
-            if i['slideshow']:
-                i['slideshow'] = ['/media/' + x['path'] for x in i['slideshow'][0]]
-
-        await self.send_json({
-            'action': 'initial',
-            'data': initial_data,
-            'count': len(initial_data)
-        })

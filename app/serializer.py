@@ -75,26 +75,3 @@ class SiteManagementsSerializer(ModelSerializer):
     class Meta:
         model = SiteManagement
         fields = '__all__'
-
-
-class SiteManagementSerializer(ModelSerializer):
-    class Meta:
-        model = SiteManagement
-        fields = ['id', 'copyright', 'logo', 'slideshow', 'created_date']
-
-    def create(self, validated_data):
-        slideshow_data = validated_data.pop('slideshow', [])
-        site_management = SiteManagement.objects.create(**validated_data)
-        for slide in slideshow_data:
-            site_management.slideshow.append(slide)
-        site_management.save()
-        return site_management
-
-    def update(self, instance, validated_data):
-        slideshow_data = validated_data.pop('slideshow', [])
-        instance.copyright = validated_data.get('copyright', instance.copyright)
-        instance.logo = validated_data.get('logo', instance.logo)
-        if slideshow_data:
-            instance.slideshow = slideshow_data
-        instance.save()
-        return instance
