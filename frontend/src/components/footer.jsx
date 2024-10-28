@@ -6,7 +6,7 @@ const Footer = () => {
       {/* Logo and Developed By Section */}
       <div className="flex items-center">
         {/* <img
-          src="http://69.197.176.103:8000/media/logo/Logo_without_background.png" // Replace with the actual logo URL
+          src="http://157.173.195.249:8000/media/logo/Logo_without_background.png" // Replace with the actual logo URL
           alt="Playdate Logo"
           className="h-8 w-auto mr-2"
         /> */}
