@@ -26,7 +26,7 @@ const UserManagement = () => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    ws = new WebSocket('ws://127.0.0.1:8000/users'); // 'ws://157.173.195.249:8000/users'
+    ws = new WebSocket('ws://157.173.195.249:8000/users'); // 'ws://157.173.195.249:8000/users'
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');

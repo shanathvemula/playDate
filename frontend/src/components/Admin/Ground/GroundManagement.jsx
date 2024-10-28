@@ -41,7 +41,7 @@ const GroundManagement = () => {
     setLoading(true);
     setWebSocketLoading(true);
 
-    const ws = new WebSocket('ws://127.0.0.1:8000/grounds'); 
+    const ws = new WebSocket('ws://157.173.195.249:8000/grounds'); 
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
