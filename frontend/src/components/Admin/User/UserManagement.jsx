@@ -190,7 +190,6 @@ const UserManagement = () => {
                 + Add New User
               </button>
             </div>
-
             {/* Table for larger screens */}
             <div className="bg-white shadow-md rounded-md overflow-x-auto hidden sm:block">
               {loading || webSocketLoading ? (

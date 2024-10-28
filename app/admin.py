@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.models import User
+from app.models import User, SiteManagement
 
 
 # Register your models here.
@@ -11,3 +11,4 @@ from app.models import User
 admin.site.unregister(User)
 
 admin.site.register(User)
+admin.site.register(SiteManagement)

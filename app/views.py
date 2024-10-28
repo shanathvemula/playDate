@@ -483,7 +483,8 @@ class SiteManagementCRUD(APIView):
             if sites:
                 serializer = SiteManagementsSerializer(sites, many=True)
                 data = serializer.data[0]
-                data['slideshow'] = ['/media/' + x['path'] for x in data['slideshow'][0]]
+                if data['slideshow']:
+                    data['slideshow'] = ['/media/' + x['path'] for x in data['slideshow'][0]]
                 return Response(data, content_type='application/json', status=status.HTTP_200_OK)
             else:
                 return Response({"message":"No data found"}, content_type='application/json', status=status.HTTP_200_OK)
@@ -530,6 +531,83 @@ class SiteManagementView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+import csv
+import pandas as pd
+
+import secrets
+import string
+
+
+
+class ImportUser(APIView):
+    authentication_classes = []
+    permission_classes = []
+    parser_classes = (MultiPartParser, FormParser)
+
+    def generate_random_password(self, length=12):
+        alphabet = string.ascii_letters + string.digits + string.punctuation
+        return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+    def post(self, request, *args, **kwargs):
+        file = request.data['file']
+        file_name = file.name
+        file_contents = file.read()
+
+        # Check the file extension
+        if file_name.endswith('.csv'):
+            file_contents_str = file_contents.decode('utf-8') if file_contents.decode('utf-8') else file_contents
+            reader = csv.DictReader(file_contents_str.splitlines())
+            df = pd.DataFrame(reader)
+
+        elif file_name.endswith('.xlsx') or file_name.endswith('.xls'):
+            # For Excel files
+            df = pd.read_excel(file)
+
+        else:
+            return HttpResponse(JSONRenderer().render({"error": "Unsupported file format"}),
+                                content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        # Print DataFrame (for debugging, optional)
+        user_profiles = []
+        errors = []
+        error_sno = []
+        for index, row in df.iterrows():
+            password = self.generate_random_password()
+            if 'dob' in row and row['dob']:
+                date_of_birth = datetime.strptime(row['dob'], '%d-%m-%Y').date()
+            else:
+                date_of_birth = None
+            user_dict = {"username":row['username'], "first_name":row['first_name'],
+                         "last_name":row['last_name'], "email":row['email'], "age":row['age'],
+                         "alternate_phone":row['alternate_phone'], "dob":date_of_birth, "gender":row['gender'],
+                         "phone":row['phone'], "user_type":row['user_type'], "password":password}
+            serializer = UserSerializer(data=user_dict)
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                error_sno.append(row['S.no'])
+                errors.append({row['username']: serializer.errors})
+        if errors:
+            return HttpResponse(JSONRenderer().render({"error": "Please check the rows "+ ', '.join(error_sno)}),
+                                content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return HttpResponse(JSONRenderer().render({"message": "File processed successfully"}),
+                                    content_type='application/json',
+                                    status=status.HTTP_200_OK)
+
+        #     user_profiles.append(user_dict)
+        #
+        # serializer = UserSerializer(data=user_profiles, many=True)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return HttpResponse(JSONRenderer().render({"message": "File processed successfully"}),
+        #                         content_type='application/json',
+        #                         status=status.HTTP_200_OK)
+        # return HttpResponse(JSONRenderer().render({"error": serializer.errors}),
+        #                     content_type='application/json',
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
 # from rest_framework_simplejwt.tokens import AccessToken
 # from django.contrib.auth.models import User
