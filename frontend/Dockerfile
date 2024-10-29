@@ -1,20 +1,26 @@
-FROM node:12.16.0-stretch
+# Use an official Node.js runtime as a parent image
+FROM node:18-alpine
 
-WORKDIR /usr/src/app
+# Set the working directory inside the container
+WORKDIR /app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
+# Copy package.json and package-lock.json (or yarn.lock) to the working directory
 COPY package*.json ./
-#COPY . /usr/src/app/
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
 
-# Bundle app source
+# Install the app dependencies
+RUN npm install
+
+# Copy the rest of the application code
 COPY . .
+
+# Build the Vite app for production
+RUN npm run build
+
+# Install a lightweight HTTP server to serve the static files
+RUN npm install -g serve
+
+# Expose port 5173 for Vite dev server or 3000 for serve
 EXPOSE 3000
-#CMD [ "node", "server.js" ]
-#CMD [ "npm", "run", "start" ]
-RUN npm run dev
-# ENTRYPOINT [ "npm", "run", "start"]
-#CMD [ "npm", "run", "prodserver" ]
+
+# Command to serve the build folder
+CMD ["serve", "-s", "dist", "-l", "3000", "--single"]
