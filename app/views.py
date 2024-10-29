@@ -498,6 +498,35 @@ class SiteManagementLC(ListCreateAPIView):
     permission_classes = []
     authentication_classes = []
 
+    def get(self, request, *args, **kwargs):
+        try:
+            sites = SiteManagement.objects.all()
+            if sites:
+                serializer = SiteManagementsSerializer(sites, many=True)
+                data = serializer.data[0]
+                return Response(data, content_type='application/json', status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error":str(e)}, content_type='application/json', status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            site = SiteManagement.objects.all()
+            if site:
+                serializer = SiteManagementsSerializer(site[0], data=data, partial=True)
+                s = status.HTTP_200_OK
+            else:
+                serializer = SiteManagementsSerializer(data=data)
+                s = status.HTTP_201_CREATED
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,
+                                content_type='application/json',
+                                status=s)
+
+        except Exception as e:
+            return Response({"error":str(e)}, content_type='application/json', status=status.HTTP_404_NOT_FOUND)
+
 import csv
 import pandas as pd
 
@@ -540,21 +569,29 @@ class ImportUser(APIView):
         errors = []
         error_sno = []
         for index, row in df.iterrows():
-            password = self.generate_random_password()
-            if 'dob' in row and row['dob']:
-                date_of_birth = datetime.strptime(row['dob'], '%d-%m-%Y').date()
-            else:
-                date_of_birth = None
-            user_dict = {"username":row['username'], "first_name":row['first_name'],
-                         "last_name":row['last_name'], "email":row['email'], "age":row['age'],
-                         "alternate_phone":row['alternate_phone'], "dob":date_of_birth, "gender":row['gender'],
-                         "phone":row['phone'], "user_type":row['user_type'], "password":password}
-            serializer = UserSerializer(data=user_dict)
-            if serializer.is_valid():
-                serializer.save()
+            username = [x for x in [row['email'], row['phone']] if x]
+            print("username", username)
+            if username:
+                row['username'] = username[0]
+                password = self.generate_random_password()
+                if 'dob' in row and row['dob']:
+                    date_of_birth = datetime.strptime(row['dob'], '%d-%m-%Y').date()
+                else:
+                    date_of_birth = None
+                user_dict = {"username": row['username'], "first_name": row['first_name'],
+                             "last_name": row['last_name'], "email": row['email'], "age": row['age'],
+                             "alternate_phone": row['alternate_phone'], "dob": date_of_birth, "gender": row['gender'],
+                             "phone": row['phone'], "user_type": row['user_type'], "password": password}
+                serializer = UserSerializer(data=user_dict)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    error_sno.append(row['S.no'])
+                    errors.append({row['username']: serializer.errors})
             else:
                 error_sno.append(row['S.no'])
-                errors.append({row['username']: serializer.errors})
+                errors.append({row['S.no']: "Please provide email or phone number"})
+                continue
         if errors:
             return HttpResponse(JSONRenderer().render({"error": "Please check the rows "+ ', '.join(error_sno)}),
                                 content_type='application/json',

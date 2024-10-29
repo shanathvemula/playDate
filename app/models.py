@@ -49,7 +49,7 @@ class SiteManagement(models.Model):
     name = models.CharField(max_length=50, unique=True)
     copyright = models.CharField(max_length=50)
     logo = models.TextField(blank=True, null=True)
-    slideshow = models.JSONField(blank=True, null=True),
+    slideshow = models.JSONField(default=dict, blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -6,15 +6,23 @@ import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground/GroundManagement";
 import UserManagement from "./components/Admin/User/UserManagement";
 import Loading from "./components/Loading"; // Import the Loading component
-import Form from "./components/Form/Form";
+import Form from "./components/Admin/Form/Form";
 
 function App() {
   const [loading, setLoading] = useState(true); // Initialize loading state
+  const [userType, setUserType] = useState(null); // State for user type
 
   // Simulate data loading or initialization
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false); // Stop loading after 2 seconds
+
+      // Retrieve user type from localStorage
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUserType(userData.user_type); // Set user type in state
+      }
     }, 2000);
 
     return () => clearTimeout(timer); // Cleanup timeout on unmount
@@ -27,15 +35,28 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Common routes for all users */}
         <Route path='/' element={<AuthPage />} />
-        <Route path="/home" element={<Home />} />
         <Route path='/passwordReset' element={<PasswordReset />} />
-        <Route path="/Admin/Ground" element={<GroundManagement />} />
-        <Route path='/Admin/User' element={<UserManagement />} />
-        <Route path="/form" element={<Form />} />
+        
+
+        {/* Conditionally render Admin routes */}
+        {userType === "Admin" && (
+          <>
+            <Route path="/Admin/Ground" element={<GroundManagement />} />
+            <Route path='/Admin/User' element={<UserManagement />} />
+            <Route path="/Admin/form" element={<Form />} />
+          </>
+        )}
+        {userType === "Ground Manager" && (
+          <>
+             <Route path="/home" element={<Home />} />
+          </>
+        )}
       </Routes>
     </Router>
   );
 }
+
 
 export default App;

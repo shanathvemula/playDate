@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import FormComponent from './FormComponent';
-import { ClientInfo } from '../../api/service';
+import { ClientInfo } from '../../../api/service';
 // import Layout from '../../layout/Layout';
 
 const Form = () =>{

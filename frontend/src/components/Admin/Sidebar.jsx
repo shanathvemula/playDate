@@ -15,6 +15,10 @@ const Sidebar = memo(({ isOpen, toggleSidebar }) => {
         navigate('/Admin/Ground');
     };
 
+    const handleOnClickSettings = () => {
+        navigate('/Admin/form')
+    }
+
     return (
         <div className={`bg-white dark:bg-gray-800 text-black dark:text-white transition-all duration-300 ${isOpen ? 'w-64' : 'w-10'} flex-shrink-0`}>
             {/* Toggle Sidebar Button */}
@@ -46,7 +50,10 @@ const Sidebar = memo(({ isOpen, toggleSidebar }) => {
                     <FaUsers size={24} />
                     {isOpen && <span className="pl-2">Users</span>}
                 </li>
-                <li className="px-2 py-2 hover:bg-sky-500 cursor-pointer flex items-center" {...(!isOpen && { 'data-tooltip-id': 'tooltip', 'data-tooltip-content': 'Settings' })}>
+                <li className="px-2 py-2 hover:bg-sky-500 cursor-pointer flex items-center" 
+                    onClick={handleOnClickSettings}
+                    {...(!isOpen && { 'data-tooltip-id': 'tooltip', 'data-tooltip-content': 'Settings' })}
+                    >
                     <FaCog size={24} />
                     {isOpen && <span className="pl-2">Settings</span>}
                 </li>

@@ -1,0 +1,21 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Ensure it stays above other content */
+    width: calc(100% - 250px); /* Adjust width based on sidebar width */
+    background-color: white;
+  }
+  
+  
+.sidebar {
+    width: 250px; /* Fixed width for the sidebar */
+    position: relative;
+}
+.sticky-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: white; /* Ensures it's visible when scrolling */
+    width: 100%; /* Adjust width if needed */
+  }
+  
