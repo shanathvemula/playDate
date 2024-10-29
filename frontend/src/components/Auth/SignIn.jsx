@@ -41,6 +41,7 @@ const SignIn = ({setCurrentForm}) => {
       // navigate('/home')
       window.location.href = '/home';
     } else {
+      console.log("kk", JSON.parse(localStorage.getItem("user")))
       console.log('End User')
     } 
   }
