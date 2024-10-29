@@ -1,5 +1,4 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 import { notification } from 'antd';
 
 // Create axios instance with dynamic base URL
@@ -13,7 +12,7 @@ const apiClient = axios.create({
 // Add request interceptor
 apiClient.interceptors.request.use(
     async (config) => {
-        const accessToken = Cookies.get('token');
+        const accessToken = localStorage.getItem('token');
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
         }
@@ -39,17 +38,13 @@ apiClient.interceptors.response.use(
 
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-            const refreshToken = Cookies.get('refresh');
+            const refreshToken = localStorage.getItem('refresh');
 
             if (refreshToken) {
                 return apiClient
                     .post('Auth/token/refresh_token/', { refresh: refreshToken })
                     .then((response) => {
-                        Cookies.set('token', response.data.access, {
-                            expires: 1/1440, 
-                            sameSite: 'lax', // Adjust SameSite attribute
-                            secure: process.env.NODE_ENV === 'production' // Set secure attribute based on environment
-                        });
+                        localStorage.setItem('token', response.data.access);
                         apiClient.defaults.headers['Authorization'] = `Bearer ${response.data.access}`;
                         originalRequest.headers['Authorization'] = `Bearer ${response.data.access}`;
                         return apiClient(originalRequest);
@@ -85,16 +80,8 @@ export const login = async (username, password) => {
             password,
         });
         openNotificationWithIcon('success', 'Login Successful', 'You have successfully logged in!');
-        Cookies.set("token", response.data.access, {
-            expires: 1 / 24, 
-            secure: process.env.NODE_ENV === 'production', // Set secure based on environment
-            sameSite: 'lax'
-        });
-        Cookies.set("refresh", response.data.refresh, {
-            expires: 7, 
-            secure: process.env.NODE_ENV === 'production', 
-            sameSite: 'lax'
-        });
+        localStorage.setItem("token", response.data.access);
+        localStorage.setItem("refresh", response.data.refresh);
         return response.data;
     } catch (error) {
         console.log("error", error);
