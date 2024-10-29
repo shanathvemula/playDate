@@ -42,6 +42,7 @@ const SignIn = ({setCurrentForm}) => {
       window.location.href = '/home';
     } else {
       console.log('End User')
+      navigate('/Admin/User')
     } 
   }
 
