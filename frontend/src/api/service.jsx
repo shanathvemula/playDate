@@ -11,7 +11,7 @@ const apiClient = axios.create({
     baseURL: '/api/',
     headers: {
         'Content-Type': 'application/json',
-        // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
+        'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
         // 'Authorization': 'Bearer ' + Cookies.get('token'),
     }
 })
