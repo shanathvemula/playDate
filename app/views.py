@@ -158,7 +158,7 @@ class SignUp(APIView):
         request=ForgetPasswordSerializer, summary="validating Forgot token and update password",
         description="* This endpoint helps to validate the forget token"
     )
-    def patch(request, *args, **kwargs):
+    def patch(self,request, *args, **kwargs):
         try:
             data = request.data
             token = data['token']

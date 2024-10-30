@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AuthPage from "./components/Auth/AuthPage";
-import Home from "./components/Home";
+import GMHome from "./components/GroundManagement/GMHome";
+import EUHome from "./components/EndUser/EUHome";
 import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground/GroundManagement";
 import UserManagement from "./components/Admin/User/UserManagement";
@@ -50,7 +51,12 @@ function App() {
         )}
         {userType === "Ground Manager" && (
           <>
-             <Route path="/home" element={<Home />} />
+             <Route path="/home" element={<GMHome />} />
+          </>
+        )}
+        {userType === "End User" && (
+          <>
+             <Route path="/home" element={<EUHome />} />
           </>
         )}
       </Routes>

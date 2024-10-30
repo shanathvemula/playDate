@@ -29,8 +29,10 @@ const Navbar = () => {
 
   // Handle logout function
   const handleLogout = () => {
-    Cookies.remove('token');
-    Cookies.remove('refresh');
+    // Cookies.remove('token');
+    // Cookies.remove('refresh');
+    localStorage.removeItem('token')
+    localStorage.removeItem('refresh')
     window.location.href = '/';
   };
 
