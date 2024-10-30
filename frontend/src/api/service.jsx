@@ -5,10 +5,11 @@ import { toast } from 'react-toastify';
 import { PiAppWindow } from "react-icons/pi";
 import Password from "antd/es/input/Password";
 
+const baseURL = 'http://157.173.195.249:8000'
 // Create axios instance with dynamic base URL
 const apiClient = axios.create({
-    // baseURL: baseURL,
-    baseURL: '/api/',
+    baseURL: baseURL,
+    // baseURL: '/api/',
     headers: {
         'Content-Type': 'application/json',
         // 'Authorization': 'Bearer ' + localStorage.getItem('token'), // Replace with your actual token or use a dynamic approach
