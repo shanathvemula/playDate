@@ -149,51 +149,6 @@ class SignUp(APIView):
             # raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
-    @extend_schema(
-        # parameters=[
-        #     OpenApiParameter(name='token', description="Enter reset token", required=True, type=str),
-        #     OpenApiParameter(name='password',description="Enter reset password", type=str),
-        #     OpenApiParameter(name='confirm_password', description="Enter Re-Password", type=str)
-        # ],
-        request=ForgetPasswordSerializer, summary="validating Forgot token and update password",
-        description="* This endpoint helps to validate the forget token"
-    )
-    def patch(self,request, *args, **kwargs):
-        try:
-            data = request.data
-            token = data['token']
-            password = data['password']
-            confirm_password = data['confirm_password']
-            data = eval(fernet.decrypt(eval("b'"+token+"'")).decode())
-            data['timeout'] = datetime.strptime(data['timeout'], '%Y-%m-%d %H:%M:%S.%f')
-            # print(data)
-            # print(data['timeout']>datetime.now())
-            if not data['password_reset']:
-                return HttpResponse(JSONRenderer().render({"error": "Reset token is not valid."}),
-                                    content_type='application/json',
-                                    status=status.HTTP_400_BAD_REQUEST)
-            elif data['timeout']>datetime.now():
-                if password == confirm_password:
-                    user = User.objects.filter(email__exact=data['email'])
-                    validate_password(password=password, user=User)
-                    hashed_password = make_password(password)
-                    user.update(password=hashed_password)
-                    return HttpResponse(JSONRenderer().render({"message": "Password updated successfully"}), content_type='application/json',
-                                        status=status.HTTP_200_OK)
-                else:
-                    return HttpResponse(JSONRenderer().render({"Error": "password and confirm password has to be same."}), content_type='application/json',
-                                        status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return HttpResponse(JSONRenderer().render({"Error": "Reset link expired."}),
-                                    content_type='application/json',
-                                    status=status.HTTP_400_BAD_REQUEST)
-        except InvalidToken:
-            return HttpResponse(JSONRenderer().render({"Error": "Invalid token"}), content_type='application/json',
-                                status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
-                                status=status.HTTP_400_BAD_REQUEST)
-
 
     @extend_schema(request=UserSignUpSerializer, summary="User SignUp", description="* This endpoint helps to sign up the user \n"
                                                                                     "* Make email will be null or empty string")
@@ -270,6 +225,54 @@ class SignUp(APIView):
                     return HttpResponse(JSONRenderer().render({"Error": "No mail info"}), content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
             else:
                 return HttpResponse(JSONRenderer().render({"Error": "user does n't exists"}), content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        # parameters=[
+        #     OpenApiParameter(name='token', description="Enter reset token", required=True, type=str),
+        #     OpenApiParameter(name='password',description="Enter reset password", type=str),
+        #     OpenApiParameter(name='confirm_password', description="Enter Re-Password", type=str)
+        # ],
+        request=ForgetPasswordSerializer, summary="validating Forgot token and update password",
+        description="* This endpoint helps to validate the forget token"
+    )
+    def patch(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            token = data['token']
+            password = data['password']
+            confirm_password = data['confirm_password']
+            data = eval(fernet.decrypt(eval("b'" + token + "'")).decode())
+            data['timeout'] = datetime.strptime(data['timeout'], '%Y-%m-%d %H:%M:%S.%f')
+            # print(data)
+            # print(data['timeout']>datetime.now())
+            if not data['password_reset']:
+                return HttpResponse(JSONRenderer().render({"error": "Reset token is not valid."}),
+                                    content_type='application/json',
+                                    status=status.HTTP_400_BAD_REQUEST)
+            elif data['timeout'] > datetime.now():
+                if password == confirm_password:
+                    user = User.objects.filter(email__exact=data['email'])
+                    validate_password(password=password, user=User)
+                    hashed_password = make_password(password)
+                    user.update(password=hashed_password)
+                    return HttpResponse(JSONRenderer().render({"message": "Password updated successfully"}),
+                                        content_type='application/json',
+                                        status=status.HTTP_200_OK)
+                else:
+                    return HttpResponse(
+                        JSONRenderer().render({"Error": "password and confirm password has to be same."}),
+                        content_type='application/json',
+                        status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "Reset link expired."}),
+                                    content_type='application/json',
+                                    status=status.HTTP_400_BAD_REQUEST)
+        except InvalidToken:
+            return HttpResponse(JSONRenderer().render({"Error": "Invalid token"}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
