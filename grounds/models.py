@@ -9,6 +9,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from datetime import datetime
 
+from django.utils import timezone
+
 # Create your models here.
 ScoreboardType = (('Digital', 'Digital'), ('Manual', 'Manual'),('Not Avaliable', 'Not Avaliable'))
 maintenanceStatus = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'), ('Not Scheduled', 'Not Scheduled'))
@@ -54,7 +56,7 @@ class Grounds(models.Model):
     maintenance_team_contact = models.CharField(max_length=200)
     Arena = models.JSONField(default=dict, blank=True, null=True)
     address = models.JSONField(default=dict, blank=True, null=True)
-    created = models.DateTimeField(default=datetime.now())
+    created = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     # Arena = models.ManyToManyField(Arena, blank=True, null=True)
     # is_active = models.BooleanField(default=True)
@@ -76,8 +78,8 @@ class GroundManagement(models.Model):
     Amenities = models.JSONField(default=dict, blank=True, null=True)
     AboutVenue = models.TextField(blank=True, null=True)
     GroundContact = models.CharField(max_length=250, blank=True, null=True)
-    # maintenance
-    Created = models.DateTimeField(default=datetime.now())
+    maintenance = models.JSONField(blank=True, null=True)
+    Created = models.DateTimeField(default=timezone.now)
     CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
