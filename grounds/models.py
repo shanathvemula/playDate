@@ -14,17 +14,23 @@ ScoreboardType = (('Digital', 'Digital'), ('Manual', 'Manual'),('Not Avaliable',
 maintenanceStatus = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'), ('Not Scheduled', 'Not Scheduled'))
 availableStatus = (('Available', 'Available'), ('Not Available', 'Not Available'))
 
-class Arena(models.Model):
-    game = models.CharField(max_length=150)
-    ground_type = models.CharField(max_length=150)
-    capacity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
-    surface_type = models.CharField(max_length=250)
-    ground_images = models.JSONField(default=dict, blank=True, null=True)
-    availability_status = models.BooleanField(default=False)
-    ground_images = models.JSONField(default=dict, blank=True, null=True)
-
-    class Meta:
-        db_table = 'arena'
+# class Arena(models.Model):
+#     game = models.CharField(max_length=150)
+#     # description = models.TextField(blank=True, null=True)
+#     # about = models.TextField(blank=True, null=True)
+#     location = models.CharField(max_length=500, blank=True, null=True)
+#     ground_images = models.JSONField(default=dict, blank=True, null=True)
+#     manage_price = models.JSONField(default=dict, blank=True, null=True)
+#
+#     ground_type = models.CharField(max_length=150)
+#     capacity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+#     surface_type = models.CharField(max_length=250)
+#     ground_images = models.JSONField(default=dict, blank=True, null=True)
+#     availability_status = models.BooleanField(default=False)
+#
+#
+#     class Meta:
+#         db_table = 'arena'
 
 def GenGroundId():
     ground = Grounds.objects.all().order_by('id').last()
@@ -58,3 +64,25 @@ class Grounds(models.Model):
 
     def __str__(self):
         return self.ground_name
+
+class GroundManagement(models.Model):
+    GroundName = models.CharField(max_length=250)
+    VenueName = models.CharField(max_length=250)
+    GroundDescription = models.TextField(blank=True, null=True)
+    Location = models.CharField(max_length=250)
+    Promotions = models.JSONField(default=dict, blank=True, null=True)
+    Images = models.JSONField(default=dict, blank=True, null=True)
+    ManagePrice = models.JSONField(default=dict, blank=True, null=True)
+    Amenities = models.JSONField(default=dict, blank=True, null=True)
+    AboutVenue = models.TextField(blank=True, null=True)
+    GroundContact = models.CharField(max_length=250, blank=True, null=True)
+    # maintenance
+    Created = models.DateTimeField(default=datetime.now())
+    CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['GroundName', 'VenueName', 'Location']
+        db_table = 'ground_management'
+
+    def __str__(self):
+        return self.GroundName + ' ' + self.VenueName + ' ' + self.Location

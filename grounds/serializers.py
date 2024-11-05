@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from grounds.models import Grounds, Arena
+from grounds.models import Grounds, GroundManagement # Arena
 
 
 class GroundsSerializerDepth(ModelSerializer):
@@ -14,7 +14,12 @@ class GroundsSerializer(ModelSerializer):
         model = Grounds
         fields = '__all__'
 
-class ArenaSerializer(ModelSerializer):
+# class ArenaSerializer(ModelSerializer):
+#     class Meta:
+#         model = Arena
+#         fields = '__all__'
+
+class GroundManagementSerializer(ModelSerializer):
     class Meta:
-        model = Arena
+        model = GroundManagement
         fields = '__all__'
