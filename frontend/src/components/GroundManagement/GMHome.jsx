@@ -225,7 +225,7 @@ const GMHome = () => {
                                 <div key={index} className="relative h-28 w-64 p-2 bg-gray-100 rounded shadow-md">
                                     <button
                                         onClick={() => openModal(promotion, index)}
-                                        className="absolute top-2 left-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                        className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
                                     >
                                         <FiEdit size={16} className="text-blue-600" />
                                     </button>
@@ -243,7 +243,27 @@ const GMHome = () => {
                     </section>
 
                     {/* Placeholder sections for other sidebar links */}
-                    <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">Images Section</section>
+                    <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
+                        <div className="px-4 py-2 bg-white rounded-lg flex flex-col gap-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-base font-semibold text-gray-800">Schedule for Maintenance</h4>
+                                <div className="p-1 bg-white rounded-full flex items-center justify-center">
+                                    <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-row gap-4">
+                                <div className="w-full p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-600">
+                                    <span className="text-xs font-semibold text-gray-800">Mon - Thu</span>
+                                    <p className="text-xs font-normal text-gray-700">10 AM - 11 AM</p>
+                                </div>
+                                <div className="w-full p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-600">
+                                    <span className="text-xs font-semibold text-gray-800">Fri - Sun</span>
+                                    <p className="text-xs font-normal text-gray-700">08 AM - 09 AM</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                     <section ref={refs.availabilityRef} className="bg-white p-4 rounded-lg shadow-lg">Slot Availability Section</section>
                     <section ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">Manage Price Section</section>
                     <section ref={refs.amenitiesRef} className="bg-white p-4 rounded-lg shadow-lg">Amenities Section</section>
