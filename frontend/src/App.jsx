@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AuthPage from "./components/Auth/AuthPage";
-import GMHome from "./components/GroundManagement/GMHome";
+import GMHome from "./components/GroundManagement/GMHome.jsx";
 import EUHome from "./components/EndUser/EUHome";
 import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground/GroundManagement";

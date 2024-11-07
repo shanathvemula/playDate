@@ -21,6 +21,10 @@ const initialGroundData = [
         description: "1234ft x 672ft wide cricket ground optimal for all your gameplays...",
         location: "Chennai",
         venue: "YDSC Ground",
+        images: [
+            { id: 1, url: "https://via.placeholder.com/200x200", title: "Cricket Ground Overview" },
+            { id: 2, url: "https://via.placeholder.com/200x200", title: "Pavilion Area" },
+        ],
         promotions: [
             { title: "Season End Offer", discount: "18% off", validity: "2024-10-31", image: "https://via.placeholder.com/98x98" },
             { title: "Monsoon Madness", discount: "25% off", validity: "2024-11-15", image: "https://via.placeholder.com/98x98" }
@@ -35,6 +39,9 @@ const initialGroundData = [
         description: "1200ft x 800ft wide football ground suitable for professional games...",
         location: "Mumbai",
         venue: "City Stadium",
+        images: [
+            { id: 2, url: "https://via.placeholder.com/200x200", title: "Football Ground Overview" },
+        ],
         promotions: [
             { title: "Summer Start Offer", discount: "30% off", validity: "2024-06-30", image: "https://via.placeholder.com/98x98" },
             { title: "Winter Warm-Up", discount: "15% off", validity: "2024-01-15", image: "https://via.placeholder.com/98x98" }
@@ -125,13 +132,44 @@ const ScheduleModal = ({ isOpen, closeModal, scheduleData, handleScheduleChange,
     </Modal>
 );
 
+const ImageModal = ({ isOpen, closeModal, imageData, handleImageChange, handleImageUpload, handleSaveImage }) => (
+    <Modal isOpen={isOpen} onRequestClose={closeModal} className="p-4 bg-white rounded-lg shadow-lg w-1/2 mx-auto my-8">
+        <h2 className="text-xl font-semibold mb-4">{imageData.isEditing ? "Edit Image" : "Upload Image"}</h2>
+        <input
+            name="title"
+            value={imageData.title}
+            onChange={handleImageChange}
+            placeholder="Image Title"
+            className="mb-2 p-2 border rounded w-full"
+        />
+        <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="mb-4"
+        />
+        {imageData.url && (
+            <img src={imageData.url} alt="Preview" className="w-32 h-32 mb-4" />
+        )}
+        <button onClick={handleSaveImage} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md mr-2">
+            Save
+        </button>
+        <button onClick={closeModal} className="px-4 py-2 bg-gray-400 text-white rounded shadow-md">
+            Cancel
+        </button>
+    </Modal>
+);
+
 const GMHome = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const [groundData, setGroundData] = useState(initialGroundData);
     const [promotionData, setPromotionData] = useState({ title: "", discount: "", validity: "", image: "", isEditing: false, editIndex: null });
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const [scheduleData, setScheduleData] = useState({ days: [], startTime: "", endTime: "", isEditing: false, editIndex: null });
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [imageData, setImageData] = useState({ url: "", title: "", isEditing: false, editIndex: null });
+
     const selectedGround = groundData[selectedIndex];
 
     const refs = {
@@ -228,6 +266,57 @@ const GMHome = () => {
         updatedGroundData[selectedIndex] = { ...selectedGround, maintenanceSchedule: updatedSchedules };
         setGroundData(updatedGroundData);
     };
+
+    const openImageModal = (image = {}, index = null) => {
+        setImageData({ ...image, isEditing: !!image.title, editIndex: index });
+        setIsImageModalOpen(true);
+    };
+
+    const closeImageModal = () => {
+        setIsImageModalOpen(false);
+        setImageData({ url: "", title: "", isEditing: false, editIndex: null });
+    };
+
+    const handleImageChange = (e) => {
+        const { name, value } = e.target;
+        setImageData((prev) => ({ ...prev, [name]: value }));
+    };
+    
+    const handleImageUploadIS = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageData((prev) => ({ ...prev, url: URL.createObjectURL(file) }));
+        }
+    };
+    
+    const handleSaveImage = () => {
+        const updatedImages = [...selectedGround.images];
+        
+        // Handle editing vs new upload
+        if (imageData.isEditing) {
+            updatedImages[imageData.editIndex] = { ...imageData };
+        } else {
+            updatedImages.push({ id: Date.now(), ...imageData });
+        }
+
+        // Update the groundData with new or updated image
+        const updatedGroundData = [...groundData];
+        updatedGroundData[selectedIndex] = { ...selectedGround, images: updatedImages };
+        setGroundData(updatedGroundData);
+
+        closeImageModal();
+    };
+    const handleDeleteImage = (index) => {
+        const updatedImages = [...selectedGround.images];
+        updatedImages.splice(index, 1);
+
+        const updatedGroundData = [...groundData];
+        updatedGroundData[selectedIndex] = { ...selectedGround, images: updatedImages };
+        console.log("updatedGroundData", updatedGroundData)
+        setGroundData(updatedGroundData);
+    };
+
+    
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
@@ -362,8 +451,38 @@ const GMHome = () => {
                             </div>
                         </div>
                     </section>
+                    <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
+                        <div className="px-4 py-2 bg-white rounded-lg flex flex-col gap-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-base font-semibold text-gray-800">Images</h4>
+                                <button onClick={() => openImageModal()} className="px-4 py-1.5 bg-blue-600 text-white rounded shadow-md">
+                                    Upload Image
+                                </button>
+                            </div>
 
-                    <section ref={refs.availabilityRef} className="bg-white p-4 rounded-lg shadow-lg">Slot Availability Section</section>
+                            <div className="flex flex-wrap gap-4">
+                                {selectedGround.images.map((image, index) => (
+                                    <div key={image.id} className="relative w-32 h-32 p-2 bg-gray-100 rounded-lg shadow-md">
+                                        <button
+                                            onClick={() => openImageModal(image, index)}
+                                            className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                        >
+                                            <FiEdit size={16} className="text-blue-600" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteImage(index)}
+                                            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                        >
+                                            <MdDelete size={16} className="text-red-600" />
+                                        </button>
+                                        <img src={image.url} alt={image.title} className="w-full h-full object-cover rounded" />
+                                        <p className="text-xs text-center mt-2 text-gray-800">{image.title}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
                     <section ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">Manage Price Section</section>
                     <section ref={refs.amenitiesRef} className="bg-white p-4 rounded-lg shadow-lg">Amenities Section</section>
                     <section ref={refs.rulesRef} className="bg-white p-4 rounded-lg shadow-lg">Ground Rules & Info Section</section>
@@ -385,6 +504,15 @@ const GMHome = () => {
                 scheduleData={scheduleData}
                 handleScheduleChange={handleScheduleChange}
                 handleSaveSchedule={handleSaveSchedule}
+            />
+
+            <ImageModal
+                isOpen={isImageModalOpen}
+                closeModal={closeImageModal}
+                imageData={imageData}
+                handleImageChange={handleImageChange}
+                handleImageUpload={handleImageUploadIS}
+                handleSaveImage={handleSaveImage}
             />
         </div>
     );
