@@ -32,7 +32,23 @@ const initialGroundData = [
         maintenanceSchedule: [
             { days: ["Mon", "Thu"], startTime: "10:00", endTime: "11:00" },
             { days: ["Fri", "Sun"], startTime: "08:00", endTime: "09:00" }
-        ]
+        ],
+        pricing: [
+            {
+                days: ["Mon", "Thu"],
+                times: [
+                    { startTime: "00:00", endTime: "07:00", price: 800 },
+                    { startTime: "07:00", endTime: "12:00", price: 1000 },
+                ],
+            },
+            {
+                days: ["Fri", "Sun"],
+                times: [
+                    { startTime: "00:00", endTime: "07:00", price: 1000 },
+                    { startTime: "07:00", endTime: "12:00", price: 1200 },
+                ],
+            },
+        ],
     },
     {
         name: "Football",
@@ -49,7 +65,23 @@ const initialGroundData = [
         maintenanceSchedule: [
             { days: ["Mon", "Wed"], startTime: "09:00", endTime: "10:00" },
             { days: ["Thu", "Sat"], startTime: "11:00", endTime: "12:00" }
-        ]
+        ],
+        pricing: [
+            {
+                days: ["Mon", "Thu"],
+                times: [
+                    { startTime: "00:00", endTime: "07:00", price: 800 },
+                    { startTime: "07:00", endTime: "12:00", price: 1000 },
+                ],
+            },
+            {
+                days: ["Fri", "Sun"],
+                times: [
+                    { startTime: "00:00", endTime: "07:00", price: 1000 },
+                    { startTime: "07:00", endTime: "12:00", price: 1200 },
+                ],
+            },
+        ],
     }
 ];
 
@@ -160,6 +192,57 @@ const ImageModal = ({ isOpen, closeModal, imageData, handleImageChange, handleIm
     </Modal>
 );
 
+const PricingModal = ({ isOpen, closeModal, pricingData, handlePricingChange, handleSavePricing }) => (
+    <Modal isOpen={isOpen} onRequestClose={closeModal} className="p-4 bg-white rounded-lg shadow-lg w-1/2 mx-auto my-8">
+        <h2 className="text-xl font-semibold mb-4">{pricingData.isEditing ? "Edit Pricing" : "Create Pricing"}</h2>
+        <label className="text-gray-600 mb-2">Select Days</label>
+        <Select
+            isMulti
+            options={daysOptions}
+            value={daysOptions.filter(day => pricingData.days.includes(day.value))}
+            onChange={selectedOptions => handlePricingChange({ target: { name: "days", value: selectedOptions.map(option => option.value) } })}
+            placeholder="Select days of the week"
+            className="mb-4"
+        />
+        <div className="mb-4">
+            <label className="text-gray-600 mb-2">Start Time</label>
+            <input
+                type="time"
+                name="startTime"
+                value={pricingData.startTime}
+                onChange={handlePricingChange}
+                className="p-2 border rounded w-full"
+            />
+        </div>
+        <div className="mb-4">
+            <label className="text-gray-600 mb-2">End Time</label>
+            <input
+                type="time"
+                name="endTime"
+                value={pricingData.endTime}
+                onChange={handlePricingChange}
+                className="p-2 border rounded w-full"
+            />
+        </div>
+        <div className="mb-4">
+            <label className="text-gray-600 mb-2">Price per Hour</label>
+            <input
+                type="number"
+                name="price"
+                value={pricingData.price}
+                onChange={handlePricingChange}
+                className="p-2 border rounded w-full"
+            />
+        </div>
+        <button onClick={handleSavePricing} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md mr-2">
+            Save
+        </button>
+        <button onClick={closeModal} className="px-4 py-2 bg-gray-400 text-white rounded shadow-md">
+            Cancel
+        </button>
+    </Modal>
+);
+
 const GMHome = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -169,6 +252,8 @@ const GMHome = () => {
     const [scheduleData, setScheduleData] = useState({ days: [], startTime: "", endTime: "", isEditing: false, editIndex: null });
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [imageData, setImageData] = useState({ url: "", title: "", isEditing: false, editIndex: null });
+    const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+    const [pricingData, setPricingData] = useState({ days: [], startTime: "", endTime: "", price: 0, editIndex: null, timeIndex: null });
 
     const selectedGround = groundData[selectedIndex];
 
@@ -315,8 +400,81 @@ const GMHome = () => {
         console.log("updatedGroundData", updatedGroundData)
         setGroundData(updatedGroundData);
     };
-
     
+    const openPricingModal = (pricingEntry = {}, timeIndex = null, pricingIndex = null) => {
+        setPricingData({
+            days: pricingEntry.days || [],
+            startTime: pricingEntry.times?.[timeIndex]?.startTime || "",
+            endTime: pricingEntry.times?.[timeIndex]?.endTime || "",
+            price: pricingEntry.times?.[timeIndex]?.price || 0,
+            editIndex: pricingIndex,
+            timeIndex: timeIndex,
+            isEditing: !!pricingEntry.days,
+        });
+        setIsPricingModalOpen(true);
+    };
+
+    const closePricingModal = () => {
+        setIsPricingModalOpen(false);
+        setPricingData({ days: [], startTime: "", endTime: "", price: 0, editIndex: null, timeIndex: null, isEditing: false });
+    };
+
+    const handlePricingChange = (e) => {
+        const { name, value } = e.target;
+        setPricingData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSavePricing = () => {
+        const updatedGroundData = [...groundData];
+        const currentPricing = [...selectedGround.pricing];
+
+        if (pricingData.isEditing) {
+            const updatedPricingEntry = { ...currentPricing[pricingData.editIndex] };
+            updatedPricingEntry.days = pricingData.days;
+            updatedPricingEntry.times[pricingData.timeIndex] = {
+                startTime: pricingData.startTime,
+                endTime: pricingData.endTime,
+                price: parseFloat(pricingData.price),
+            };
+            currentPricing[pricingData.editIndex] = updatedPricingEntry;
+        } else {
+            const newPricingEntry = {
+                days: pricingData.days,
+                times: [{ startTime: pricingData.startTime, endTime: pricingData.endTime, price: parseFloat(pricingData.price) }],
+            };
+            currentPricing.push(newPricingEntry);
+        }
+
+        updatedGroundData[selectedIndex] = {
+            ...selectedGround,
+            pricing: currentPricing,
+        };
+        setGroundData(updatedGroundData);
+        closePricingModal();
+    };
+
+    const handleDeletePricingEntry = (pricingIndex) => {
+        const updatedGroundData = [...groundData];
+        const updatedPricing = selectedGround.pricing.filter((_, index) => index !== pricingIndex);
+        updatedGroundData[selectedIndex] = { ...selectedGround, pricing: updatedPricing };
+        setGroundData(updatedGroundData);
+    };
+
+    const handleDeleteTimeSlot = (pricingIndex, timeIndex) => {
+        const updatedGroundData = [...groundData];
+        const updatedPricingEntry = { ...selectedGround.pricing[pricingIndex] };
+        updatedPricingEntry.times = updatedPricingEntry.times.filter((_, index) => index !== timeIndex);
+
+        // If no time slots left, remove the entire pricing entry
+        if (updatedPricingEntry.times.length === 0) {
+            handleDeletePricingEntry(pricingIndex);
+        } else {
+            const updatedPricing = [...selectedGround.pricing];
+            updatedPricing[pricingIndex] = updatedPricingEntry;
+            updatedGroundData[selectedIndex] = { ...selectedGround, pricing: updatedPricing };
+            setGroundData(updatedGroundData);
+        }
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-100">
@@ -483,7 +641,50 @@ const GMHome = () => {
                         </div>
                     </section>
 
-                    <section ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">Manage Price Section</section>
+                    <section ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">
+                        <div className="flex justify-between mb-4">
+                            <span className="text-base font-semibold">Manage Price</span>
+                            <button onClick={() => openPricingModal()} className="px-4 py-2 bg-green-600 text-white rounded shadow-md">
+                                Create Pricing
+                            </button>
+                        </div>
+                        {selectedGround.pricing.map((pricingEntry, pricingIndex) => (
+                            <div key={pricingIndex} className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex justify-between">
+                                    <span className="text-sm font-medium text-gray-800">
+                                        {pricingEntry.days.map(day => daysOptions.find(option => option.value === day)?.label).join(", ")}
+                                    </span>
+                                    <button
+                                        onClick={() => handleDeletePricingEntry(pricingIndex)}
+                                        className="text-red-600 hover:text-red-800"
+                                    >
+                                        <MdDelete />
+                                    </button>
+                                </div>
+                                {pricingEntry.times.map((timeEntry, timeIndex) => (
+                                    <div key={timeIndex} className="flex justify-between text-sm mt-2">
+                                        <span>{`${timeEntry.startTime} - ${timeEntry.endTime}`}</span>
+                                        <span>{`INR ${timeEntry.price.toFixed(2)}/hour`}</span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => openPricingModal(pricingEntry, timeIndex, pricingIndex)}
+                                                className="text-blue-600"
+                                            >
+                                                <FiEdit />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteTimeSlot(pricingIndex, timeIndex)}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                <MdDelete />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </section>
+
                     <section ref={refs.amenitiesRef} className="bg-white p-4 rounded-lg shadow-lg">Amenities Section</section>
                     <section ref={refs.rulesRef} className="bg-white p-4 rounded-lg shadow-lg">Ground Rules & Info Section</section>
                 </div>
@@ -513,6 +714,14 @@ const GMHome = () => {
                 handleImageChange={handleImageChange}
                 handleImageUpload={handleImageUploadIS}
                 handleSaveImage={handleSaveImage}
+            />
+
+            <PricingModal
+                isOpen={isPricingModalOpen}
+                closeModal={closePricingModal}
+                pricingData={pricingData}
+                handlePricingChange={handlePricingChange}
+                handleSavePricing={handleSavePricing}
             />
         </div>
     );
