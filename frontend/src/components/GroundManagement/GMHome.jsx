@@ -609,18 +609,21 @@ const GMHome = () => {
                             </div>
                         </div>
                     </section>
+                    {/* Images Section */}
                     <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
-                        <div className="px-4 py-2 bg-white rounded-lg flex flex-col gap-4">
+                        <div className="px-4 py-2 flex flex-col gap-4">
                             <div className="flex justify-between items-center">
                                 <h4 className="text-base font-semibold text-gray-800">Images</h4>
                                 <button onClick={() => openImageModal()} className="px-4 py-1.5 bg-blue-600 text-white rounded shadow-md">
                                     Upload Image
                                 </button>
                             </div>
-
                             <div className="flex flex-wrap gap-4">
                                 {selectedGround.images.map((image, index) => (
-                                    <div key={image.id} className="relative w-32 h-32 p-2 bg-gray-100 rounded-lg shadow-md">
+                                    <div
+                                        key={image.id}
+                                        className="relative w-32 h-40 p-2 bg-gray-100 rounded-lg shadow-md overflow-hidden"
+                                    >
                                         <button
                                             onClick={() => openImageModal(image, index)}
                                             className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
@@ -633,8 +636,8 @@ const GMHome = () => {
                                         >
                                             <MdDelete size={16} className="text-red-600" />
                                         </button>
-                                        <img src={image.url} alt={image.title} className="w-full h-full object-cover rounded" />
-                                        <p className="text-xs text-center mt-2 text-gray-800">{image.title}</p>
+                                        <img src={image.url} alt={image.title} className="w-full h-28 object-cover rounded" />
+                                        <p className="text-xs text-center mt-2 text-gray-800 truncate">{image.title}</p>
                                     </div>
                                 ))}
                             </div>
