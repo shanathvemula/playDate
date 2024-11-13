@@ -29,6 +29,7 @@ const allAmenities = [
 
 const initialGroundData = [
     {
+        ground_name: "Test",
         name: "Cricket",
         description: "1234ft x 672ft wide cricket ground optimal for all your gameplays...",
         location: "Chennai",
@@ -68,6 +69,7 @@ const initialGroundData = [
         },
     },
     {
+        ground_name: "Test2",
         name: "Football",
         description: "1200ft x 800ft wide football ground suitable for professional games...",
         location: "Mumbai",
@@ -663,8 +665,12 @@ const GMHome = () => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-100">
-            <GMNavbar />
+        <div className="min-h-screen bg-gray-100">
+            {/* min-h-screen flex flex-col bg-gray-100 */}
+            <GMNavbar/>
+            <br />
+            <br />
+            <br />
 
             <div className="p-4 space-y-4 lg:p-6">
                 <section className="bg-white shadow-md rounded-lg p-4 flex justify-between items-center">
@@ -679,7 +685,7 @@ const GMHome = () => {
                     </div>
                 </section>
 
-                <div className="flex overflow-x-auto space-x-2">
+                <div className="flex overflow-x-auto space-x-2 pb-2">
                     {groundData.map((ground, index) => (
                         <div
                             key={index}
@@ -693,25 +699,71 @@ const GMHome = () => {
                                 <span>{ground.venue}</span>
                                 <span>{ground.location}</span>
                             </div>
+                            <br/>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 p-4 lg:px-6">
-                <aside className="w-full md:w-1/4 bg-gray-100 p-4 rounded-lg">
+            <div className="flex flex-col md:flex-row gap-4 p-2 lg:px-2 h-[calc(100vh-12rem)]">
+                <aside className="hidden lg:block w-full md:w-1/4 bg-gray-100 p-4 rounded-lg">
                     <nav>
-                        {Object.keys(refs).map((key, idx) => (
-                            <div key={idx} onClick={() => refs[key].current.scrollIntoView({ behavior: "smooth" })}
-                                className="p-3 cursor-pointer hover:bg-white">
-                                {key.replace("Ref", "").replace(/([A-Z])/g, " $1")}
-                            </div>
-                        ))}
+                        {/* <div
+                            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            All Sections
+                        </div> */}
+                        <div
+                            onClick={() => document.getElementById("ground-details").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Ground Details
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("promotions").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Promotions
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("schedule-maintenance").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Schedule for Maintenance
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("ground-images").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Ground Images
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("manage-price").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Manage Price
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("amenities").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Amenities
+                        </div>
+                        <div
+                            onClick={() => document.getElementById("ground-rules").scrollIntoView({ behavior: "smooth" })}
+                            className="p-3 cursor-pointer hover:bg-white"
+                        >
+                            Ground Rules & Info
+                        </div>
                     </nav>
                 </aside>
 
-                <div className="flex flex-col w-full md:w-3/4 space-y-4">
-                    <section className="bg-white p-4 rounded-lg shadow-lg">
+
+
+                <main className="flex-1 overflow-y-auto p-4 h-full space-y-4">
+                    {/* Ground Details and Form - Entire section scrolls as part of main */}
+                    <section id="ground-details" className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">Ground Details</h3>
                             {!isEditing ? (
@@ -790,8 +842,9 @@ const GMHome = () => {
                             )}
                         </div>
                     </section>
-
-                    <section ref={refs.promotionsRef} className="bg-white p-4 rounded-lg shadow-lg">
+                    
+                    {/* Promotions */}
+                    <section id="promotions" ref={refs.promotionsRef} className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">Promotions</h3>
                             <button onClick={() => openModal()} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md">
@@ -820,7 +873,8 @@ const GMHome = () => {
                         </div>
                     </section>
 
-                    <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
+                    {/* Schedule for Maintenance */}
+                    <section id="schedule-maintenance" className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="px-4 py-2 bg-white rounded-lg flex flex-col gap-4">
                             <div className="flex justify-between items-center">
                                 <h4 className="text-base font-semibold text-gray-800">Schedule for Maintenance</h4>
@@ -855,8 +909,9 @@ const GMHome = () => {
                             </div>
                         </div>
                     </section>
+
                     {/* Images Section */}
-                    <section ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
+                    <section id="ground-images" ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="px-4 py-2 flex flex-col gap-4">
                             <div className="flex justify-between items-center">
                                 <h4 className="text-base font-semibold text-gray-800">Ground Images</h4>
@@ -890,7 +945,8 @@ const GMHome = () => {
                         </div>
                     </section>
 
-                    <section ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">
+                    {/* Manage Price */}
+                    <section id="manage-price" ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between mb-4">
                             <span className="text-base font-semibold">Manage Price</span>
                             <button onClick={() => openPricingModal()} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md">
@@ -933,8 +989,9 @@ const GMHome = () => {
                             </div>
                         ))}
                     </section>
-
-                    <section className="bg-white p-4 rounded-lg shadow-lg">
+                    
+                    {/* Amenities */}
+                    <section id="amenities" className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center">
                             <h3 className="text-base font-semibold text-gray-800">Amenities</h3>
                             <button onClick={openEditModal} className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
@@ -955,7 +1012,7 @@ const GMHome = () => {
                     </section>
 
                     {/* Ground Rules & Info Section */}
-                    <section ref={refs.rulesRef} className="bg-white p-4 rounded-lg shadow-lg">
+                    <section id="ground-rules" ref={refs.rulesRef} className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">About Venue</h3>
                             <button onClick={openGroundRulesModal} className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
@@ -967,8 +1024,8 @@ const GMHome = () => {
                             <p className="mt-2"><strong>Goals:</strong><br />{selectedGround.groundRulesInfo.goals}</p>
                         </div>
                     </section>
-                    
-                </div>
+                </main>
+
             </div>
 
             <PromotionModal

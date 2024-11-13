@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'; 
-import Navbar from '../../Navbar';
+import Navbar from '../Navbar';
 import Footer from '../../footer';
 import Sidebar from '../Sidebar';
 import GroundSidebarForm from './GroundSidebarForm'; 

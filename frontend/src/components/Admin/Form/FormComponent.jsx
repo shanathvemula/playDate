@@ -15,7 +15,7 @@ import { FaUpload, FaFileAlt, FaImages, FaTrashAlt } from 'react-icons/fa';
 import { styled } from '@mui/material/styles';
 import Resizer from 'react-image-file-resizer';
 import { ClientInfo, ClientInfoPost } from '../../../api/service';
-import Navbar from '../../Navbar';
+import Navbar from '../Navbar';
 import Footer from '../../footer';
 import Sidebar from '../Sidebar';
 import './FormComponent.css'; // Optional for your custom styles
