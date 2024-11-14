@@ -34,6 +34,9 @@ const initialGroundData = [
         description: "1234ft x 672ft wide cricket ground optimal for all your gameplays...",
         location: "Chennai",
         venue: "YDSC Ground",
+        type: "Grass",
+        capacity: 11,
+        contact_number: "+91 9908564639",
         images: [
             { id: 1, url: "https://via.placeholder.com/200x200", title: "Cricket Ground Overview" },
             { id: 2, url: "https://via.placeholder.com/200x200", title: "Pavilion Area" },
@@ -74,6 +77,9 @@ const initialGroundData = [
         description: "1200ft x 800ft wide football ground suitable for professional games...",
         location: "Mumbai",
         venue: "City Stadium",
+        type: "wood",
+        capacity: 22,
+        contact_number: "+91 9014050007",
         images: [
             { id: 2, url: "https://via.placeholder.com/200x200", title: "Football Ground Overview" },
         ],
@@ -348,6 +354,14 @@ const GMHome = () => {
         description: groundData[selectedIndex].description,
         venue: groundData[selectedIndex].venue,
         location: groundData[selectedIndex].location,
+        type: groundData[selectedIndex].type,
+        capacity: groundData[selectedIndex].capacity,
+        contact_number: groundData[selectedIndex].contact_number,
+    });
+    const [isEditingProfitCenter, setIsEditingProfitCenter] = useState(false);
+    const [editableProfitCenter, setEditableProfitCenter] = useState({
+        groundName: groundData[selectedIndex].ground_name,
+        location: groundData[selectedIndex].location,
     });
 
     const selectedGround = groundData[selectedIndex];
@@ -369,6 +383,9 @@ const GMHome = () => {
             description: selectedGround.description,
             venue: selectedGround.venue,
             location: selectedGround.location,
+            type: selectedGround.type,
+            capacity: selectedGround.capacity,
+            contact_number: selectedGround.contact_number,
         });
     }, [selectedGround]);
 
@@ -401,8 +418,51 @@ const GMHome = () => {
             description: selectedGround.description,
             venue: selectedGround.venue,
             location: selectedGround.location,
+            type: selectedGround.type,
+            capacity: selectedGround.capacity,
+            contact_number: selectedGround.contact_number,
         });
         setIsEditing(false);
+    };
+
+
+    React.useEffect(() => {
+        setEditableProfitCenter({
+            groundName: selectedGround.ground_name,
+            location: selectedGround.location,
+        });
+    }, [selectedGround]);
+
+    const handleProfitCenterEditClick = () => {
+        setIsEditingProfitCenter(true);
+    };
+
+    const handleProfitCenterInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditableProfitCenter((prevDetails) => ({
+            ...prevDetails,
+            [name]: value,
+        }));
+    };
+
+    const handleProfitCenterSave = () => {
+        const updatedGroundData = [...groundData];
+        updatedGroundData[selectedIndex] = {
+            ...updatedGroundData[selectedIndex],
+            ground_name: editableProfitCenter.groundName,
+            location: editableProfitCenter.location,
+        };
+        setGroundData(updatedGroundData);
+        setIsEditingProfitCenter(false);
+    };
+
+    const handleProfitCenterCancel = () => {
+        // Reset editable details to current ground data if canceled
+        setEditableProfitCenter({
+            groundName: selectedGround.ground_name,
+            location: selectedGround.location,
+        });
+        setIsEditingProfitCenter(false);
     };
 
     const openModal = (promotion = {}, index = null) => {
@@ -762,7 +822,65 @@ const GMHome = () => {
 
 
                 <main className="flex-1 overflow-y-auto p-4 h-full space-y-4">
-                    {/* Ground Details and Form - Entire section scrolls as part of main */}
+                    {/* Profit Center */}
+                    <section className="bg-white p-4 rounded-lg shadow-lg">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-neutral-600 text-base font-semibold leading-loose">Profit Center</h2>
+                        {!isEditingProfitCenter ? (
+                            <button onClick={handleProfitCenterEditClick} className="flex items-center gap-1 text-gray-500 hover:text-gray-700">
+                                <FiEdit className="text-blue-600" /> Edit
+                            </button>
+                        ) : (
+                            <div>
+                                <button onClick={handleProfitCenterSave} className="px-4 py-1.5 bg-blue-600 text-white rounded shadow-md mr-2">
+                                    Save
+                                </button>
+                                <button onClick={handleProfitCenterCancel} className="px-4 py-1.5 bg-gray-400 text-white rounded shadow-md">
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        {/* Ground Name */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-gray-700 text-base font-normal leading-snug">Ground Name</label>
+                            {isEditingProfitCenter ? (
+                                <input
+                                    name="groundName"
+                                    value={selectedGround.ground_name}
+                                    onChange={handleProfitCenterInputChange}
+                                    className="w-full px-4 py-3 border rounded-lg mt-1"
+                                />
+                            ) : (
+                                <div className="p-2 bg-gray-50 rounded-md border">
+                                    {selectedGround.ground_name}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Location */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-gray-700 text-base font-normal leading-snug">Location</label>
+                            {isEditingProfitCenter ? (
+                                <input
+                                    name="location"
+                                    value={selectedGround.location}
+                                    onChange={handleProfitCenterInputChange}
+                                    className="w-full px-4 py-3 border rounded-lg mt-1"
+                                />
+                            ) : (
+                                <div className="p-2 bg-gray-50 rounded-md border">
+                                    {selectedGround.location}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    </section>
+                    
+                    {/* Ground Details */}
+
                     <section id="ground-details" className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">Ground Details</h3>
@@ -772,19 +890,15 @@ const GMHome = () => {
                                 </button>
                             ) : (
                                 <div>
-                                    <button onClick={handleDetailsSave} className="px-4 py-1.5 bg-blue-600 text-white rounded shadow-md mr-2">
-                                        Save
-                                    </button>
-                                    <button onClick={handleDetailsCancel} className="px-4 py-1.5 bg-gray-400 text-white rounded shadow-md">
-                                        Cancel
-                                    </button>
+                                    <button onClick={handleDetailsSave} className="px-4 py-1.5 bg-blue-600 text-white rounded shadow-md mr-2">Save</button>
+                                    <button onClick={handleDetailsCancel} className="px-4 py-1.5 bg-gray-400 text-white rounded shadow-md">Cancel</button>
                                 </div>
                             )}
                         </div>
-                        
-                        {/* Game */}
+
+                        {/* Venue Name */}
                         <div className="mb-2">
-                            <label className="text-gray-600">Game:</label>
+                            <label className="text-gray-600">Venue Name</label>
                             {isEditing ? (
                                 <input
                                     name="name"
@@ -796,10 +910,45 @@ const GMHome = () => {
                                 <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.name}</div>
                             )}
                         </div>
-                        
+
+                        {/* Ground Type and Capacity - Side by Side */}
+                        <div className="flex gap-4 mb-2">
+                            {/* Ground Type */}
+                            <div className="flex-1">
+                                <label className="text-gray-600">Ground Type</label>
+                                {isEditing ? (
+                                    <input
+                                        name="type"
+                                        value={editableDetails.type}
+                                        onChange={handleDetailsInputChange}
+                                        className="w-full p-2 border rounded mt-1"
+                                    />
+                                ) : (
+                                    <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.type}</div>
+                                )}
+                            </div>
+
+                            {/* Capacity */}
+                            <div className="flex-1">
+                                <label className="text-gray-600">Capacity</label>
+                                {isEditing ? (
+                                    <input
+                                        type="number"
+                                        name="capacity"
+                                        value={editableDetails.capacity}
+                                        onChange={handleDetailsInputChange}
+                                        className="w-full p-2 border rounded mt-1"
+                                        min={2}
+                                    />
+                                ) : (
+                                    <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.capacity}</div>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Ground Description */}
                         <div className="mb-2">
-                            <label className="text-gray-600">Ground Description:</label>
+                            <label className="text-gray-600">Ground Description</label>
                             {isEditing ? (
                                 <textarea
                                     name="description"
@@ -811,37 +960,25 @@ const GMHome = () => {
                                 <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.description}</div>
                             )}
                         </div>
-                        
-                        {/* Venue Name */}
+
+                        {/* Contact Number */}
                         <div className="mb-2">
-                            <label className="text-gray-600">Venue Name:</label>
+                            <label className="text-gray-600">Contact Number</label>
                             {isEditing ? (
                                 <input
-                                    name="venue"
-                                    value={editableDetails.venue}
+                                    type="tel"
+                                    name="contact_number"
+                                    value={editableDetails.contact_number}
                                     onChange={handleDetailsInputChange}
+                                    placeholder="Enter phone number"
                                     className="w-full p-2 border rounded mt-1"
                                 />
                             ) : (
-                                <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.venue}</div>
-                            )}
-                        </div>
-                        
-                        {/* Location */}
-                        <div className="mb-2">
-                            <label className="text-gray-600">Location:</label>
-                            {isEditing ? (
-                                <input
-                                    name="location"
-                                    value={editableDetails.location}
-                                    onChange={handleDetailsInputChange}
-                                    className="w-full p-2 border rounded mt-1"
-                                />
-                            ) : (
-                                <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.location}</div>
+                                <div className="p-2 bg-gray-50 rounded-md border">{selectedGround.contact_number}</div>
                             )}
                         </div>
                     </section>
+
                     
                     {/* Promotions */}
                     <section id="promotions" ref={refs.promotionsRef} className="bg-white p-4 rounded-lg shadow-lg">

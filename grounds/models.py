@@ -88,3 +88,16 @@ class GroundManagement(models.Model):
 
     def __str__(self):
         return self.GroundName + ' ' + self.VenueName + ' ' + self.Location
+
+
+def GenGroundIds():
+    ground = Ground.objects.all().order_by('id').last()
+    if not ground:
+        return "GRD" + '0000001'
+    return 'GRD' + str(int(ground.id[4:]) + 1).zfill(7)
+
+class Ground(models.Model):
+    id = models.CharField(max_length=50, primary_key=True, default=GenGroundIds)
+    ground_name = models.CharField(max_length=500, unique=False)
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True, null=True)
