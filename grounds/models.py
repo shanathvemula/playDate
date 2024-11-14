@@ -99,5 +99,20 @@ def GenGroundIds():
 class Ground(models.Model):
     id = models.CharField(max_length=50, primary_key=True, default=GenGroundIds)
     ground_name = models.CharField(max_length=500, unique=False)
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250) # game name like cricket, football and etc
     description = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=500, blank=True, null=True)
+    venue = models.CharField(max_length=500, blank=True, null=True) # address of the ground
+    type = models.CharField(max_length=250) # surface type
+    capacity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    contact_number =  models.CharField(max_length=250, blank=True, null=True)
+    images = models.JSONField(default=dict, blank=True, null=True)
+    promotions = models.JSONField(default=dict, blank=True, null=True)
+    maintenanceSchedule = models.JSONField(default=dict, blank=True, null=True)
+    pricing = models.JSONField(default=dict, blank=True, null=True)
+    amenities = models.JSONField(default=list, blank=True, null=True)
+    groundRulesInfo = models.JSONField(default=dict, blank=True, null=True)
+
+    class Meta:
+        unique_together = ['ground_name', 'name', 'venue', 'location']
+        db_table = 'ground'
