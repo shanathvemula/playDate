@@ -91,12 +91,12 @@ class GroundManagement(models.Model):
 
 
 def GenGroundIds():
-    ground = Ground.objects.all().order_by('id').last()
+    ground = GroundNew.objects.all().order_by('id').last()
     if not ground:
         return "GRD" + '0000001'
     return 'GRD' + str(int(ground.id[4:]) + 1).zfill(7)
 
-class Ground(models.Model):
+class GroundNew(models.Model):
     id = models.CharField(max_length=50, primary_key=True, default=GenGroundIds)
     ground_name = models.CharField(max_length=500, unique=False)
     name = models.CharField(max_length=250) # game name like cricket, football and etc
@@ -112,7 +112,9 @@ class Ground(models.Model):
     pricing = models.JSONField(default=dict, blank=True, null=True)
     amenities = models.JSONField(default=list, blank=True, null=True)
     groundRulesInfo = models.JSONField(default=dict, blank=True, null=True)
+    Created = models.DateTimeField(default=timezone.now)
+    CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['ground_name', 'name', 'venue', 'location']
-        db_table = 'ground'
+        db_table = 'ground_new'

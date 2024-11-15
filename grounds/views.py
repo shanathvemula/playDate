@@ -8,7 +8,7 @@ from rest_framework.renderers import JSONRenderer
 
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 
@@ -16,7 +16,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
-from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth # , ArenaSerializer
+from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth, GroundNewSerializer, GroundNew # , ArenaSerializer
 
 from django.core.files.storage import default_storage
 
@@ -210,6 +210,98 @@ class GroundManagementCRUD(APIView):
         try:
             id = request.GET.get('id')
             ground = GroundManagement.objects.get(id__exact=id)
+            ground.delete()
+            return HttpResponse(JSONRenderer().render({"message": "Deleted Successfully"}),
+                                content_type='application/json',
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            # raise e
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
+class GroundCRUD(APIView):
+    permission_classes = [DjangoModelPermissions, IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = GroundNew.objects.all().order_by('-Created')
+    serializer_class = GroundNewSerializer
+
+    @extend_schema(parameters=[
+        OpenApiParameter(name='id', description='Enter Ground Id', type=int),
+        OpenApiParameter(name='user_id', description='Enter User Id', type=int),
+    ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
+    def get(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id', None)
+            CreatedBy = request.GET.get('user_id', None)
+            if id:
+                ground = GroundNew.objects.get(id=id)
+                return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground).data))
+            elif CreatedBy:
+                ground = GroundNew.objects.filter(CreatedBy=CreatedBy)
+                return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
+            else:
+                print("request.user.id", request.user.id)
+                ground = GroundNew.objects.filter(CreatedBy=request.user.id)
+                return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
+                # return HttpResponse(JSONRenderer().render({"Error": "Enter valid id or user id"}), content_type='application/json',
+                #                     status=status.HTTP_400_BAD_REQUEST)
+        except Grounds.DoesNotExist:
+            return HttpResponse(JSONRenderer().render({"Error": "Provide valid Ground name"}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        request=GroundNewSerializer, summary="Adding Ground",
+        description="This endpoint helps to create a Ground")
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            serializer = GroundNewSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        request=GroundNewSerializer, summary="Update Ground", description=f"* Updating Ground details.\n"
+                                                                                 f"* This endpoint helps to updating "
+                                                                                 f"Ground. \n "
+                                                                                 f"* Provide the fields to what are need "
+                                                                                 f"to update with name. \n"
+                                                                                 f"* name is required field"
+                                                                                 "* Send is_active as false for "
+                                                                                 f"deleting user. \n"
+    )
+    def put(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            ground = GroundNew.objects.get(id__exact=data['id'])
+            serializer = GroundNewSerializer(ground, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            # OpenApiParameter(name='username', description="Enter Username", type=str),
+            OpenApiParameter(name='id', description="Enter Id"),
+        ], summary="Delete Ground", description=f"* This endpoint helps to deleting user.\n"
+    )
+    def delete(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            ground = GroundNew.objects.get(id__exact=id)
             ground.delete()
             return HttpResponse(JSONRenderer().render({"message": "Deleted Successfully"}),
                                 content_type='application/json',
