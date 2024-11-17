@@ -13,6 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken
 
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
@@ -241,7 +242,8 @@ class GroundCRUD(APIView):
                 ground = GroundNew.objects.filter(CreatedBy=CreatedBy)
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
             else:
-                print("request.user.id", request.user.id)
+                # access_token = AccessToken(request.headers.get('Authorization').split(' ')[1])
+                # print("Ground", access_token.payload['user_id'])
                 ground = GroundNew.objects.filter(CreatedBy=request.user.id)
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
                 # return HttpResponse(JSONRenderer().render({"Error": "Enter valid id or user id"}), content_type='application/json',
