@@ -6,8 +6,8 @@ import { PiAppWindow } from "react-icons/pi";
 import Password from "antd/es/input/Password";
 
 // Define base URL
-// const baseURL = 'http://157.173.195.249:8000'; 
-const baseURL = '/api'
+const baseURL = 'http://157.173.195.249:8000'; 
+// const baseURL = '/api'
 
 // Create axios instance
 const apiClient = axios.create({
