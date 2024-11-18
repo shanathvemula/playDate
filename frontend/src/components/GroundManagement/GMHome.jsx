@@ -6,6 +6,7 @@ import { FiEdit } from "react-icons/fi";
 import { MdDelete, MdClose } from "react-icons/md";
 import { GroundNewGET } from "../../api/service";
 import NewGroundForm from "./NewGroundForm";
+import Loader from "../Loader/Loader";
 
 
 const daysOptions = [
@@ -30,18 +31,18 @@ const allAmenities = [
     "Seating Area",
 ];
 
-const Loader = () => (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 bg-opacity-80 z-50">
-        <div className="flex flex-col items-center">
-            <img
-                src="http://157.173.195.249:8000/media/logo/Play_primary.svg" // Replace with your loading image path
-                alt="Loading..."
-                className="w-24 h-24"
-            />
-            <p className="mt-2 text-lg font-medium text-gray-600 dark:text-gray-300">Loading, please wait...</p>
-        </div>
-    </div>
-);
+// const Loader = () => (
+//     <div className="fixed inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 bg-opacity-80 z-50">
+//         <div className="flex flex-col items-center">
+//             <img
+//                 src="http://157.173.195.249:8000/media/logo/Play_primary.svg" // Replace with your loading image path
+//                 alt="Loading..."
+//                 className="w-16 h-16"
+//             />
+//             <p className="mt-2 text-lg font-medium text-gray-600 dark:text-gray-300">Loading, please wait...</p>
+//         </div>
+//     </div>
+// );
 
 const PromotionModal = ({ isOpen, closeModal, promotionData, handlePromotionChange, handleImageUpload, handleSavePromotion }) => (
     <Modal
