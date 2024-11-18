@@ -6,8 +6,8 @@ import { PiAppWindow } from "react-icons/pi";
 import Password from "antd/es/input/Password";
 
 // Define base URL
-const baseURL = 'http://157.173.195.249:8000';
-// const baseURL = '/api'
+// const baseURL = 'http://157.173.195.249:8000'; 
+const baseURL = '/api'
 
 // Create axios instance
 const apiClient = axios.create({
@@ -222,6 +222,17 @@ export const ClientInfoPost = async (formData) => {
         return { open: true, message: 'Failed to submit the form.', severity: 'error' };
     }
 };
+
+export const GroundNewGET = async () => {
+    try {
+        const response = await apiClient.get('/Grounds/ground_new/');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching ground data:", error);
+        return []; // Or return an empty array `[]` if your UI expects an array
+    }
+}
+
 
 // Optional multipart API setup for multimedia files
 const multipartAPIClient = axios.create({

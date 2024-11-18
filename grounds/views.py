@@ -233,6 +233,7 @@ class GroundCRUD(APIView):
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
         try:
+            print('Getting Ground Information')
             id = request.GET.get('id', None)
             CreatedBy = request.GET.get('user_id', None)
             if id:
@@ -242,9 +243,10 @@ class GroundCRUD(APIView):
                 ground = GroundNew.objects.filter(CreatedBy=CreatedBy)
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
             else:
-                # access_token = AccessToken(request.headers.get('Authorization').split(' ')[1])
+                access_token = AccessToken(request.headers.get('Authorization').split(' ')[1])
                 # print("Ground", access_token.payload['user_id'])
-                ground = GroundNew.objects.filter(CreatedBy=request.user.id)
+                ground = GroundNew.objects.filter(CreatedBy=access_token.payload['user_id'])
+                # ground = GroundNew.objects.filter(CreatedBy=request.user.id)
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
                 # return HttpResponse(JSONRenderer().render({"Error": "Enter valid id or user id"}), content_type='application/json',
                 #                     status=status.HTTP_400_BAD_REQUEST)
@@ -261,6 +263,7 @@ class GroundCRUD(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
+            data['CreatedBy'] = request.user.id
             serializer = GroundNewSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
