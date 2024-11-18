@@ -3,6 +3,7 @@ from grounds.consumers import GroundConsumer, GroundManagementConsumer, GroundNe
 
 ground_websocket_urlpatterns = [
     re_path(r"^grounds", GroundConsumer.as_asgi()),
+    re_path(r"^groundnew", GroundNewConsumer.as_asgi()),
     re_path(r"^ground", GroundManagementConsumer.as_asgi()),
-    re_path(r"^groundNew", GroundNewConsumer.as_asgi())
+
 ]
