@@ -112,6 +112,7 @@ class GroundNew(models.Model):
     pricing = models.JSONField(default=dict, blank=True, null=True)
     amenities = models.JSONField(default=list, blank=True, null=True)
     groundRulesInfo = models.JSONField(default=dict, blank=True, null=True)
+    availability_status = models.CharField(max_length=250, default="Available")
     Created = models.DateTimeField(default=timezone.now)
     CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
 
