@@ -233,6 +233,36 @@ export const GroundNewGET = async () => {
     }
 }
 
+export const GroundNewPOST = async (formData) =>{
+    try {
+        const response = await apiClient.post('/Grounds/ground_new/', formData);
+        openNotificationWithIcon('success', 'Ground Created', 'Ground created successfully');
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to create ground');
+    }
+}
+
+export const GroundNewUpdate = async (data) => {
+    try {
+        const response = await apiClient.put('/Grounds/ground_new/', data);
+        openNotificationWithIcon('success', 'Ground Updated', 'Ground updated successfully');
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to update ground');
+    }
+};
+
+
+export const GroundNewDelete = async (id) => {
+    try {
+        const response = await apiClient.delete(`/Grounds/ground_new/?id=${id}`);
+        openNotificationWithIcon('success', 'Ground Deleted', 'Ground deleted successfully');
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to delete ground');
+    }
+};
 
 // Optional multipart API setup for multimedia files
 const multipartAPIClient = axios.create({

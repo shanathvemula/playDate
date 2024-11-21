@@ -128,8 +128,8 @@ class GroundNewConsumer(GenericAsyncAPIConsumer):
         """
         Sends the initial data to the WebSocket client.
         """
-        initial_data = await self.fetch_initial_data()
+        # initial_data = await self.fetch_initial_data()
         await self.send_json({
             'action': 'initial',
-            'data': initial_data
+            'data': []
         })

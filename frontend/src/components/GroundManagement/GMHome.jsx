@@ -4,7 +4,7 @@ import GMNavbar from "./GMNavbar";
 import Select from "react-select";
 import { FiEdit } from "react-icons/fi";
 import { MdDelete, MdClose } from "react-icons/md";
-import { GroundNewGET } from "../../api/service";
+import { GroundNewGET, GroundNewPOST, GroundNewUpdate, GroundNewDelete } from "../../api/service";
 import NewGroundForm from "./NewGroundForm";
 
 
@@ -419,6 +419,7 @@ const GMHome = () => {
     const [groundRulesData, setGroundRulesData] = useState({dimensions: "", goals: ""});
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [webSocketLoading, setWebSocketLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editableDetails, setEditableDetails] = useState(() => {
         const initialGround = groundData[selectedIndex] || {}; // Fallback to empty object if no ground is selected
@@ -457,6 +458,72 @@ const GMHome = () => {
         fetchInitialGroundData();
     }, []);
 
+    let ws;
+
+    useEffect(() => {
+        setIsLoading(true);
+        setWebSocketLoading(true);
+    
+        ws = new WebSocket('ws://localhost:8000/groundnew'); // 'ws://157.173.195.249:8000/groundnew'
+    
+        ws.onopen = () => {
+          console.log('Connected to WebSocket server');
+          setWebSocketLoading(false);
+        };
+    
+        ws.onmessage = (event) => {
+          setIsLoading(true);
+          try {
+            const message = JSON.parse(event.data);
+            handleWebSocketAction(message);
+          } catch (error) {
+            console.error('Error parsing WebSocket data', error);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+    
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setWebSocketLoading(false);
+        };
+    
+        return () => {
+          ws.close();
+        };
+    }, []);
+
+    const handleWebSocketAction = (message) => {
+        console.log("WebSocket Action:", message.action);
+        
+        switch (message.action) {
+            case "create":
+                // Add new ground data to the list
+                setGroundData((prevGroundData) => [...prevGroundData, message.data]);
+                break;
+    
+            case "update":
+                // Update an existing ground data by matching the id
+                setGroundData((prevGroundData) =>
+                    prevGroundData.map((ground) =>
+                        ground.id === message.data.id ? { ...ground, ...message.data } : ground
+                    )
+                );
+                break;
+    
+            case "delete":
+                // Remove ground data based on the id
+                setGroundData((prevGroundData) =>
+                    prevGroundData.filter((ground) => ground.id !== message.data.id)
+                );
+                break;
+    
+            default:
+                console.warn("Unhandled WebSocket action:", message.action);
+        }
+    };
+    
+
     const selectedGround = groundData[selectedIndex];
 
 
@@ -486,30 +553,52 @@ const GMHome = () => {
         setNewGroundDetails((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSaveNewGround = () => {
-        const updatedGroundData = [...groundData, { ...newGroundDetails }];
-        setGroundData(updatedGroundData);
-        setIsAddingNewGround(false);
-        setNewGroundDetails({
-            ground_name: "",
-            name: "",
-            description: "",
-            location: "",
-            venue: "",
-            type: "",
-            capacity: 0,
-            contact_number: "",
-            images: [],
-            promotions: [],
-            maintenanceSchedule: [],
-            pricing: [],
-            amenities: [],
-            groundRulesInfo: {
-                dimensions: "",
-                goals: "",
-            },
-        });
+    const handleSaveNewGround = async () => {
+        try {
+            // Send the new ground details to the API
+            const response = await GroundNewPOST(newGroundDetails);
+    
+            // Ensure the response contains data
+            if (response?.status === 200 || response?.status === 201) {
+                const responseData = response.data; // Access response data properly
+                
+                // Update the ground data locally only after successful API response
+                const updatedGroundData = [...groundData, { ...responseData }];
+                setGroundData(updatedGroundData);
+    
+                // Close the form and reset the fields
+                setIsAddingNewGround(false);
+                setNewGroundDetails({
+                    ground_name: "",
+                    name: "",
+                    description: "",
+                    location: "",
+                    venue: "",
+                    type: "",
+                    capacity: 0,
+                    contact_number: "",
+                    images: [],
+                    promotions: [],
+                    maintenanceSchedule: [],
+                    pricing: [],
+                    amenities: [],
+                    groundRulesInfo: {
+                        dimensions: "",
+                        goals: "",
+                    },
+                });
+    
+                console.log("New ground saved successfully:", responseData);
+            } else {
+                console.error("Failed to save the new ground:", response);
+                alert("Failed to save the new ground. Please try again.");
+            }
+        } catch (error) {
+            console.error("An error occurred while saving the new ground:", error.message || error);
+            alert("An unexpected error occurred. Please try again later.");
+        }
     };
+    
 
     const handleCancelNewGround = () => {
         setIsAddingNewGround(false);
@@ -895,6 +984,23 @@ const GMHome = () => {
         closeGroundRulesModal();
     };
 
+    const handleDeleteGround = async (index) => {
+        const removedGround = groundData[index]; // Capture the ground being removed
+        console.log("Removed Ground Data:", removedGround.id); // Log the removed ground data
+        setIsLoading(true)
+        const response = await GroundNewDelete(removedGround.id);
+        if (response?.status === 200 || response?.status === 204) {
+            setIsLoading(false)
+            // Update the local ground data only if the API call is successful
+            const updatedGroundData = groundData.filter((_, i) => i !== index); // Remove the selected ground
+            setGroundData(updatedGroundData); // Update state
+            console.log("Updated Ground Data:", updatedGroundData); // Log updated data
+        } else {
+            console.log("Failed to delete ground from API:", response);
+            // window.location.reload()
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-gray-900">
             {/* min-h-screen flex flex-col bg-gray-100 */}
@@ -931,19 +1037,30 @@ const GMHome = () => {
                                 setSelectedIndex(index);
                                 setIsAddingNewGround(false);
                             }}
-                            className={`h-[114px] w-[280px] sm:w-[350px] md:w-[409px] p-4 rounded-lg shadow-md flex-shrink-0 cursor-pointer transition-all duration-200 
+                            className={`relative h-[114px] w-[280px] sm:w-[350px] md:w-[409px] p-4 rounded-lg shadow-md flex-shrink-0 cursor-pointer transition-all duration-200 
                                 ${selectedIndex === index ? "bg-white border-2 border-blue-600" : "bg-neutral-100 hover:bg-gray-100"}`}
                         >
+                            {/* Delete Button */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevent triggering card click
+                                    handleDeleteGround(index);
+                                }}
+                                className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                            >
+                                <MdDelete size={16} className="text-red-600"/>
+                            </button>
+
                             <h3 className="text-xl font-semibold text-gray-800">{ground.name}</h3>
                             <p className="text-sm text-gray-600 truncate">{ground.description}</p>
                             <div className="flex justify-between text-sm text-gray-600 mt-2">
                                 <span>{ground.venue}</span>
                                 <span>{ground.location}</span>
                             </div>
-                            <br/>
                         </div>
                     ))}
                 </div>
+
                 {/* )} */}
             </div>
             
