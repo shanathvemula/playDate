@@ -600,7 +600,10 @@ const GMHome = () => {
             ...editableDetails,
         };
         setIsLoading(true);
-        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
+        const response = await GroundNewUpdate({ 
+            id: updatedGroundData[selectedIndex].id, 
+            ...editableDetails
+        })
         setGroundData(updatedGroundData);
         setIsEditing(false);
     };
@@ -647,9 +650,12 @@ const GMHome = () => {
             ground_name: editableProfitCenter.groundName,
             location: editableProfitCenter.location,
         };
-        console.log("updatedGroundData", updatedGroundData[selectedIndex])
         setIsLoading(true)
-        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id, 
+            ground_name: editableProfitCenter.groundName,
+            location: editableProfitCenter.location,
+        })
         setIsLoading(false)
         setGroundData(updatedGroundData);
         setIsEditingProfitCenter(false);
@@ -707,7 +713,10 @@ const GMHome = () => {
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = { ...selectedGround, promotions: updatedPromotions };
         setIsLoading(true);
-        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
+        const response = await GroundNewUpdate({ 
+            id: updatedGroundData[selectedIndex].id,
+            promotions: updatedPromotions 
+        });
         setGroundData(updatedGroundData);
         setIsLoading(false);
         closeModal();
@@ -721,7 +730,10 @@ const GMHome = () => {
         const updatedGround = { ...selectedGround, promotions: updatedPromotions };
     
         try {
-            await GroundNewUpdate(updatedGround);
+            await GroundNewUpdate({ 
+                id: selectedGround.id,
+                promotions: updatedPromotions 
+            });
             setGroundData(groundData.map(ground =>
                 ground.id === selectedGround.id ? updatedGround : ground
             ));
@@ -755,7 +767,7 @@ const GMHome = () => {
         setScheduleData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSaveSchedule = () => {
+    const handleSaveSchedule = async () => {
         const updatedSchedules = [...selectedGround.maintenanceSchedule];
         if (scheduleData.isEditing) {
             updatedSchedules[scheduleData.editIndex] = {
@@ -772,15 +784,28 @@ const GMHome = () => {
         }
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = { ...selectedGround, maintenanceSchedule: updatedSchedules };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id, 
+            maintenanceSchedule: updatedSchedules
+        })
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closeScheduleModal();
     };
 
-    const handleDeleteSchedule = (index) => {
+    const handleDeleteSchedule = async (index) => {
         const updatedSchedules = [...selectedGround.maintenanceSchedule];
         updatedSchedules.splice(index, 1);
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = { ...selectedGround, maintenanceSchedule: updatedSchedules };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id,
+            maintenanceSchedule: updatedSchedules 
+        })
+        setGroundData(updatedGroundData);
+        setIsLoading(false);
         setGroundData(updatedGroundData);
     };
 
@@ -811,7 +836,7 @@ const GMHome = () => {
     };
     
     
-    const handleSaveImage = () => {
+    const handleSaveImage = async () => {
         const updatedImages = [...selectedGround.images];
         if (imageData.isEditing) {
             updatedImages[imageData.editIndex] = { ...imageData };
@@ -819,17 +844,29 @@ const GMHome = () => {
             updatedImages.push({ id: Date.now(), ...imageData });
         }
         const updatedGroundData = [...groundData];
-        updatedGroundData[selectedIndex] = { ...selectedGround, images: updatedImages };  
+        updatedGroundData[selectedIndex] = { ...selectedGround, images: updatedImages };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id,
+            images: updatedImages
+        })
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closeImageModal();
     };
     
-    const handleDeleteImage = (index) => {
+    const handleDeleteImage = async (index) => {
         const updatedImages = [...selectedGround.images];
         updatedImages.splice(index, 1);
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = { ...selectedGround, images: updatedImages };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id,
+            images: updatedImages
+        })
         setGroundData(updatedGroundData);
+        setIsLoading(false);
     };
     
     const openPricingModal = (pricingEntry = {}, timeIndex = null, pricingIndex = null) => {
@@ -855,7 +892,7 @@ const GMHome = () => {
         setPricingData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSavePricing = () => {
+    const handleSavePricing = async () => {
         const updatedGroundData = [...groundData];
         const currentPricing = [...selectedGround.pricing];
 
@@ -880,18 +917,30 @@ const GMHome = () => {
             ...selectedGround,
             pricing: currentPricing,
         };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id,
+            pricing: currentPricing
+        })
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closePricingModal();
     };
 
-    const handleDeletePricingEntry = (pricingIndex) => {
+    const handleDeletePricingEntry = async (pricingIndex) => {
         const updatedGroundData = [...groundData];
         const updatedPricing = selectedGround.pricing.filter((_, index) => index !== pricingIndex);
         updatedGroundData[selectedIndex] = { ...selectedGround, pricing: updatedPricing };
+        setIsLoading(true);
+        const response = await GroundNewUpdate({
+            id: updatedGroundData[selectedIndex].id,
+            pricing: updatedPricing
+        })
         setGroundData(updatedGroundData);
+        setIsLoading(false);
     };
 
-    const handleDeleteTimeSlot = (pricingIndex, timeIndex) => {
+    const handleDeleteTimeSlot = async (pricingIndex, timeIndex) => {
         const updatedGroundData = [...groundData];
         const updatedPricingEntry = { ...selectedGround.pricing[pricingIndex] };
         updatedPricingEntry.times = updatedPricingEntry.times.filter((_, index) => index !== timeIndex);
@@ -903,7 +952,13 @@ const GMHome = () => {
             const updatedPricing = [...selectedGround.pricing];
             updatedPricing[pricingIndex] = updatedPricingEntry;
             updatedGroundData[selectedIndex] = { ...selectedGround, pricing: updatedPricing };
+            setIsLoading(true);
+            const response = await GroundNewUpdate({
+                id: updatedGroundData[selectedIndex].id,
+                pricing: updatedPricing
+            })
             setGroundData(updatedGroundData);
+            setIsLoading(false);
         }
     };
     
@@ -923,13 +978,16 @@ const GMHome = () => {
         );
     };
 
-    const saveAmenities = () => {
+    const saveAmenities = async () => {
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = {
             ...selectedGround,
             amenities: selectedAmenities,
         };
+        setIsLoading(true);
+        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closeEditModal();
     };
 
@@ -950,10 +1008,13 @@ const GMHome = () => {
         setGroundRulesData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex].groundRulesInfo = { ...groundRulesData };
+        setIsLoading(true);
+        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closeGroundRulesModal();
     };
 
@@ -1305,42 +1366,49 @@ const GMHome = () => {
                                 Create Promotion
                             </button>
                         </div>
-                        <div className="flex gap-4 flex-wrap">
-                            {selectedGround.promotions.map((promotion, index) => (
-                                <div key={index} className="relative h-28 w-68 p-2 bg-gray-100 rounded shadow-md">
-                                    <div className="flex items-start gap-2">
-                                        <img className="w-24 h-24 rounded" src={promotion.image} alt={promotion.title} />
-                                        <div className="absolute top-2 right-2 flex gap-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Prevents the modal from opening
-                                                    openModal(promotion, index);
-                                                }}
-                                                className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                            >
-                                                <FiEdit size={16} className="text-blue-600" />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation(); // Prevents the modal from opening
-                                                    handleDeletePromotion(index);
-                                                }}
-                                                className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                            >
-                                                <MdDelete size={16} className="text-red-600" />
-                                            </button>
-                                        </div>
-                                        <div className="flex flex-col justify-between">
-                                            <br/>
-                                            <span className="font-medium text-gray-800">{promotion.title}</span>
-                                            <span className="text-sm text-gray-600">{`${promotion.discount}% off`}</span>
-                                            <span className="text-sm text-gray-500">{promotion.validity}</span>
+                        {selectedGround.promotions && selectedGround.promotions.length > 0 ? (
+                            <div className="flex gap-4 flex-wrap">
+                                {selectedGround.promotions.map((promotion, index) => (
+                                    <div key={index} className="relative h-28 w-68 p-2 bg-gray-100 rounded shadow-md">
+                                        <div className="flex items-start gap-2">
+                                            <img className="w-24 h-24 rounded" src={promotion.image} alt={promotion.title} />
+                                            <div className="absolute top-2 right-2 flex gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevents the modal from opening
+                                                        openModal(promotion, index);
+                                                    }}
+                                                    className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                                >
+                                                    <FiEdit size={16} className="text-blue-600" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevents the modal from opening
+                                                        handleDeletePromotion(index);
+                                                    }}
+                                                    className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                                >
+                                                    <MdDelete size={16} className="text-red-600" />
+                                                </button>
+                                            </div>
+                                            <div className="flex flex-col justify-between">
+                                                <br/>
+                                                <span className="font-medium text-gray-800">{promotion.title}</span>
+                                                <span className="text-sm text-gray-600">{`${promotion.discount}% off`}</span>
+                                                <span className="text-sm text-gray-500">{promotion.validity}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-gray-500 mt-2">
+                                No promotions available. Click 'Create Promotion' to add new ones.
+                            </div>
+                        )}
                     </section>
+
 
 
                     {/* Schedule for Maintenance */}
@@ -1353,32 +1421,39 @@ const GMHome = () => {
                                 </button>
                             </div>
                             
-                            <div className="flex flex-row gap-4">
-                                {selectedGround.maintenanceSchedule.map((schedule, index) => (
-                                    <div key={index} className="relative w-full p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-600">
-                                        <button
-                                            onClick={() => openScheduleModal(schedule, index)}
-                                            className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                        >
-                                            <FiEdit size={16} className="text-blue-600" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteSchedule(index)}
-                                            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                        >
-                                            <MdDelete size={16} className="text-red-600" />
-                                        </button>
-                                        <span className="text-xs font-semibold text-gray-800">
-                                            {schedule.days.map(day => daysOptions.find(option => option.value === day)?.label).join(", ")}
-                                        </span>
-                                        <p className="text-xs font-normal text-gray-600">
-                                            {schedule.startTime} - {schedule.endTime}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
+                            {selectedGround.maintenanceSchedule && selectedGround.maintenanceSchedule.length > 0 ? (
+                                <div className="flex flex-row gap-4">
+                                    {selectedGround.maintenanceSchedule.map((schedule, index) => (
+                                        <div key={index} className="relative w-full p-3 bg-yellow-100 rounded-lg border-l-4 border-yellow-600">
+                                            <button
+                                                onClick={() => openScheduleModal(schedule, index)}
+                                                className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <FiEdit size={16} className="text-blue-600" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteSchedule(index)}
+                                                className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <MdDelete size={16} className="text-red-600" />
+                                            </button>
+                                            <span className="text-xs font-semibold text-gray-800">
+                                                {schedule.days.map(day => daysOptions.find(option => option.value === day)?.label).join(", ")}
+                                            </span>
+                                            <p className="text-xs font-normal text-gray-600">
+                                                {schedule.startTime} - {schedule.endTime}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-gray-500 mt-2">
+                                    No maintenance schedules available.
+                                </div>
+                            )}
                         </div>
                     </section>
+
 
                     {/* Images Section */}
                     <section id="ground-images" ref={refs.imagesRef} className="bg-white p-4 rounded-lg shadow-lg">
@@ -1389,31 +1464,38 @@ const GMHome = () => {
                                     Upload Image
                                 </button>
                             </div>
-                            <div className="flex flex-wrap gap-4">
-                                {selectedGround.images.map((image, index) => (
-                                    <div
-                                        key={image.id}
-                                        className="relative w-32 h-40 p-2 bg-gray-100 rounded-lg shadow-md overflow-hidden"
-                                    >
-                                        <button
-                                            onClick={() => openImageModal(image, index)}
-                                            className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                            {selectedGround.images && selectedGround.images.length > 0 ? (
+                                <div className="flex flex-wrap gap-4">
+                                    {selectedGround.images.map((image, index) => (
+                                        <div
+                                            key={image.id}
+                                            className="relative w-32 h-40 p-2 bg-gray-100 rounded-lg shadow-md overflow-hidden"
                                         >
-                                            <FiEdit size={16} className="text-blue-600" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteImage(index)}
-                                            className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                        >
-                                            <MdDelete size={16} className="text-red-600" />
-                                        </button>
-                                        <img src={image.url} alt={image.title} className="w-full h-28 object-cover rounded" />
-                                        <p className="text-xs text-center mt-2 text-gray-800 truncate">{image.title}</p>
-                                    </div>
-                                ))}
-                            </div>
+                                            <button
+                                                onClick={() => openImageModal(image, index)}
+                                                className="absolute top-2 right-8 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <FiEdit size={16} className="text-blue-600" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteImage(index)}
+                                                className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <MdDelete size={16} className="text-red-600" />
+                                            </button>
+                                            <img src={image.url} alt={image.title} className="w-full h-28 object-cover rounded" />
+                                            <p className="text-xs text-center mt-2 text-gray-800 truncate">{image.title}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-gray-500 mt-2">
+                                    No images available
+                                </div>
+                            )}
                         </div>
                     </section>
+
 
                     {/* Manage Price */}
                     <section id="manage-price" ref={refs.pricingRef} className="bg-white p-4 rounded-lg shadow-lg">
@@ -1423,42 +1505,51 @@ const GMHome = () => {
                                 Create Pricing
                             </button>
                         </div>
-                        {selectedGround.pricing.map((pricingEntry, pricingIndex) => (
-                            <div key={pricingIndex} className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-gray-800">
-                                        {pricingEntry.days.map(day => daysOptions.find(option => option.value === day)?.label).join(", ")}
-                                    </span>
-                                    <button
-                                        onClick={() => handleDeletePricingEntry(pricingIndex)}
-                                        className="text-red-600 hover:text-red-800"
-                                    >
-                                        <MdDelete />
-                                    </button>
-                                </div>
-                                {pricingEntry.times.map((timeEntry, timeIndex) => (
-                                    <div key={timeIndex} className="flex justify-between text-sm mt-2">
-                                        <span>{`${timeEntry.startTime} - ${timeEntry.endTime}`}</span>
-                                        <span>{`INR ${timeEntry.price.toFixed(2)}/hour`}</span>
-                                        <div className="flex items-center gap-2">
+                        {selectedGround.pricing && selectedGround.pricing.length > 0 ? (
+                            <div className="flex flex-col gap-4">
+                                {selectedGround.pricing.map((pricingEntry, pricingIndex) => (
+                                    <div key={pricingIndex} className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div className="flex justify-between">
+                                            <span className="text-sm font-medium text-gray-800">
+                                                {pricingEntry.days.map(day => daysOptions.find(option => option.value === day)?.label).join(", ")}
+                                            </span>
                                             <button
-                                                onClick={() => openPricingModal(pricingEntry, timeIndex, pricingIndex)}
-                                                className="text-blue-600"
-                                            >
-                                                <FiEdit />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteTimeSlot(pricingIndex, timeIndex)}
+                                                onClick={() => handleDeletePricingEntry(pricingIndex)}
                                                 className="text-red-600 hover:text-red-800"
                                             >
                                                 <MdDelete />
                                             </button>
                                         </div>
+                                        {pricingEntry.times.map((timeEntry, timeIndex) => (
+                                            <div key={timeIndex} className="flex justify-between text-sm mt-2">
+                                                <span>{`${timeEntry.startTime} - ${timeEntry.endTime}`}</span>
+                                                <span>{`INR ${timeEntry.price.toFixed(2)}/hour`}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => openPricingModal(pricingEntry, timeIndex, pricingIndex)}
+                                                        className="text-blue-600"
+                                                    >
+                                                        <FiEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteTimeSlot(pricingIndex, timeIndex)}
+                                                        className="text-red-600 hover:text-red-800"
+                                                    >
+                                                        <MdDelete />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 ))}
                             </div>
-                        ))}
+                        ) : (
+                            <div className="text-gray-500 mt-2">
+                                No pricing details available.
+                            </div>
+                        )}
                     </section>
+
                     
                     {/* Amenities */}
                     <section id="amenities" className="bg-white p-4 rounded-lg shadow-lg">
@@ -1469,17 +1560,24 @@ const GMHome = () => {
                                 <span>Edit</span>
                             </button>
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                            {selectedGround.amenities.map((amenity, index) => (
-                                <div
-                                    key={index}
-                                    className="px-3 py-1 bg-gray-200 rounded-md text-sm font-medium text-gray-600"
-                                >
-                                    {amenity}
-                                </div>
-                            ))}
-                        </div>
+                        {selectedGround.amenities && selectedGround.amenities.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {selectedGround.amenities.map((amenity, index) => (
+                                    <div
+                                        key={index}
+                                        className="px-3 py-1 bg-gray-200 rounded-md text-sm font-medium text-gray-600"
+                                    >
+                                        {amenity}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="mt-3 text-gray-500">
+                                No amenities available.
+                            </div>
+                        )}
                     </section>
+
 
                     {/* Ground Rules & Info Section */}
                     <section id="ground-rules" ref={refs.rulesRef} className="bg-white p-4 rounded-lg shadow-lg">
