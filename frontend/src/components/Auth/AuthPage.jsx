@@ -4,11 +4,11 @@ import SignIn from "./SignIn";
 import ForgetPassword from "./ForgetPassword";
 import CarouselComponent from "../CarouselComponent";
 import { getUserToken } from "../../api/service";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
     const navigate = useNavigate();
-    
+
     const imageSrcList = [
         'https://via.placeholder.com/1920x1080.png?text=Slide+1',
         'https://via.placeholder.com/1920x1080.png?text=Slide+2',
@@ -16,46 +16,63 @@ const AuthPage = () => {
         'https://via.placeholder.com/1920x1080.png?text=Slide+4',
     ];
 
-    const [currentForm, setCurrentForm] = useState('signIn'); // Default form
+    const [currentForm, setCurrentForm] = useState("signIn"); // Default form
+    const [isLoading, setIsLoading] = useState(true); // Loading state for session check
 
-    // Function to determine navigation based on user type after login
+    // Navigate based on user type
     const handleUserNavigation = async () => {
         try {
             const user = await getUserToken();
-            if (user.user_type === 'Admin') {
-                navigate('/Admin/User');
-            } else if (user.user_type === 'Ground Manager') {
-                navigate('/home');
+            if (user.user_type === "Admin") {
+                navigate("/Admin/User");
+            } else if (user.user_type === "Ground Manager") {
+                navigate("/home");
             }
         } catch (error) {
             console.error("Failed to retrieve user token:", error);
         }
     };
 
-    // useEffect to check for user session on component load
+    // Check for user session on initial load
     useEffect(() => {
         const checkUserSession = async () => {
-            const token = localStorage.getItem('token'); // Check if token exists
+            const token = localStorage.getItem("token");
             if (token) {
-                await handleUserNavigation(); // If token exists, verify user session
+                await handleUserNavigation();
             }
+            setIsLoading(false); // Stop loading after session check
         };
         checkUserSession();
-    }, []); // Empty dependency array to run only on initial load
+    }, []);
 
-    // Function to switch forms
+    // Render appropriate form based on `currentForm`
     const renderForm = () => {
         switch (currentForm) {
-            case 'signIn':
-                return <SignIn setCurrentForm={setCurrentForm} onLoginSuccess={handleUserNavigation} />;
-            case 'signUp':
+            case "signIn":
+                return (
+                    <SignIn
+                        setCurrentForm={setCurrentForm}
+                        onLoginSuccess={handleUserNavigation}
+                    />
+                );
+            case "signUp":
                 return <SignUp setCurrentForm={setCurrentForm} />;
-            case 'forgetPassword':
+            case "forgetPassword":
                 return <ForgetPassword setCurrentForm={setCurrentForm} />;
             default:
-                return <SignIn setCurrentForm={setCurrentForm} onLoginSuccess={handleUserNavigation} />;
+                return (
+                    <SignIn
+                        setCurrentForm={setCurrentForm}
+                        onLoginSuccess={handleUserNavigation}
+                    />
+                );
         }
     };
+
+    // Show a loading spinner while checking session
+    if (isLoading) {
+        return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
+    }
 
     return (
         <div className="min-h-screen flex justify-center items-center bg-gray-100">
@@ -66,7 +83,7 @@ const AuthPage = () => {
                         {renderForm()}
                     </div>
 
-                    {/* Carousel section for larger screens */}
+                    {/* Carousel section */}
                     <div className="hidden md:block w-full md:w-2/3 bg-gray-100 flex justify-center items-center p-2">
                         <CarouselComponent images={imageSrcList} />
                     </div>

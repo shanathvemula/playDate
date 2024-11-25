@@ -9,6 +9,13 @@ import NewGroundForm from "./NewGroundForm";
 import Loader from "../Loader/Loader";
 
 
+const availabilityOptions = [
+    { value: "Available", label: "Available" },
+    { value: "unavailable", label: "Unavailable" },
+    { value: "maintenance", label: "Under Maintenance" },
+    { value: "closed", label: "Closed" },
+];
+
 const daysOptions = [
     { value: "Mon", label: "Monday" },
     { value: "Tue", label: "Tuesday" },
@@ -73,6 +80,7 @@ const PromotionModal = ({ isOpen, closeModal, promotionData, handlePromotionChan
             onChange={handlePromotionChange}
             placeholder="Discount"
             className="mb-2 p-2 border rounded w-full"
+            type="number"
         />
         <input
             name="validity"
@@ -344,7 +352,7 @@ const GMHome = () => {
     const [isGroundRulesModalOpen, setIsGroundRulesModalOpen] = useState(false);
     const [groundRulesData, setGroundRulesData] = useState({dimensions: "", goals: ""});
     const [isEditing, setIsEditing] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [webSocketLoading, setWebSocketLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editableDetails, setEditableDetails] = useState(() => {
@@ -357,6 +365,7 @@ const GMHome = () => {
             type: initialGround.type || "",
             capacity: initialGround.capacity || 0,
             contact_number: initialGround.contact_number || "",
+            availability_status: initialGround.availability_status || ""
         };
     });
     
@@ -368,21 +377,22 @@ const GMHome = () => {
 
     useEffect(() => {
         const fetchInitialGroundData = async () => {
+            setIsLoading(true);  // Start loading
             try {
-                setIsLoading(true); // Start loading
-                const data = await GroundNewGET(); // API call
-                setGroundData(data || []); // Update state with fetched data or fallback to an empty array
-                setSelectedIndex(0); // Reset the selected index after fetching data
+                const data = await GroundNewGET();  // API call
+                setGroundData(data || []);  // Update state with fetched data or fallback to an empty array
+                setSelectedIndex(0);  // Reset the selected index after fetching data
             } catch (err) {
                 console.error("Failed to fetch ground data:", err);
                 setError("Failed to load ground data. Please try again.");
             } finally {
-                setIsLoading(false); // Stop loading
+                setIsLoading(false);  // Stop loading regardless of the result
             }
         };
-
+    
         fetchInitialGroundData();
     }, []);
+    
 
     let ws;
 
@@ -398,16 +408,17 @@ const GMHome = () => {
         };
     
         ws.onmessage = (event) => {
-          setIsLoading(true);
-          try {
-            const message = JSON.parse(event.data);
-            handleWebSocketAction(message);
-          } catch (error) {
-            console.error('Error parsing WebSocket data', error);
-          } finally {
-            setIsLoading(false);
-          }
+            setIsLoading(true);
+            try {
+                const message = JSON.parse(event.data);
+                handleWebSocketAction(message);
+            } catch (error) {
+                console.error('Error parsing WebSocket data', error);
+            } finally {
+                setIsLoading(false);  // Hide loader after processing the message
+            }
         };
+        
     
         ws.onerror = (error) => {
           console.error('WebSocket error:', error);
@@ -463,6 +474,7 @@ const GMHome = () => {
         type: "",
         capacity: 0,
         contact_number: "",
+        availability_status: "",
         images: [],
         promotions: [],
         maintenanceSchedule: [],
@@ -503,6 +515,7 @@ const GMHome = () => {
                     type: "",
                     capacity: 0,
                     contact_number: "",
+                    availability_status: "",
                     images: [],
                     promotions: [],
                     maintenanceSchedule: [],
@@ -517,11 +530,9 @@ const GMHome = () => {
                 console.log("New ground saved successfully:", responseData);
             } else {
                 console.error("Failed to save the new ground:", response);
-                alert("Failed to save the new ground. Please try again.");
             }
         } catch (error) {
             console.error("An error occurred while saving the new ground:", error.message || error);
-            alert("An unexpected error occurred. Please try again later.");
         }
     };
     
@@ -552,6 +563,7 @@ const GMHome = () => {
                 type: selectedGround.type || "",
                 capacity: selectedGround.capacity || 0,
                 contact_number: selectedGround.contact_number || "",
+                availability_status: selectedGround.availability_status || "",
             });
         } else {
             // Fallback to default values if selectedGround is undefined
@@ -563,6 +575,7 @@ const GMHome = () => {
                 type: "",
                 capacity: 0,
                 contact_number: "",
+                availability_status: "",
             });
         }
     }, [selectedGround]);
@@ -580,12 +593,14 @@ const GMHome = () => {
         }));
     };
 
-    const handleDetailsSave = () => {
+    const handleDetailsSave = async () => {
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = {
             ...updatedGroundData[selectedIndex],
             ...editableDetails,
         };
+        setIsLoading(true);
+        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
         setGroundData(updatedGroundData);
         setIsEditing(false);
     };
@@ -600,6 +615,7 @@ const GMHome = () => {
             type: selectedGround.type,
             capacity: selectedGround.capacity,
             contact_number: selectedGround.contact_number,
+            availability_status: selectedGround.availability_status,
         });
         setIsEditing(false);
     };
@@ -624,13 +640,17 @@ const GMHome = () => {
         }));
     };
 
-    const handleProfitCenterSave = () => {
+    const handleProfitCenterSave = async () => {
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = {
             ...updatedGroundData[selectedIndex],
             ground_name: editableProfitCenter.groundName,
             location: editableProfitCenter.location,
         };
+        console.log("updatedGroundData", updatedGroundData[selectedIndex])
+        setIsLoading(true)
+        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
+        setIsLoading(false)
         setGroundData(updatedGroundData);
         setIsEditingProfitCenter(false);
     };
@@ -659,22 +679,25 @@ const GMHome = () => {
         setPromotionData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = () => {
-                if (reader.result.startsWith("data:image/")) {
-                    setImageData((prev) => ({ ...prev, url: reader.result }));
-                } else {
-                    alert("Please upload a valid image file.");
-                }
+                const base64String = reader.result;
+                handlePromotionChange({
+                    target: {
+                        name: 'image',
+                        value: base64String
+                    }
+                });
             };
             reader.readAsDataURL(file);
         }
     };
+    
 
-    const handleSavePromotion = () => {
+    const handleSavePromotion = async () => {
         const updatedPromotions = [...selectedGround.promotions];
         if (promotionData.isEditing) {
             updatedPromotions[promotionData.editIndex] = { ...promotionData };
@@ -683,10 +706,34 @@ const GMHome = () => {
         }
         const updatedGroundData = [...groundData];
         updatedGroundData[selectedIndex] = { ...selectedGround, promotions: updatedPromotions };
+        setIsLoading(true);
+        const response = await GroundNewUpdate(updatedGroundData[selectedIndex])
         setGroundData(updatedGroundData);
+        setIsLoading(false);
         closeModal();
     };
 
+    const handleDeletePromotion = async (index) => {
+        if (!window.confirm("Are you sure you want to delete this promotion?")) return;
+    
+        setIsLoading(true);
+        const updatedPromotions = selectedGround.promotions.filter((_, idx) => idx !== index);
+        const updatedGround = { ...selectedGround, promotions: updatedPromotions };
+    
+        try {
+            await GroundNewUpdate(updatedGround);
+            setGroundData(groundData.map(ground =>
+                ground.id === selectedGround.id ? updatedGround : ground
+            ));
+        } catch (error) {
+            console.error('Failed to delete the promotion:', error);
+            alert("Could not delete the promotion: " + error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };    
+    
+    
     const openScheduleModal = (schedule = {}, index = null) => {
         setScheduleData({
             days: schedule.days || [],
@@ -981,7 +1028,7 @@ const GMHome = () => {
                             <h3 className="text-xl font-semibold text-gray-800">{ground.name}</h3>
                             <p className="text-sm text-gray-600 truncate">{ground.description}</p>
                             <div className="flex justify-between text-sm text-gray-600 mt-2">
-                                <span>{ground.venue}</span>
+                                <span>{ground.ground_name}</span>
                                 <span>{ground.location}</span>
                             </div>
                         </div>
@@ -1095,13 +1142,13 @@ const GMHome = () => {
                             {isEditingProfitCenter ? (
                                 <input
                                     name="groundName"
-                                    value={selectedGround.ground_name}
+                                    value={editableProfitCenter.groundName}
                                     onChange={handleProfitCenterInputChange}
                                     className="w-full px-4 py-3 border rounded-lg mt-1"
                                 />
                             ) : (
                                 <div className="p-2 bg-gray-50 rounded-md border">
-                                    {selectedGround.ground_name}
+                                    {editableProfitCenter.groundName}
                                 </div>
                             )}
                         </div>
@@ -1112,13 +1159,13 @@ const GMHome = () => {
                             {isEditingProfitCenter ? (
                                 <input
                                     name="location"
-                                    value={selectedGround.location}
+                                    value={editableProfitCenter.location}
                                     onChange={handleProfitCenterInputChange}
                                     className="w-full px-4 py-3 border rounded-lg mt-1"
                                 />
                             ) : (
                                 <div className="p-2 bg-gray-50 rounded-md border">
-                                    {selectedGround.location}
+                                    {editableProfitCenter.location}
                                 </div>
                             )}
                         </div>
@@ -1192,6 +1239,30 @@ const GMHome = () => {
                             </div>
                         </div>
 
+                        {/* Availability Status */}
+                        <div className="mb-2">
+                        <label className="text-gray-600">Availability Status</label>
+                        {isEditing ? (
+                            <select
+                                name="availability_status"
+                                value={editableDetails.availability_status}
+                                onChange={handleDetailsInputChange}
+                                className="w-full p-2 border rounded mt-1"
+                            >
+                                {availabilityOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div className="p-2 bg-gray-50 rounded-md border">
+                                {availabilityOptions.find(option => option.value === editableDetails.availability_status)?.label || "Not specified"}
+                            </div>
+                        )}
+                    </div>
+
+
                         {/* Ground Description */}
                         <div className="mb-2">
                             <label className="text-gray-600">Ground Description</label>
@@ -1230,24 +1301,39 @@ const GMHome = () => {
                     <section id="promotions" ref={refs.promotionsRef} className="bg-white p-4 rounded-lg shadow-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold">Promotions</h3>
-                            <button onClick={() => openModal()} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md">
+                            <button onClick={() => openModal({}, null)} className="px-4 py-2 bg-blue-600 text-white rounded shadow-md">
                                 Create Promotion
                             </button>
                         </div>
                         <div className="flex gap-4 flex-wrap">
                             {selectedGround.promotions.map((promotion, index) => (
-                                <div key={index} className="relative h-28 w-64 p-2 bg-gray-100 rounded shadow-md">
-                                    <button
-                                        onClick={() => openModal(promotion, index)}
-                                        className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
-                                    >
-                                        <FiEdit size={16} className="text-blue-600" />
-                                    </button>
+                                <div key={index} className="relative h-28 w-68 p-2 bg-gray-100 rounded shadow-md">
                                     <div className="flex items-start gap-2">
                                         <img className="w-24 h-24 rounded" src={promotion.image} alt={promotion.title} />
+                                        <div className="absolute top-2 right-2 flex gap-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Prevents the modal from opening
+                                                    openModal(promotion, index);
+                                                }}
+                                                className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <FiEdit size={16} className="text-blue-600" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Prevents the modal from opening
+                                                    handleDeletePromotion(index);
+                                                }}
+                                                className="bg-white p-1 rounded-full shadow hover:bg-gray-200"
+                                            >
+                                                <MdDelete size={16} className="text-red-600" />
+                                            </button>
+                                        </div>
                                         <div className="flex flex-col justify-between">
+                                            <br/>
                                             <span className="font-medium text-gray-800">{promotion.title}</span>
-                                            <span className="text-sm text-gray-600">{promotion.discount}</span>
+                                            <span className="text-sm text-gray-600">{`${promotion.discount}% off`}</span>
                                             <span className="text-sm text-gray-500">{promotion.validity}</span>
                                         </div>
                                     </div>
@@ -1255,6 +1341,7 @@ const GMHome = () => {
                             ))}
                         </div>
                     </section>
+
 
                     {/* Schedule for Maintenance */}
                     <section id="schedule-maintenance" className="bg-white p-4 rounded-lg shadow-lg">

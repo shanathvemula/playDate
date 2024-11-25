@@ -5,7 +5,7 @@ const Loader = () => (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900 bg-opacity-80 z-50">
         <div className="flex flex-col items-center">
             <img
-                src="http://157.173.195.249:8000/media/logo/Play_primary.svg"
+                src={"http://157.173.195.249:8000/media/logo/Play_primary.svg"}
                 alt="Loading..."
                 className="loader-image w-10 h-10"
             />

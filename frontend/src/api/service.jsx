@@ -18,6 +18,7 @@ const apiClient = axios.create({
 // Centralized error handler
 const handleError = (error, defaultMsg) => {
     const message = error.response?.data?.Error || defaultMsg;
+    console.log("message", message)
     notification.error({ message: 'Error', description: message, placement: 'topRight' });
     return Promise.reject(error);
 };
@@ -164,9 +165,11 @@ export const deleteUser = async (id) => {
 
 export const getUserToken = async () => {
     try {
-        const response = await apiClient.get("/User/signup/");
+        const response = await apiClient.get(baseURL+"/User/signup/");
+        // console.log("response", response.data)
         return response.data;
     } catch (error) {
+        // console.log("error", error)
         return handleError(error, 'Failed to fetch user token');
     }
 };
