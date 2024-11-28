@@ -30,10 +30,10 @@ const NewGroundForm = ({ newGroundDetails, handleInputChange, handleSaveNewGroun
                     className="w-full p-2 border rounded"
                 />
                 <input
-                    name="location"
-                    value={newGroundDetails.location}
+                    name="address"
+                    value={newGroundDetails.address}
                     onChange={handleInputChange}
-                    placeholder="Location"
+                    placeholder="Address"
                     className="w-full p-2 border rounded"
                 />
                 <input
@@ -49,7 +49,8 @@ const NewGroundForm = ({ newGroundDetails, handleInputChange, handleSaveNewGroun
                     onChange={handleInputChange}
                     placeholder="Ground Type (e.g., Grass)"
                     className="w-full p-2 border rounded"
-                />
+                /><br />
+                <label>Capacity</label>
                 <input
                     type="number"
                     name="capacity"

@@ -3,9 +3,10 @@ from enum import unique
 from random import choices
 from tokenize import blank_re
 
-from django.db import models
+# from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.gis.db import models
 
 from datetime import datetime
 
@@ -101,8 +102,8 @@ class GroundNew(models.Model):
     ground_name = models.CharField(max_length=500, unique=False)
     name = models.CharField(max_length=250) # game name like cricket, football and etc
     description = models.TextField(blank=True, null=True)
-    location = models.CharField(max_length=500, blank=True, null=True)
-    venue = models.CharField(max_length=500, blank=True, null=True) # address of the ground
+    address = models.CharField(max_length=500, blank=True, null=True) # address of the ground
+    # venue = models.CharField(max_length=500, blank=True, null=True)
     type = models.CharField(max_length=250) # surface type
     capacity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
     contact_number =  models.CharField(max_length=250, blank=True, null=True)
@@ -115,7 +116,9 @@ class GroundNew(models.Model):
     availability_status = models.CharField(max_length=250, default="Available")
     Created = models.DateTimeField(default=timezone.now)
     CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
+    location = models.PointField(blank=True, null=True, srid=4326)
+
 
     class Meta:
-        unique_together = ['ground_name', 'name', 'venue', 'location']
+        unique_together = ['ground_name', 'name', 'address', 'location']
         db_table = 'ground_new'

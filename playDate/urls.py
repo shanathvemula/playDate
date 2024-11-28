@@ -44,4 +44,5 @@ urlpatterns = [
 
     path('User/', include('app.urls')),
     path('Grounds/', include('grounds.urls')),
+    path('payments/', include('payments.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

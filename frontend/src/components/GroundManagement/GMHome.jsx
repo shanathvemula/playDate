@@ -361,7 +361,7 @@ const GMHome = () => {
             name: initialGround.name || "",
             description: initialGround.description || "",
             venue: initialGround.venue || "",
-            location: initialGround.location || "",
+            address: initialGround.address || "",
             type: initialGround.type || "",
             capacity: initialGround.capacity || 0,
             contact_number: initialGround.contact_number || "",
@@ -372,7 +372,7 @@ const GMHome = () => {
     const [isEditingProfitCenter, setIsEditingProfitCenter] = useState(false);
     const [editableProfitCenter, setEditableProfitCenter] = useState({
         groundName: groundData[selectedIndex]?.ground_name || '',
-        location: groundData[selectedIndex]?.location || '',
+        address: groundData[selectedIndex]?.address || '',
     });
 
     useEffect(() => {
@@ -469,7 +469,7 @@ const GMHome = () => {
         ground_name: "",
         name: "",
         description: "",
-        location: "",
+        address: "",
         venue: "",
         type: "",
         capacity: 0,
@@ -510,7 +510,7 @@ const GMHome = () => {
                     ground_name: "",
                     name: "",
                     description: "",
-                    location: "",
+                    address: "",
                     venue: "",
                     type: "",
                     capacity: 0,
@@ -559,7 +559,7 @@ const GMHome = () => {
                 name: selectedGround.name || "",
                 description: selectedGround.description || "",
                 venue: selectedGround.venue || "",
-                location: selectedGround.location || "",
+                address: selectedGround.address || "",
                 type: selectedGround.type || "",
                 capacity: selectedGround.capacity || 0,
                 contact_number: selectedGround.contact_number || "",
@@ -571,7 +571,7 @@ const GMHome = () => {
                 name: "",
                 description: "",
                 venue: "",
-                location: "",
+                address: "",
                 type: "",
                 capacity: 0,
                 contact_number: "",
@@ -614,7 +614,7 @@ const GMHome = () => {
             name: selectedGround.name,
             description: selectedGround.description,
             venue: selectedGround.venue,
-            location: selectedGround.location,
+            address: selectedGround.address,
             type: selectedGround.type,
             capacity: selectedGround.capacity,
             contact_number: selectedGround.contact_number,
@@ -627,7 +627,7 @@ const GMHome = () => {
     React.useEffect(() => {
         setEditableProfitCenter({
             groundName: selectedGround?.ground_name || '',
-            location: selectedGround?.location || '',
+            address: selectedGround?.address || '',
         });
     }, [selectedGround]);
 
@@ -648,13 +648,13 @@ const GMHome = () => {
         updatedGroundData[selectedIndex] = {
             ...updatedGroundData[selectedIndex],
             ground_name: editableProfitCenter.groundName,
-            location: editableProfitCenter.location,
+            address: editableProfitCenter.address,
         };
         setIsLoading(true)
         const response = await GroundNewUpdate({
             id: updatedGroundData[selectedIndex].id, 
             ground_name: editableProfitCenter.groundName,
-            location: editableProfitCenter.location,
+            address: editableProfitCenter.address,
         })
         setIsLoading(false)
         setGroundData(updatedGroundData);
@@ -665,7 +665,7 @@ const GMHome = () => {
         // Reset editable details to current ground data if canceled
         setEditableProfitCenter({
             groundName: selectedGround.ground_name,
-            location: selectedGround.location,
+            address: selectedGround.address,
         });
         setIsEditingProfitCenter(false);
     };
@@ -1090,7 +1090,7 @@ const GMHome = () => {
                             <p className="text-sm text-gray-600 truncate">{ground.description}</p>
                             <div className="flex justify-between text-sm text-gray-600 mt-2">
                                 <span>{ground.ground_name}</span>
-                                <span>{ground.location}</span>
+                                <span>{ground.address}</span>
                             </div>
                         </div>
                     ))}
@@ -1214,19 +1214,19 @@ const GMHome = () => {
                             )}
                         </div>
 
-                        {/* Location */}
+                        {/* address */}
                         <div className="flex flex-col gap-2">
-                            <label className="text-gray-600 text-base font-normal leading-snug">Location</label>
+                            <label className="text-gray-600 text-base font-normal leading-snug">Address</label>
                             {isEditingProfitCenter ? (
                                 <input
-                                    name="location"
-                                    value={editableProfitCenter.location}
+                                    name="address"
+                                    value={editableProfitCenter.address}
                                     onChange={handleProfitCenterInputChange}
                                     className="w-full px-4 py-3 border rounded-lg mt-1"
                                 />
                             ) : (
                                 <div className="p-2 bg-gray-50 rounded-md border">
-                                    {editableProfitCenter.location}
+                                    {editableProfitCenter.address}
                                 </div>
                             )}
                         </div>

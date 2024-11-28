@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import AuthPage from "./components/Auth/AuthPage";
 import GMHome from "./components/GroundManagement/GMHome.jsx";
 import EUHome from "./components/EndUser/EUHome";
+import Booking from "./components/EndUser/Booking.jsx";
+import Payment from "./components/EndUser/Payment.jsx";
+import EUHomeNew from "./components/EndUser/EUHomeNew.jsx";
 import PasswordReset from "./components/Auth/PasswordReset";
 import GroundManagement from "./components/Admin/Ground/GroundManagement";
 import UserManagement from "./components/Admin/User/UserManagement";
 import Loading from "./components/Loading"; // Import the Loading component
 import Form from "./components/Admin/Form/Form";
+import { StateProvider } from "./components/EndUser/context/StateContext.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true); // Initialize loading state
@@ -34,35 +38,38 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        {/* Common routes for all users */}
-        <Route path='/' element={<AuthPage />} />
-        <Route path='/passwordReset' element={<PasswordReset />} />
-        
+    <StateProvider>
+      <Router>
+        <Routes>
+          {/* Common routes for all users */}
+          <Route path="/" element={<AuthPage />} />
+          <Route path="/passwordReset" element={<PasswordReset />} />
 
-        {/* Conditionally render Admin routes */}
-        {userType === "Admin" && (
-          <>
-            <Route path="/Admin/Ground" element={<GroundManagement />} />
-            <Route path='/Admin/User' element={<UserManagement />} />
-            <Route path="/Admin/form" element={<Form />} />
-          </>
-        )}
-        {userType === "Ground Manager" && (
-          <>
-             <Route path="/home" element={<GMHome />} />
-          </>
-        )}
-        {userType === "End User" && (
-          <>
-             <Route path="/home" element={<EUHome />} />
-          </>
-        )}
-      </Routes>
-    </Router>
+          {/* Conditionally render Admin routes */}
+          {userType === "Admin" && (
+            <>
+              <Route path="/Admin/Ground" element={<GroundManagement />} />
+              <Route path="/Admin/User" element={<UserManagement />} />
+              <Route path="/Admin/form" element={<Form />} />
+            </>
+          )}
+          {userType === "Ground Manager" && (
+            <>
+              <Route path="/home" element={<GMHome />} />
+            </>
+          )}
+          {userType === "End User" && (
+            <>
+              <Route path="/home" element={<EUHome />} />
+              <Route path="/booking" element={<Booking />} />
+              <Route path="/booking/proceed" element={<Payment />} />
+              {/* <Route path="/home" element={<EUHomeNew />} /> */}
+            </>
+          )}
+        </Routes>
+      </Router>
+    </StateProvider>
   );
 }
-
 
 export default App;
