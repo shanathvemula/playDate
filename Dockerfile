@@ -2,7 +2,9 @@
 FROM python:latest
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1  # Ensures Python output is flushed
+ENV PYTHONUNBUFFERED=1
+
+# Ensures Python output is flushed
 ENV PATH="/root/.local/bin:$PATH"
 
 # Set the working directory
