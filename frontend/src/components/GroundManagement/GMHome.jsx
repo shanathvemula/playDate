@@ -338,6 +338,7 @@ const GroundRulesModal = ({ isOpen, closeModal, groundRulesData, handleInputChan
 
 const GMHome = () => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [location, setLocation] = useState({ latitude: null, longitude: null });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [groundData, setGroundData] = useState([]);
     const [promotionData, setPromotionData] = useState({ title: "", discount: "", validity: "", image: "", isEditing: false, editIndex: null });
@@ -374,6 +375,24 @@ const GMHome = () => {
         groundName: groundData[selectedIndex]?.ground_name || '',
         address: groundData[selectedIndex]?.address || '',
     });
+
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setLocation({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            },
+            (error) => {
+              console.error("Error fetching location:", error);
+            }
+          );
+        } else {
+          console.error("Geolocation is not available in this browser.");
+        }
+      }, []);
 
     useEffect(() => {
         const fetchInitialGroundData = async () => {
@@ -493,6 +512,9 @@ const GMHome = () => {
 
     const handleSaveNewGround = async () => {
         try {
+            newGroundDetails.location = `POINT (${location.latitude} ${location.longitude})`
+            newGroundDetails.availability_status = 'Available'
+            console.log("newGroundDetails", newGroundDetails)
             // Send the new ground details to the API
             const response = await GroundNewPOST(newGroundDetails);
     
@@ -511,6 +533,7 @@ const GMHome = () => {
                     name: "",
                     description: "",
                     address: "",
+                    location: "",
                     venue: "",
                     type: "",
                     capacity: 0,
