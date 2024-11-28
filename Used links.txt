@@ -2,3 +2,8 @@ GeoDjango : For Location : https://www.youtube.com/watch?v=lxYQRl6tFrI
 
 # Install GDAL on windows
     pip install GDAL-3.9.2-cp312-cp312-win_amd64.whl
+
+# Install GDAL on Linux
+   1. sudo apt update
+   2. sudo apt install -y gdal-bin libgdal-dev
+   3. gdalinfo --version  # checking the version of the GDPL
