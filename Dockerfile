@@ -3,37 +3,32 @@ FROM python:latest
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-
-# Ensures Python output is flushed
 ENV PATH="/root/.local/bin:$PATH"
 
-# Set the working directory
+# Set working directory
 WORKDIR /usr/src/app
 
-# Install system dependencies for GDAL and PostgreSQL
+# Install GDAL and PostgreSQL dependencies
 RUN apt-get update && apt-get install -y \
     gdal-bin \
     libgdal-dev \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Set the GDAL library path
+# Set GDAL library path
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
 ENV GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so
 
-# Copy the requirements and environment file
+# Copy and install Python dependencies
 COPY requirements.txt ./
-COPY .env ./
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install psycopg2-binary --no-cache-dir --user
 
-# Copy the rest of the application code
+# Copy project files
 COPY . .
 
-# Expose the port
+# Expose the application's port
 EXPOSE 8000
 
-# Run the Django server
+# Run Django development server
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
