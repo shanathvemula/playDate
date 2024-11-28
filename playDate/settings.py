@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
-GDAL_LIBRARY_PATH = r'C://OSGeo4W//bin//gdal309'
+# GDAL_LIBRARY_PATH = r'C://OSGeo4W//bin//gdal309'
 
 from pathlib import Path
 from datetime import timedelta
