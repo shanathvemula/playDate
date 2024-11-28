@@ -1,1 +1,4 @@
 GeoDjango : For Location : https://www.youtube.com/watch?v=lxYQRl6tFrI
+
+# Install GDAL on windows
+    pip install GDAL-3.9.2-cp312-cp312-win_amd64.whl
