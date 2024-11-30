@@ -4,6 +4,11 @@ from djangochannelsrestframework.permissions import IsAuthenticated
 
 from channels.db import database_sync_to_async
 
+from urllib.parse import parse_qs
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
+
 from grounds.serializers import Grounds, GroundsSerializer, GroundManagementSerializer, GroundManagement, GroundNew, GroundNewSerializer
 
 class GroundConsumer(GenericAsyncAPIConsumer):
@@ -115,12 +120,15 @@ class GroundNewConsumer(GenericAsyncAPIConsumer):
         await super().disconnect(code)
 
     @database_sync_to_async
-    def fetch_initial_data(self):
+    def fetch_initial_data(self, latitude, longitude, radius, **kwargs):
         """
         Fetches initial data from the database.
         """
+        print(latitude, longitude, radius)
+        current_location = Point(float(latitude), float(longitude), srid=4326)
+        print("current_location", (current_location, D(km=float(radius))))
         return GroundNewSerializer(
-            GroundNew.objects.all().order_by('-id'),
+            GroundNew.objects.filter(location__distance_lte=(current_location, D(km=float(radius)))).order_by('-id'),
             many=True
         ).data
 
@@ -128,8 +136,12 @@ class GroundNewConsumer(GenericAsyncAPIConsumer):
         """
         Sends the initial data to the WebSocket client.
         """
-        # initial_data = await self.fetch_initial_data()
-        await self.send_json({
-            'action': 'initial',
-            'data': []
-        })
+        query_params = parse_qs(self.scope['query_string'].decode())
+        latitude  = query_params.get('latitude', None)
+        longitude  = query_params.get('longitude', None)
+        radius = query_params.get('radius', None)
+        if latitude and longitude:
+            initial_data = await self.fetch_initial_data(latitude=latitude[0], longitude= longitude[0], radius=radius[0])
+            await self.send_json({'action': 'initial', 'data': initial_data})
+        else:
+            await self.send_json({'action': 'initial', 'data': []})

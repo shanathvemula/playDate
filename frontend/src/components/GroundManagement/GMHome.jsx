@@ -512,6 +512,7 @@ const GMHome = () => {
 
     const handleSaveNewGround = async () => {
         try {
+            setIsLoading(true);
             newGroundDetails.location = `POINT (${location.latitude} ${location.longitude})`
             newGroundDetails.availability_status = 'Available'
             console.log("newGroundDetails", newGroundDetails)
@@ -554,8 +555,10 @@ const GMHome = () => {
             } else {
                 console.error("Failed to save the new ground:", response);
             }
+            setIsLoading(false);  // Hide loader after processing the response
         } catch (error) {
             console.error("An error occurred while saving the new ground:", error.message || error);
+            setIsLoading(false);  // Hide loader after processing the error
         }
     };
     
@@ -1113,7 +1116,11 @@ const GMHome = () => {
                             <p className="text-sm text-gray-600 truncate">{ground.description}</p>
                             <div className="flex justify-between text-sm text-gray-600 mt-2">
                                 <span>{ground.ground_name}</span>
-                                <span>{ground.address}</span>
+                                <span>
+                                    {ground.address
+                                        ? `${ground.address.substring(0, 30)}${ground.address.length > 30 ? '...' : ''}`
+                                        : 'No address available'}
+                                </span>
                             </div>
                         </div>
                     ))}
