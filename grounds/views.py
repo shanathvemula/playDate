@@ -20,6 +20,8 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from grounds.serializers import Grounds, GroundsSerializer, GroundsSerializerDepth, GroundNewSerializer, GroundNew # , ArenaSerializer
 
 from django.core.files.storage import default_storage
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 
 
 # Create your views here.
@@ -234,9 +236,15 @@ class GroundCRUD(APIView):
     def get(self, request, *args, **kwargs):
         try:
             print('Getting Ground Information')
+            lat = float(request.GET.get('lat', None))
+            lon = float(request.GET.get('lon', None))
+            radius = int(request.GET.get('radius', None))
             id = request.GET.get('id', None)
             CreatedBy = request.GET.get('user_id', None)
-            if id:
+            if lat and lon and radius:
+                ground = GroundNew.objects.filter(location__distance_lte=(Point(lat, lon), D(km=radius))).order_by('Created')
+                return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
+            elif id:
                 ground = GroundNew.objects.get(id=id)
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground).data))
             elif CreatedBy:

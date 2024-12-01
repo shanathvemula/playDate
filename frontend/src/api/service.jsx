@@ -226,9 +226,9 @@ export const ClientInfoPost = async (formData) => {
     }
 };
 
-export const GroundNewGET = async () => {
+export const GroundNewGET = async (queryParams) => {
     try {
-        const response = await apiClient.get('/Grounds/ground_new/');
+        const response = await apiClient.get(`/Grounds/ground_new/${queryParams}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching ground data:", error);

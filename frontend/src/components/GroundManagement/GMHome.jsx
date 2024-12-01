@@ -398,7 +398,7 @@ const GMHome = () => {
         const fetchInitialGroundData = async () => {
             setIsLoading(true);  // Start loading
             try {
-                const data = await GroundNewGET();  // API call
+                const data = await GroundNewGET('');  // API call
                 setGroundData(data || []);  // Update state with fetched data or fallback to an empty array
                 setSelectedIndex(0);  // Reset the selected index after fetching data
             } catch (err) {

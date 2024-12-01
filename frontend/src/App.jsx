@@ -44,6 +44,7 @@ function App() {
           {/* Common routes for all users */}
           <Route path="/" element={<AuthPage />} />
           <Route path="/passwordReset" element={<PasswordReset />} />
+          <Route path="/EUhome" element={<EUHome />} />
 
           {/* Conditionally render Admin routes */}
           {userType === "Admin" && (
@@ -60,7 +61,6 @@ function App() {
           )}
           {userType === "End User" && (
             <>
-              <Route path="/home" element={<EUHome />} />
               <Route path="/booking" element={<Booking />} />
               <Route path="/booking/proceed" element={<Payment />} />
               {/* <Route path="/home" element={<EUHomeNew />} /> */}

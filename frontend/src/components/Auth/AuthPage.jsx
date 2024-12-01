@@ -27,6 +27,9 @@ const AuthPage = () => {
                 navigate("/Admin/User");
             } else if (user.user_type === "Ground Manager") {
                 navigate("/home");
+            } 
+            else if (user.user_type === "End User") {
+                navigate('/EUhome')
             }
         } catch (error) {
             console.error("Failed to retrieve user token:", error);
