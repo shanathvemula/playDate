@@ -1,39 +1,29 @@
-# Step 1: Use an official Node.js image as the base image
-FROM node:18 as build
+# Use an official Node.js runtime as a parent image
+FROM node:18-alpine
 
-# Step 2: Set the working directory inside the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Step 3: Copy package.json and package-lock.json first to leverage Docker cache
+# Copy package.json and package-lock.json (or yarn.lock) to the working directory
 COPY package*.json ./
 
-# Step 4: Install dependencies
+# Install the app dependencies
 RUN npm install
 
-# Step 5: Copy the rest of the application code
+# Copy the rest of the application code
 COPY . .
 
-# Step 6: Build the application for production
+# Build the Vite app for production
 RUN npm run build
 
-# Step 7: Use a lightweight image for serving the static files
-FROM node:18-slim
-
-# Step 8: Install a lightweight HTTP server
+# Install a lightweight HTTP server to serve the static files
 RUN npm install -g serve
 
-# Step 9: Set the working directory inside the container
-WORKDIR /app
-
-# Step 10: Copy the build output from the previous stage
-COPY --from=build /app/dist ./dist
-
-# Step 11: Expose the port for the HTTP server
+# Expose port 5173 for Vite dev server or 3000 for serve
 EXPOSE 3000
 
-# Step 12: Serve the build folder
+# Command to serve the build folder
 CMD ["serve", "-s", "dist", "-l", "3000", "--single"]
-
 
 
 
