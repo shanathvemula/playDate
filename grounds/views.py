@@ -236,13 +236,13 @@ class GroundCRUD(APIView):
     def get(self, request, *args, **kwargs):
         try:
             print('Getting Ground Information')
-            lat = float(request.GET.get('lat', None))
-            lon = float(request.GET.get('lon', None))
-            radius = int(request.GET.get('radius', None))
+            lat = request.GET.get('lat', None)
+            lon = request.GET.get('lon', None)
+            radius = request.GET.get('radius', None)
             id = request.GET.get('id', None)
             CreatedBy = request.GET.get('user_id', None)
             if lat and lon and radius:
-                ground = GroundNew.objects.filter(location__distance_lte=(Point(lat, lon), D(km=radius))).order_by('Created')
+                ground = GroundNew.objects.filter(location__distance_lte=(Point(float(lat), float(lon)), D(km=int(radius)))).order_by('Created')
                 return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground, many=True).data))
             elif id:
                 ground = GroundNew.objects.get(id=id)
