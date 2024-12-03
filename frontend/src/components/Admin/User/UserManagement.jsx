@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Navbar from '../Navbar';
-import Footer from '../../Footer';
+// import Footer from '../../Footer';
 import Sidebar from '../Sidebar';
 import UserSidebarForm from './UserSidebarForm';
 import Skeleton from 'react-loading-skeleton';
@@ -304,7 +304,7 @@ const UserManagement = () => {
         </div>
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
 
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
