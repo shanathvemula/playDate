@@ -7,7 +7,7 @@ import { BookVenue } from "./mock_datas";
 import { AiOutlineExport } from "react-icons/ai";
 import { notification } from "antd";
 import Loader from "../Loader/Loader";
-import Footer from "../Footer";
+// import Footer from "../Footer";
 import { GroundNewGET } from "../../api/service"; // Import the GroundNewGET API function
 
 const EUHome = () => {
@@ -108,7 +108,7 @@ const EUHome = () => {
           )}
         </section>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };
