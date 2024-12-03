@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoShareSocial } from "react-icons/io5";
 import { FaCircleCheck } from "react-icons/fa6";
-import Footer from "../../components/Footer";
+// import Footer from "../../components/Footer";
 import BookingForm from "./BookingForm";
 import { useStateContext } from "./context/StateContext";
 import { useNavigate } from "react-router-dom";
@@ -162,7 +162,7 @@ const Booking = () => {
       </div>
 
       {/* Footer */}
-      {!showModal && <Footer />}
+      {/* {!showModal && <Footer />} */}
     </>
   );
 };
