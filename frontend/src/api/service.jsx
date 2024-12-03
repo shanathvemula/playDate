@@ -6,7 +6,7 @@ import { PiAppWindow } from "react-icons/pi";
 import Password from "antd/es/input/Password";
 
 // Define base URL
-const baseURL = 'http://157.173.195.249:8000';  //157.173.195.249
+const baseURL = 'http://localhost:8000';  //157.173.195.249
 // const baseURL = '/api'
 
 // Create axios instance
@@ -165,7 +165,15 @@ export const deleteUser = async (id) => {
 
 export const getUserToken = async () => {
     try {
-        const response = await apiClient.get(baseURL+"/User/signup/");
+        const token = localStorage.getItem('token');
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await axios.get(baseURL+"/User/signup/", { headers });
         // console.log("response", response.data)
         return response.data;
     } catch (error) {

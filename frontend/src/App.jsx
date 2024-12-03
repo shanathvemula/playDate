@@ -37,16 +37,31 @@ function App() {
     return <Loading />; // Show loading component while loading
   }
 
+  console.log("userType", userType);
+
+
   return (
     <StateProvider>
       <Router>
         <Routes>
           {/* Common routes for all users */}
-          <Route path="/" element={<AuthPage />} />
+          <Route path="/login" element={<AuthPage />} />
           <Route path="/passwordReset" element={<PasswordReset />} />
-          <Route path="/EUhome" element={<EUHome />} />
+          <Route path="/" element={<EUHome />} />
+          <Route path="/booking" element={<Booking />} />
+          <Route path="/booking/proceed" element={<Payment />} />
+          
 
           {/* Conditionally render Admin routes */}
+          {/* {userType === null && (
+            <>
+            <Route path="/" element={<EUHome />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/booking/proceed" element={<Payment />} />
+            </>
+            
+            
+          )} */}
           {userType === "Admin" && (
             <>
               <Route path="/Admin/Ground" element={<GroundManagement />} />

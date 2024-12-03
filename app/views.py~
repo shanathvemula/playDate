@@ -138,7 +138,7 @@ class SignUp(APIView):
     @extend_schema(exclude=True)
     def get(request, *args, **kwargs):
         try:
-            # print(request.headers)
+            print(request.headers)
             if "Authorization" in request.headers:
                 token = request.headers['Authorization'].split(' ')[-1]
                 access_token_obj = AccessToken(token)

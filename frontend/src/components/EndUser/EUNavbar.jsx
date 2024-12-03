@@ -36,7 +36,7 @@ const EUNavbar = () => {
           <FaUser color="white" />
         </div>
         <button
-          className={`bg-[var(--primary)] text-white px-6 py-2 text-sm rounded-full`}
+          className={`bg-blue-600 text-white px-6 py-2 text-sm rounded-full`}
         >
           Login / Signup
         </button>

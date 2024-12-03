@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import Navbar from '../Navbar';
-import Footer from '../../footer';
+import Footer from '../../Footer';
 import Sidebar from '../Sidebar';
 import UserSidebarForm from './UserSidebarForm';
 import Skeleton from 'react-loading-skeleton';

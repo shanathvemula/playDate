@@ -7,6 +7,7 @@ import { BookVenue } from "./mock_datas";
 import { AiOutlineExport } from "react-icons/ai";
 import { notification } from "antd";
 import Loader from "../Loader/Loader";
+import Footer from "../Footer";
 import { GroundNewGET } from "../../api/service"; // Import the GroundNewGET API function
 
 const EUHome = () => {
@@ -20,6 +21,7 @@ const EUHome = () => {
         setLoading(true);
         // Fetch games near the current location
         const response = await GroundNewGET(`?lat=${latitude}&lon=${longitude}&radius=${radius}`);
+        console.log("yarooo",response)
         setGameNear(response); // Update state with fetched data
       } catch (err) {
         setError(err.message);
@@ -64,6 +66,7 @@ const EUHome = () => {
 
   return (
     <>
+      <EUNavbar />
       <header className="home-banner bg-cover text-white h-[80vh] min-h-full text-center flex items-center justify-center">
         <SearchBar />
       </header>
@@ -80,12 +83,14 @@ const EUHome = () => {
           </div>
           <div className="flex items-center gap-6 overflow-x-auto scrollbar scrollbar-thin scrollbar-thumb-primary-bg scrollbar-track-gray-200">
             {BookVenue?.map((game) => (
-              <Card key={game.id} game={game} />
+              // <Card key={game?.id} game={game} />
+              <></>
             ))}
           </div>
         </section>
 
         {/* Game near you */}
+       
         <section className="mt-14">
           <h2 className="text-md font-bold mb-5">Games near you</h2>
           {loading ? (
@@ -94,7 +99,7 @@ const EUHome = () => {
             <p className="text-red-500">{error}</p>
           ) : gameNear?.length > 0 ? (
             <div className="flex items-center gap-6 overflow-x-auto scrollbar scrollbar-thin scrollbar-thumb-primary-bg scrollbar-track-gray-200">
-              {gameNear.map((game) => (
+              {gameNear?.map((game) => (
                 <Card key={game.id} game={game} />
               ))}
             </div>
@@ -103,6 +108,7 @@ const EUHome = () => {
           )}
         </section>
       </main>
+      <Footer />
     </>
   );
 };
