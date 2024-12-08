@@ -16,7 +16,7 @@ import { styled } from '@mui/material/styles';
 import Resizer from 'react-image-file-resizer';
 import { ClientInfo, ClientInfoPost } from '../../../api/service';
 import Navbar from '../Navbar';
-// import Footer from '../../Footer';
+import Footer from '../../Footer';
 import Sidebar from '../Sidebar';
 import './FormComponent.css'; // Optional for your custom styles
 
@@ -356,7 +356,7 @@ const FormComponent = () => {
               </Button>
             </Box>
           </Box>
-          {/* <Footer /> */}
+          <Footer />
         </div>
       </div>
     </div>

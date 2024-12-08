@@ -29,7 +29,7 @@ const AuthPage = () => {
                 navigate("/home");
             } 
             else if (user.user_type === "End User") {
-                navigate('/EUhome')
+                navigate('/')
             }
         } catch (error) {
             console.error("Failed to retrieve user token:", error);

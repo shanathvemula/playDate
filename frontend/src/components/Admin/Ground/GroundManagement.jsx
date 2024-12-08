@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'; 
 import Navbar from '../Navbar';
-// import Footer from '../../Footer';
+import Footer from '../../Footer';
 import Sidebar from '../Sidebar';
 import GroundSidebarForm from './GroundSidebarForm'; 
 import Skeleton from 'react-loading-skeleton';
@@ -268,9 +268,9 @@ const GroundManagement = () => {
       </div>
 
       {/* Footer */}
-      {/* <div className="mt-auto">
+      <div className="mt-auto">
         <Footer />
-      </div> */}
+      </div>
 
       <GroundSidebarForm
         isOpen={isGroundFormOpen}

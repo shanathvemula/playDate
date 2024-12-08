@@ -4,9 +4,18 @@ import { Logo } from "./constant/common";
 import { COLORS } from "./constant/styles";
 import { FaUser } from "react-icons/fa";
 import { useStateContext } from "./context/StateContext";
+import { useNavigate } from "react-router-dom";
 
 const EUNavbar = () => {
   const { tabs, handlerTabs } = useStateContext();
+  const navigate = useNavigate();
+
+  // Check for token in localStorage
+  const token = localStorage.getItem("token");
+
+  const handleLoginSignupClick = () => {
+    navigate("/login"); // Navigate to the '/login' route
+  };
 
   return (
     <nav className="flex sticky top-0 z-50  justify-between items-center flex-wrap bg-white shadow-md ">
@@ -35,11 +44,15 @@ const EUNavbar = () => {
         <div className="p-1 rounded-full w-[35px] h-[35px] border flex items-center justify-center bg-orange-700">
           <FaUser color="white" />
         </div>
-        <button
-          className={`bg-blue-600 text-white px-6 py-2 text-sm rounded-full`}
-        >
-          Login / Signup
-        </button>
+        {/* Conditionally render the Login / Signup button */}
+        {!token && (
+          <button
+            onClick={handleLoginSignupClick}
+            className="bg-blue-600 text-white px-6 py-2 text-sm rounded-full"
+          >
+            Login / Signup
+          </button>
+        )}
       </div>
     </nav>
   );

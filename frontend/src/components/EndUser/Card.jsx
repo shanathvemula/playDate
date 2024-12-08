@@ -10,7 +10,7 @@ const Card = ({ game }) => {
   const navigate = useNavigate();
   const { handlerSelectedGround } = useStateContext();
   const imageUrls = game?.images?.map((image) => image?.url).filter(Boolean) || [];
-  console.log("handlerSelectedGround", imageUrls)
+  console.log("handlerSelectedGround", game.priceRange)
 
   return (
     <div
@@ -43,11 +43,30 @@ const Card = ({ game }) => {
         <h3 className="text-sm font-bold card-title mt-3">{game?.ground_name}</h3>
         <p className="text-xs my-2">{game?.type}</p>
         <div className="block md:flex items-center justify-between">
-          <p className="text-xs my-2">{game?.location.fieldType}</p>
-          <p className="text-xs my-2">{game?.capacity} people</p>
+          {/* Field Type with Tooltip */}
+          <p
+            className="text-xs my-2 truncate"
+            title={game?.description}
+          >
+            {game?.description
+              ? game.description.length > 20
+                ? `${game.description.slice(0, 20)}...`
+                : game.location.fieldType
+              : "Field type not specified"}
+          </p>
+
+          {/* Capacity */}
+          <p className="text-xs my-2">
+            {game?.capacity ? `${game.capacity} people` : "Capacity not available"}
+          </p>
         </div>
+
+
         <div className="block md:flex items-center justify-between">
-          <p className="text-xs my-2 text-gray-500 mt-2">Price: 1000</p>
+          <p className="text-xs my-2 text-gray-500 mt-2">
+              Price: {game.priceRange?.length === 2 ? `${game.priceRange[0]} - ${game.priceRange[1]}` : "N/A"}
+          </p>
+
           <p
             className={`text-xs p-1 px-2 rounded ${game?.availability_status?.toLowerCase() === "today" ||
               game?.availability_status?.toLowerCase() === "available"

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoShareSocial } from "react-icons/io5";
 import { FaCircleCheck } from "react-icons/fa6";
-// import Footer from "../../components/Footer";
+import Footer from "../../components/Footer";
 import BookingForm from "./BookingForm";
 import { useStateContext } from "./context/StateContext";
 import { useNavigate } from "react-router-dom";
@@ -129,25 +129,35 @@ const Booking = () => {
                 </span>
               </div>
 
-              {/* Venue Details */}
-              <div className="mt-3 rounded-md border bg-white p-3">
+              {/* Venue/Ground Details */}
+              <div className=" mt-3 rounded-md border bg-white p-3 max-h-[400px] ">
                 <h3 className="text-sm font-bold mb-2">Venue/Ground Details</h3>
-                <span className="text-sm">{selectGroud?.description}</span>
+                <div className=" mt-3">
+                  <span className="text-sm ">{selectGroud?.description}</span>
+                </div>
+              </div>
+
+              {/* Venue/Ground Details */}
+              <div className=" mt-3 rounded-md border bg-white p-3">
+                <h3 className="text-sm font-bold mb-2">
+                  Where you&apos;ll be playing
+                </h3>
+                <h3 className="text-lg font-bold mb-2">
+                  Gate 3,{selectGroud?.academy}, {selectGroud?.location.area}
+                </h3>
+                <div className=" mt-3">
+                  <img src={selectGroud?.Rectangle} alt="" width={"100%"} />
+                </div>
               </div>
             </div>
           ) : (
-            // Modal View for All Photos
             <div>
-              {selectGroud?.images?.map((image, idx) => (
-                <div key={idx}>
-                  <img
-                    src={getImageSrc(image)}
-                    alt={image.id}
-                    className="w-full rounded"
-                  />
-                </div>
-              ))}
-            </div>
+            {selectGroud?.images?.map((item, idx) => (
+              <div key={idx}>
+                <img src={getImageSrc(item)} alt={selectGroud?.gameName} className="w-full" />
+              </div>
+            ))}
+          </div>
           )}
         </div>
 
@@ -155,14 +165,14 @@ const Booking = () => {
         {!showModal && (
           <div className="col-span-12 lg:col-span-4 xl:col-span-3">
             <div className="sticky top-14 right-2">
-              <BookingForm />
+              <BookingForm groundInfo={selectGroud} />
             </div>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      {/* {!showModal && <Footer />} */}
+      {!showModal && <Footer />}
     </>
   );
 };

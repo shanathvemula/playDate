@@ -6,7 +6,7 @@ import { PiAppWindow } from "react-icons/pi";
 import Password from "antd/es/input/Password";
 
 // Define base URL
-const baseURL = 'http://157.173.195.249:8000';  //157.173.195.249
+const baseURL = 'http://localhost:8000';  //157.173.195.249
 // const baseURL = '/api'
 
 // Create axios instance
@@ -236,7 +236,7 @@ export const ClientInfoPost = async (formData) => {
 
 export const GroundNewGET = async (queryParams) => {
     try {
-        const response = await apiClient.get(`/Grounds/ground_new/${queryParams}`);
+        const response = await apiClient.get(baseURL+`/Grounds/ground_new/${queryParams}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching ground data:", error);
@@ -274,6 +274,25 @@ export const GroundNewDelete = async (id) => {
         return handleError(error, 'Failed to delete ground');
     }
 };
+
+export const Orders = async (data) => {
+    try {
+        const response = await apiClient.post('/payments/orders/', data);
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to create order');
+    }
+}
+
+export const UpdateTrans = async (data) => {
+    try {
+        console.log("/payments/order/", data);
+        const response = await apiClient.put('/payments/order/', data);
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to create order');
+    }
+}
 
 // Optional multipart API setup for multimedia files
 const multipartAPIClient = axios.create({
@@ -320,3 +339,23 @@ multipartAPIClient.interceptors.response.use(
         return handleError(error, 'An unexpected error occurred');
     }
 );
+
+export const GroundNewInfo = async (queryParams) => {
+    try {
+        const response = await axios.get(baseURL+`/Grounds/ground_info/${queryParams}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching ground data:", error);
+        return []; // Or return an empty array `[]` if your UI expects an array
+    }
+}
+
+export const GroundPriceCal = async (queryParams) => {
+    try {
+        const response = await axios.get(baseURL+`/Grounds/price_calculator/${queryParams}`);
+        return response;
+    } catch (error) {
+        console.error("Error fetching ground data:", error);
+        return []; // Or return an empty array `[]` if your UI expects an array
+    }
+}

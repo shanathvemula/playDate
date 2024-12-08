@@ -43,7 +43,7 @@ const SignIn = ({setCurrentForm}) => {
     } else {
       // console.log("kk", JSON.parse(localStorage.getItem("user")))
       // console.log('End User')
-      navigate('/home')
+      navigate('/')
     } 
   }
 

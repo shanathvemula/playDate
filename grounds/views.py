@@ -23,6 +23,8 @@ from django.core.files.storage import default_storage
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 
+from datetime import datetime, timedelta
+
 
 # Create your views here.
 @method_decorator(csrf_exempt, name='dispatch')
@@ -67,7 +69,7 @@ class Ground(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data= request.data
-            print("data", data['Arena'])
+            # print("data", data['Arena'])
             user = data['created_by']
             # Arena = data['Arena']
             data['created_by'] = user['id']
@@ -152,7 +154,7 @@ class GroundManagementCRUD(APIView):
                 ground = GroundManagement.objects.filter(CreatedBy=CreatedBy)
                 return HttpResponse(JSONRenderer().render(GroundManagementSerializer(ground, many=True).data))
             else:
-                print("request.user.id", request.user.id)
+                # print("request.user.id", request.user.id)
                 ground = GroundManagement.objects.filter(CreatedBy=request.user.id)
                 return HttpResponse(JSONRenderer().render(GroundManagementSerializer(ground, many=True).data))
                 # return HttpResponse(JSONRenderer().render({"Error": "Enter valid id or user id"}), content_type='application/json',
@@ -235,7 +237,7 @@ class GroundCRUD(APIView):
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
         try:
-            print('Getting Ground Information')
+            # print('Getting Ground Information')
             lat = request.GET.get('lat', None)
             lon = request.GET.get('lon', None)
             radius = request.GET.get('radius', None)
@@ -323,3 +325,138 @@ class GroundCRUD(APIView):
             # raise e
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+
+class GroundsData(APIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = GroundNew.objects.all().order_by('-Created')
+    serializer_class = GroundNewSerializer
+
+    @extend_schema(parameters=[
+        OpenApiParameter(name='id', description='Enter Ground Id', type=int),
+        OpenApiParameter(name='user_id', description='Enter User Id', type=int),
+    ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
+    def get(self, request, *args, **kwargs):
+        try:
+            lat = request.GET.get('lat', None)
+            lon = request.GET.get('lon', None)
+            radius = request.GET.get('radius', None)
+            if lat and lon and radius:
+                ground = GroundNew.objects.filter(
+                    location__distance_lte=(Point(float(lat), float(lon)), D(km=int(radius)))).order_by('Created')
+                serializers_data = list(GroundNewSerializer(ground, many=True).data)
+                for i in serializers_data:
+                    prices = []
+                    try:
+                        for j in i['pricing']:
+                            for k in j['times']:
+                                prices.append(k['price'])
+                        i['priceRange'] = [min(prices), max(prices)]
+                    except:
+                        pass
+                return HttpResponse(JSONRenderer().render(serializers_data),
+                                    content_type='application/json', status=status.HTTP_200_OK)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "Please provide the location info."}),
+                                    content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+# def get(self, request, *args, **kwargs):
+#     date = request.GET.get('date', None)
+#     time = request.GET.get('time', None)
+#     id = request.GET.get('id', None)
+#     price = 0
+#     if date not in [None,  ''] and time not in [None,  ''] and id not in [None,  '']:
+#         ground = GroundNew.objects.get(id__exact=id)
+#         date = datetime.strptime(date, "%Y-%m-%d")
+#         shot_date_name = date.strftime("%a")
+#         for i in ground.pricing:
+#             if shot_date_name in i['days']:
+#                 startTime = datetime.strptime(i['times'][0]['startTime'], "%H:%M")
+#                 endTime = datetime.strptime(i['times'][0]['endTime'], "%H:%M")
+#                 if startTime <= datetime.strptime(time, "%H:%M") <= endTime:
+#                     price = i['times'][0]['price']
+#
+#     return HttpResponse(JSONRenderer().render({"price": price}),
+#                         content_type='application/json', status=status.HTTP_200_OK)
+
+def generate_slots(date_str, pricing_data):
+    """
+    Generate hourly slots for a given date based on pricing data.
+
+    Args:
+        date_str (str): Date for which slots are to be generated (format: YYYY-MM-DD).
+        pricing_data (list): Pricing data with days and time ranges.
+
+    Returns:
+        list: List of slots with time range and prices.
+    """
+    # Parse the given date
+    # date_str = datetime.strptime(date_str, "%Y-%m-%d")
+    day_name = date_str.strftime("%a")  # Get the day name (e.g., "Mon")
+
+    # Find the pricing for the given day
+    applicable_pricing = next(
+        (p for p in pricing_data if day_name in p["days"]), None
+    )
+
+    if not applicable_pricing:
+        return []  # No pricing found for the day
+
+    slots = []
+    for time_range in applicable_pricing["times"]:
+        start_time = datetime.strptime(time_range["startTime"], "%H:%M")
+        end_time = datetime.strptime(time_range["endTime"], "%H:%M")
+        price = time_range["price"]
+
+        # Generate hourly slots
+        current_time = start_time
+        while current_time < end_time:
+            slot_start = current_time
+            slot_end = slot_start + timedelta(hours=1)
+
+            # Adjust slot_end to not exceed end_time
+            if slot_end > end_time:
+                slot_end = end_time
+
+            slots.append({
+                "date": date_str,
+                "startTime": slot_start.strftime("%H:%M"),
+                "endTime": slot_end.strftime("%H:%M"),
+                "price": price
+            })
+            current_time = slot_end
+
+    return slots
+
+class PriceCalculator(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        date = request.GET.get('date', None)
+        # time = request.GET.get('time', None)
+        id = request.GET.get('id', None)
+        price = 0
+        if date not in [None,  ''] and id not in [None,  '']:
+            ground = GroundNew.objects.get(id__exact=id)
+            date = datetime.strptime(date, "%Y-%m-%d")
+            shot_date_name = date.strftime("%a")
+            slots  = generate_slots(date_str=date, pricing_data=ground.pricing)
+            slot_id = 1
+            for slot in slots:
+                slot['Availability'] = True
+                slot['id'] = slot_id
+                slot_id = slot_id+1
+                maintenances = [x for x in ground.maintenanceSchedule if shot_date_name in x['days']]
+                for maintenance in maintenances:
+                    startTime = datetime.strptime(maintenance['startTime'], "%H:%M")
+                    endTime = datetime.strptime(maintenance['endTime'], "%H:%M")
+                    if ((startTime <= datetime.strptime(slot['startTime'], "%H:%M") <= endTime)
+                            or (startTime <= datetime.strptime(slot['endTime'], "%H:%M") <= endTime)):
+                        slot['Availability'] = False
+
+        return HttpResponse(JSONRenderer().render({"slots": slots}),
+                            content_type='application/json', status=status.HTTP_200_OK)

@@ -5,5 +5,5 @@ from payments.views import RazorPayOrders, TransactionCRUD
 
 urlpatterns = [
     path('orders/', RazorPayOrders.as_view()),
-    path('order/', TransactionCRUD.as_view()),
+    path('complete_order/', TransactionCRUD.as_view()),
 ]

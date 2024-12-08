@@ -7,8 +7,8 @@ import { BookVenue } from "./mock_datas";
 import { AiOutlineExport } from "react-icons/ai";
 import { notification } from "antd";
 import Loader from "../Loader/Loader";
-// import Footer from "../Footer";
-import { GroundNewGET } from "../../api/service"; // Import the GroundNewGET API function
+import Footer from "../Footer";
+import { GroundNewInfo } from "../../api/service"; // Import the GroundNewGET API function
 
 const EUHome = () => {
   const [gameNear, setGameNear] = useState([]); // State for games near you
@@ -20,7 +20,7 @@ const EUHome = () => {
       try {
         setLoading(true);
         // Fetch games near the current location
-        const response = await GroundNewGET(`?lat=${latitude}&lon=${longitude}&radius=${radius}`);
+        const response = await GroundNewInfo(`?lat=${latitude}&lon=${longitude}&radius=${radius}`);
         console.log("yarooo",response)
         setGameNear(response); // Update state with fetched data
       } catch (err) {
@@ -108,7 +108,7 @@ const EUHome = () => {
           )}
         </section>
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

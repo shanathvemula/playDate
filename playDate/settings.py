@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load the .env file
 env_path = os.path.join(BASE_DIR, ".env")
 load_dotenv(dotenv_path=env_path)
-# GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH') # Need to uncommit while running in docker
+GDAL_LIBRARY_PATH = os.getenv('GDAL_LIBRARY_PATH') # Need to uncommit while running in docker
 fernet = Fernet(os.getenv('fernet_key').encode('utf-8'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -36,7 +36,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'localhost:3000']
 
 # Application definition
 
