@@ -25,6 +25,7 @@ from django.contrib.gis.measure import D
 
 from datetime import datetime, timedelta
 
+from payments.models import Transaction
 
 # Create your views here.
 @method_decorator(csrf_exempt, name='dispatch')
@@ -333,8 +334,9 @@ class GroundsData(APIView):
     serializer_class = GroundNewSerializer
 
     @extend_schema(parameters=[
-        OpenApiParameter(name='id', description='Enter Ground Id', type=int),
-        OpenApiParameter(name='user_id', description='Enter User Id', type=int),
+        OpenApiParameter(name='lat', description='Enter latitude', type=int),
+        OpenApiParameter(name='lon', description='Enter longitude', type=int),
+        OpenApiParameter(name='radius', description='Enter radius', type=int),
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
         try:
@@ -359,6 +361,14 @@ class GroundsData(APIView):
             else:
                 return HttpResponse(JSONRenderer().render({"Error": "Please provide the location info."}),
                                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            print(data)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -445,17 +455,27 @@ class PriceCalculator(APIView):
             date = datetime.strptime(date, "%Y-%m-%d")
             shot_date_name = date.strftime("%a")
             slots  = generate_slots(date_str=date, pricing_data=ground.pricing)
+            trans = Transaction.objects.filter(ground_booked_date=date, groundId=id, status="SUCCESS")
+            # print([item for sublist in [x.selectedSlots for x in trans] for item in sublist])
             slot_id = 1
             for slot in slots:
                 slot['Availability'] = True
                 slot['id'] = slot_id
                 slot_id = slot_id+1
-                maintenances = [x for x in ground.maintenanceSchedule if shot_date_name in x['days']]
+                maintenances = [x for x in ground.maintenanceSchedule if shot_date_name in x['days']] + [item for sublist in [x.selectedSlots for x in trans] for item in sublist]
+                # print(maintenances)
                 for maintenance in maintenances:
                     startTime = datetime.strptime(maintenance['startTime'], "%H:%M")
                     endTime = datetime.strptime(maintenance['endTime'], "%H:%M")
-                    if ((startTime <= datetime.strptime(slot['startTime'], "%H:%M") <= endTime)
-                            or (startTime <= datetime.strptime(slot['endTime'], "%H:%M") <= endTime)):
+                    # if date.strftime("%Y-%m-%d") == datetime.now().strftime("%Y-%m-%d"):
+                    #     time = datetime.now().strftime("%H:%M")
+                    #     if endTime <= datetime.strptime(time, "%H:%M"):
+                    #         slot['Availability'] = False
+                        # if ((startTime <= datetime.strptime(time, "%H:%M"))
+                        #         or (endTime >= datetime.strptime(time, "%H:%M"))):
+                        #     slot['Availability'] = False
+                    if ((startTime == datetime.strptime(slot['startTime'], "%H:%M")) #  <= endTime
+                            or (datetime.strptime(slot['endTime'], "%H:%M") == endTime)): # startTime <=
                         slot['Availability'] = False
 
         return HttpResponse(JSONRenderer().render({"slots": slots}),

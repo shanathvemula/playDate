@@ -14,14 +14,21 @@ const EUHome = () => {
   const [gameNear, setGameNear] = useState([]); // State for games near you
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [user, setUser] = useState(null); // User information
 
   useEffect(() => {
+    // Check for user in localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser)); // Parse and set user data
+    }
+
     const fetchGameNear = async (latitude, longitude, radius) => {
       try {
         setLoading(true);
         // Fetch games near the current location
         const response = await GroundNewInfo(`?lat=${latitude}&lon=${longitude}&radius=${radius}`);
-        console.log("yarooo",response)
+        console.log("Games near you:", response);
         setGameNear(response); // Update state with fetched data
       } catch (err) {
         setError(err.message);
@@ -71,26 +78,26 @@ const EUHome = () => {
         <SearchBar />
       </header>
       <main className="p-6">
-        {/* Your book venue */}
-        <section>
-          <div className="flex items-center gap-2 mb-5">
-            <h2 className="text-md font-bold ">
-              Your booked venue ({BookVenue?.length || 0})
-            </h2>
-            <span className="cursor-pointer">
-              <AiOutlineExport />
-            </span>
-          </div>
-          <div className="flex items-center gap-6 overflow-x-auto scrollbar scrollbar-thin scrollbar-thumb-primary-bg scrollbar-track-gray-200">
-            {BookVenue?.map((game) => (
-              // <Card key={game?.id} game={game} />
-              <></>
-            ))}
-          </div>
-        </section>
+        {/* Your booked venue */}
+        {user && ( // Show only if user exists
+          <section>
+            <div className="flex items-center gap-2 mb-5">
+              <h2 className="text-md font-bold ">
+                Your booked venue ({BookVenue?.length || 0})
+              </h2>
+              <span className="cursor-pointer">
+                <AiOutlineExport />
+              </span>
+            </div>
+            <div className="flex items-center gap-6 overflow-x-auto scrollbar scrollbar-thin scrollbar-thumb-primary-bg scrollbar-track-gray-200">
+              {BookVenue?.map((game) => (
+                <Card key={game?.id} game={game} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Game near you */}
-       
+        {/* Games near you */}
         <section className="mt-14">
           <h2 className="text-md font-bold mb-5">Games near you</h2>
           {loading ? (

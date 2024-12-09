@@ -8,6 +8,8 @@ from datetime import datetime
 
 from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction
 
+import json
+
 import razorpay
 from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -21,7 +23,11 @@ class RazorPayOrders(APIView):
         try:
             data = request.data
             data['amount'] = float(data['amount']*100)
-            # print("data", data)
+            user_info = data.pop('user')
+            try:
+                user_info = json.loads(user_info)['id']
+            except:
+                user_info = user_info
             selectedSlots = data.pop('selectedSlots')
             date = selectedSlots[0]['date']
             groundId = data.pop('groundId')
@@ -34,6 +40,7 @@ class RazorPayOrders(APIView):
                 order['amount'] = order['amount'] / 100
                 order['amount_due'] = order['amount_due'] / 100
                 order['ground_booked_date'] = datetime.fromisoformat(date)
+                order['user'] = user_info
 
 
                 order.pop('created_at')

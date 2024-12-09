@@ -16,6 +16,7 @@ class Transaction(models.Model):
     order_id = models.CharField(max_length=200, verbose_name="Order ID")
     status = models.CharField(max_length=20, verbose_name="Status")
     ground_booked_date = models.DateTimeField(blank=True, null=True)
+    user = models.CharField(max_length=250)
 
     def __str__(self):
         return str(self.order_id)

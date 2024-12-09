@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GroundPriceCal, Orders, UpdateTrans } from "../../api/service";
 import { notification } from "antd";
-import axios from "axios";
-import { useRazorpay, RazorpayOrderOptions } from "react-razorpay";
+import { useRazorpay } from "react-razorpay";
 
 function BookingForm({ groundInfo }) {
   const { error, isLoading, Razorpay } = useRazorpay();
@@ -13,11 +12,16 @@ function BookingForm({ groundInfo }) {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [showEmailPopup, setShowEmailPopup] = useState(false); // For email input popup
   const navigate = useNavigate();
 
-  // Get today's date in YYYY-MM-DD format
-  const getTodayDate = () => new Date().toISOString().split("T")[0];
-  const user = localStorage.getItem('user');
+  const getTodayDate = () => {
+    const now = new Date();
+    const indiaOffset = 5.5 * 60 * 60 * 1000;
+    const indiaTime = new Date(now.getTime() + indiaOffset - now.getTimezoneOffset() * 60 * 1000);
+    return indiaTime.toISOString().split("T")[0];
+  };
 
   const resetFormData = () => {
     setTotalPrice(0);
@@ -26,9 +30,9 @@ function BookingForm({ groundInfo }) {
     setSelectedSlots([]);
     setOrderId("");
     setShowPopup(false);
+    setUserEmail("");
   };
 
-  // Fetch slots for the selected date
   const fetchSlots = async (date) => {
     try {
       const response = await GroundPriceCal(`?date=${date}&id=${groundInfo.id}`);
@@ -39,7 +43,6 @@ function BookingForm({ groundInfo }) {
     }
   };
 
-  // Handle date change and fetch slots
   const handleDateChange = async (event) => {
     const selectedDate = event.target.value;
     setGameDay(selectedDate);
@@ -52,7 +55,6 @@ function BookingForm({ groundInfo }) {
     }
   };
 
-  // Toggle slot selection and update total price
   const toggleSlotSelection = (slot) => {
     if (!slot.Availability) return;
 
@@ -82,55 +84,54 @@ function BookingForm({ groundInfo }) {
       console.error("Error updating transaction:", error);
     }
   };
-  
 
-  // Close the popup
   const closePopup = () => setShowPopup(false);
 
-  // Book Now handler
   const handleBookNow = async () => {
+    const user = localStorage.getItem("user") || userEmail;
+
+    if (!user) {
+      setShowEmailPopup(true);
+      return;
+    }
+
     if (selectedSlots.length === 0) {
       notification.error({ message: "No Slots Selected", description: "Please select at least one slot." });
       return;
     }
 
     try {
-      console.log("amount", totalPrice)
       const response = await Orders({
         selectedSlots,
         groundId: groundInfo.id,
         amount: totalPrice,
         currency: "INR",
+        user: user,
       });
-      console.log("Order Response:", response.data.order_id);
-      // Initiate Razorpay payment
       setOrderId(response.data.order_id);
-      initiatePayment(response.data.order_id, totalPrice);
+      initiatePayment(response.data.order_id, totalPrice, user);
     } catch (error) {
       console.error("Error creating order:", error);
       notification.error({ message: "Order Failed", description: "Unable to create order. Please try again later." });
     }
   };
 
-  // Initiate Razorpay Payment
-  const initiatePayment = async(orderId, price) => {
+  const initiatePayment = async (orderId, price, user) => {
     const options = {
-      key: "rzp_test_JvXFkNCRf4a6j0", // Razorpay test key
+      key: "rzp_test_JvXFkNCRf4a6j0",
       name: "Test Company",
       description: "Test Transaction",
       order_id: orderId,
-      amount: price * 100, // Amount in paise
+      amount: price * 100,
       currency: "INR",
       handler: async (response) => {
-        console.log("Payment Success:", response);
         resetFormData();
         notification.success({ message: "Payment Successful", description: "Your booking is confirmed!" });
         await updateTransactionStatus(response.razorpay_payment_id, "SUCCESS", "Payment successful", orderId);
-        // navigate(routesLink.BOOKING_SCREEN);
       },
       prefill: {
         name: user?.name || "Guest User",
-        email: user?.email || "guest@example.com",
+        email: user?.email || userEmail || "guest@example.com",
         contact: user?.contact || "0000000000",
       },
       theme: { color: "#F37254" },
@@ -142,15 +143,17 @@ function BookingForm({ groundInfo }) {
       console.error("Payment Failed:", response.error);
       notification.error({ message: "Payment Failed", description: "Unable to process payment. Please try again." });
     });
-    razorpay.on("payment.success", async (response) => {
-      console.log("Payment Successful:", response);
-      notification.success({ message: "Payment Successful", description: "Your booking is confirmed!" });
-      await updateTransactionStatus(response.error.metadata.payment_id, "FAILED", response.error.reason, orderId);
-      // navigate(routesLink.BOOKING_SCREEN);
-    });
   };
 
-  // Render slot cards
+  const handleEmailSubmit = () => {
+    if (!userEmail) {
+      notification.error({ message: "Invalid Email", description: "Please enter a valid email." });
+      return;
+    }
+    setShowEmailPopup(false);
+    handleBookNow();
+  };
+
   const renderSlots = () =>
     slots.map((slot) => (
       <div
@@ -175,7 +178,6 @@ function BookingForm({ groundInfo }) {
         <h1 className="text-lg font-semibold mb-6 text-gray-500">₹ {totalPrice.toFixed(2)} total</h1>
         <h6 className="text-sm mb-2 text-gray-400">Price calculated based on selected slots.</h6>
 
-        {/* Game Info */}
         <div className="mb-4">
           <label htmlFor="sport" className="block text-sm mb-1 text-gray-500 font-medium">
             Game
@@ -189,7 +191,6 @@ function BookingForm({ groundInfo }) {
           />
         </div>
 
-        {/* Game Day */}
         <div className="mb-4">
           <label htmlFor="game-day" className="block text-sm mb-1 text-gray-500 font-medium">
             Day
@@ -205,7 +206,6 @@ function BookingForm({ groundInfo }) {
           />
         </div>
 
-        {/* Selected Slots */}
         {selectedSlots.length > 0 && (
           <div className="mb-4">
             <label htmlFor="selected-slots" className="block text-sm mb-1 text-gray-500 font-medium">
@@ -224,7 +224,6 @@ function BookingForm({ groundInfo }) {
           </div>
         )}
 
-        {/* Slot Selection Popup */}
         {showPopup && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
             <div className="relative w-full max-w-3xl p-8 bg-white rounded-lg shadow-lg">
@@ -242,7 +241,29 @@ function BookingForm({ groundInfo }) {
           </div>
         )}
 
-        {/* Buttons */}
+        {showEmailPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Email</h2>
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                className="w-full px-4 py-2 border rounded-md mb-4"
+                placeholder="Enter your email"
+              />
+              <div className="flex justify-end">
+                <button
+                  onClick={handleEmailSubmit}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
           <button
             type="button"
