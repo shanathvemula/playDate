@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmation with Optimized QR Code</title>
+  <style>
+    /* General Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background-color: #4b0082;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 20px;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: fadeIn 0.5s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #6a0dad, #9b59b6);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-bottom: 5px solid #f1f1f1;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 18px;
+      font-weight: 300;
+    }
+
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .details {
+      flex: 2;
+      margin-right: 20px;
+    }
+
+    .details h3 {
+      color: #4b0082;
+      margin-bottom: 15px;
+      font-size: 20px;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    .details table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .details table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+    }
+
+    .right-section {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .qr-code {
+      width: 150px;
+      height: 150px;
+      background: white;
+      padding: 10px;
+      border-radius: 15px;
+      border: 2px solid #ddd;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .qr-code img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .date-card {
+      background: linear-gradient(135deg, #f5f5f5, #e3e3e3);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .date-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .date-card .date {
+      font-size: 48px;
+      font-weight: bold;
+      color: #4b0082;
+    }
+
+    .date-card .month {
+      font-size: 22px;
+      color: #666;
+    }
+
+    .date-card .booking-id {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #777;
+    }
+
+    .print-button {
+      background: linear-gradient(45deg, #4b0082, #8a2be2);
+      color: white;
+      padding: 12px 30px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      text-align: center;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .print-button:hover {
+      transform: scale(1.05);
+      background: linear-gradient(45deg, #8a2be2, #4b0082);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .promotion {
+      background: #000;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 0 0 20px 20px;
+    }
+
+    .promotion h3 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .promotion p {
+      margin-bottom: 10px;
+    }
+
+    .app-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      background: #4b0082;
+      color: white;
+    }
+
+    .app-section img {
+      width: 120px;
+      filter: brightness(1.2);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 14px;
+      background: linear-gradient(45deg, #6a0dad, #4b0082);
+      color: white;
+    }
+	
+	.footer .developed-by {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #f0e6ff;
+      font-weight: 300;
+    }
+
+    .footer .developed-by span {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Booking Confirmation</h1>
+      <p>Vijaya Bhaskar, your booking has been confirmed!</p>
+    </div>
+    <div class="content">
+      <div class="details">
+        <h3>Booking Details</h3>
+        <table>
+          <tr>
+            <td>Order Amount</td>
+            <td>Application Fee & Taxes</td>
+            <td>Total</td>
+          </tr>
+          <tr>
+            <td>INR 0.00</td>
+            <td>INR 0.00</td>
+            <td>INR 0.00</td>
+          </tr>
+        </table>
+        <h3>Event Details</h3>
+        <table>
+          <tr>
+            <td>Name</td>
+            <td>Webinar on Writing Workshop</td>
+          </tr>
+          <tr>
+            <td>Venue</td>
+            <td>Hyderabad - Telangana</td>
+          </tr>
+          <tr>
+            <td>Date & Time</td>
+            <td>2020-10-06 10:00:00</td>
+          </tr>
+        </table>
+        <h3>Ticket Details</h3>
+        <table>
+          <tr>
+            <td>Name</td>
+            <td>Vijaya Bhaskar</td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td>Rakeshkumar@gmail.com</td>
+          </tr>
+          <tr>
+            <td>Mobile</td>
+            <td>98575663003</td>
+          </tr>
+        </table>
+      </div>
+      <div class="right-section">
+        <div class="qr-code">
+          <img src="https://codeqrcode.com/blog/wp-content/uploads/2018/03/QR-code-on-BusinessCard-good-1024x1024.png" alt="QR Code">
+        </div>
+        <div class="date-card">
+          <div class="date">26</div>
+          <div class="month">February</div>
+          <div class="booking-id">#Booking ID: STMZ2020</div>
+        </div>
+        <a href="#" class="print-button">Print Booking</a>
+      </div>
+    </div>
+    <div class="promotion">
+      <h3>CONGRATULATIONS</h3>
+      <p>YOUR CODE: VIPFREE</p>
+      <p>40 INR OFF</p>
+    </div>
+    <div class="footer">
+      Powered by <b>stumagz</b>
+	  <div class="developed-by">
+        Design and Developed by <span>Kirubaharan</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

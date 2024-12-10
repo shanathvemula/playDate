@@ -1,7 +1,14 @@
 from django.db import models
 
+def GenTransactionIds():
+    trans = Transaction.objects.all().order_by('id').last()
+    if not trans:
+        return "TNS" + '0000001'
+    return 'TNS' + str(int(trans.id[4:]) + 1).zfill(7)
+
 # Create your models here.
 class Transaction(models.Model):
+    id = models.CharField(max_length=15, primary_key=True, default=GenTransactionIds)
     payment_id = models.CharField(max_length=100, verbose_name="Payment ID", blank=True, null=True)
     order_id = models.CharField(max_length=100, unique=True, verbose_name="Order ID")
     signature = models.CharField(max_length=200, verbose_name="Signature", blank=True, null=True)
@@ -17,6 +24,7 @@ class Transaction(models.Model):
     status = models.CharField(max_length=20, verbose_name="Status")
     ground_booked_date = models.DateTimeField(blank=True, null=True)
     user = models.CharField(max_length=250)
+
     def __str__(self):
         return str(self.order_id)
 

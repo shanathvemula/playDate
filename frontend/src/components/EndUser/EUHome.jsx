@@ -8,6 +8,7 @@ import { AiOutlineExport } from "react-icons/ai";
 import { notification } from "antd";
 import Loader from "../Loader/Loader";
 import Footer from "../Footer";
+import homeBg from "../../assets/images/home_bg.png";
 import { GroundNewInfo } from "../../api/service"; // Import the GroundNewGET API function
 
 const EUHome = () => {
@@ -74,7 +75,7 @@ const EUHome = () => {
   return (
     <>
       <EUNavbar />
-      <header className="home-banner bg-cover text-white h-[80vh] min-h-full text-center flex items-center justify-center">
+      <header className="home-banner bg-cover text-white h-[80vh] min-h-full text-center flex items-center justify-center" style={{ backgroundImage: `url(${homeBg})` }}>
         <SearchBar />
       </header>
       <main className="p-6">

@@ -71,13 +71,14 @@ function BookingForm({ groundInfo }) {
     });
   };
 
-  const updateTransactionStatus = async (paymentId, status, message, order_id) => {
+  const updateTransactionStatus = async (paymentId, status, message, order_id, signature) => {
     try {
       await UpdateTrans({
         order_id,
-        paymentId,
+        payment_id: paymentId,
         status,
         message,
+        signature
       });
       console.log(`Transaction updated: Order ID: ${orderId}, Status: ${status}`);
     } catch (error) {
@@ -126,8 +127,9 @@ function BookingForm({ groundInfo }) {
       currency: "INR",
       handler: async (response) => {
         resetFormData();
+        console.log("success response", response)
         notification.success({ message: "Payment Successful", description: "Your booking is confirmed!" });
-        await updateTransactionStatus(response.razorpay_payment_id, "SUCCESS", "Payment successful", orderId);
+        await updateTransactionStatus(response.razorpay_payment_id, "SUCCESS", "Payment successful", orderId, response.razorpay_signature);
       },
       prefill: {
         name: user?.name || "Guest User",
@@ -142,6 +144,7 @@ function BookingForm({ groundInfo }) {
     razorpay.on("payment.failed", (response) => {
       console.error("Payment Failed:", response.error);
       notification.error({ message: "Payment Failed", description: "Unable to process payment. Please try again." });
+      updateTransactionStatus(response.error.metadata.payment_id, "Falied", response.error.reason, orderId);
     });
   };
 

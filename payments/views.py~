@@ -116,8 +116,7 @@ class TransactionCRUD(APIView):
                                 replace("{{ last_name }}", user.last_name).
                                 replace("{{ amount }}", str(payment_details['amount'] /100)).
                                 replace("{{ email }}", user.email). replace("{{ phone }}", str(user.phone)).
-                                replace("{{ ground_name }}", ground.ground_name).
-                                replace("{{ address }}", ground.address))
+                                replace("{{ ground_name }}", ground.ground_name). replace("{{ address }}", ground.address))
                     send_mail(to=user.email, subject="PlayDate Ground Booking Confirmation", body=body)
                 return Response(transaction_serializer.data, status=status.HTTP_200_OK)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

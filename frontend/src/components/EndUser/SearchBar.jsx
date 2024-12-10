@@ -75,7 +75,7 @@ const SearchBar = () => {
           className="primary-bg col-span-12 px-6 py-2 w-full rounded-md text-white font-semibold 
              transition-all duration-200 ease-in-out 
              hover:bg-blue-700  
-             active:bg-blue-800"
+             bg-blue-800"
         >
           Search
         </button>
