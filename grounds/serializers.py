@@ -29,3 +29,9 @@ class GroundNewSerializer(ModelSerializer):
         model = GroundNew
         # exclude = ['id']
         fields = '__all__'
+
+class GroundNewSerializerSpecific(ModelSerializer):
+    class Meta:
+        model = GroundNew
+        fields = ('id', 'ground_name', 'name', 'description', 'address', 'type',
+                  'capacity', 'contact_number', "maintenanceSchedule")

@@ -56,7 +56,7 @@ function BookingForm({ groundInfo }) {
   };
 
   const toggleSlotSelection = (slot) => {
-    if (!slot.Availability) return;
+    if (!slot.Availability || isSlotPast(slot)) return;
 
     setSelectedSlots((prev) => {
       const isSelected = prev.some((s) => s.id === slot.id);
@@ -67,6 +67,12 @@ function BookingForm({ groundInfo }) {
         ? prev.filter((s) => s.id !== slot.id)
         : [...prev, slot];
     });
+  };
+
+  const isSlotPast = (slot) => {
+    const currentDateTime = new Date();
+    const slotDateTime = new Date(`${gameDay} ${slot.endTime}`);
+    return slotDateTime <= currentDateTime;
   };
 
   const updateTransactionStatus = async (paymentId, status, message, orderId, signature) => {
@@ -153,96 +159,102 @@ function BookingForm({ groundInfo }) {
 
   return (
     <div className="bg-gray-100 flex items-center justify-center">
-      {loading ?(
+      {loading ? (
         <Loader />
-      ):(
-      <form className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-lg font-semibold mb-6 text-gray-500">₹ {totalPrice.toFixed(2)} total</h1>
-        <h6 className="text-sm mb-2 text-gray-400">Price calculated based on selected slots.</h6>
+      ) : (
+        <form className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+          <h1 className="text-lg font-semibold mb-6 text-gray-500">₹ {totalPrice.toFixed(2)} total</h1>
+          <h6 className="text-sm mb-2 text-gray-400">Price calculated based on selected slots.</h6>
 
-        <div className="mb-4">
-          <label htmlFor="sport" className="block text-sm mb-1 text-gray-500 font-medium">
-            Game
-          </label>
-          <input
-            type="text"
-            id="sport"
-            value={groundInfo?.name || "N/A"}
-            readOnly
-            className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="game-day" className="block text-sm mb-1 text-gray-500 font-medium">
-            Day
-          </label>
-          <input
-            type="date"
-            id="game-day"
-            value={gameDay}
-            onChange={handleDateChange}
-            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-md"
-            min={getTodayDate()}
-            required
-          />
-        </div>
-
-        {slots.length > 0 && (
           <div className="mb-4">
-            <label htmlFor="slots" className="block text-sm mb-1 text-gray-500 font-medium">
-              Available Slots
+            <label htmlFor="sport" className="block text-sm mb-1 text-gray-500 font-medium">
+              Game
             </label>
-            <div className="grid grid-cols-5 gap-2">
-              {slots.map((slot) => (
-                <div
-                  key={slot.id}
-                  className={`flex flex-col items-center px-2 py-1 border rounded-md text-xs font-medium cursor-pointer ${
-                    slot.Availability
-                      ? selectedSlots.some((s) => s.id === slot.id)
-                        ? "bg-blue-500 border-blue-700 text-white"
-                        : "bg-white border-gray-300 text-black"
-                      : "bg-gray-700 border-gray-700 text-gray-400 cursor-not-allowed"
-                  }`}
-                  onClick={() => toggleSlotSelection(slot)}
-                >
-                  <span>{slot.startTime}</span>
-                  <span>{slot.endTime}</span>
-                  <span>₹{slot.price || 0}</span>
-                </div>
-              ))}
-            </div>
+            <input
+              type="text"
+              id="sport"
+              value={groundInfo?.name || "N/A"}
+              readOnly
+              className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500"
+            />
           </div>
-        )}
 
-        {showEmailPopup && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Email</h2>
-              <input
-                type="email"
-                value={userEmail}
-                onChange={(e) => setUserEmail(e.target.value)}
-                className="w-full px-4 py-2 border rounded-md mb-4"
-                placeholder="Enter your email"
-              />
-              <div className="flex justify-end">
-                <button onClick={handleEmailSubmit} className="px-6 py-2 bg-blue-500 text-white rounded-md">
-                  Submit
-                </button>
+          <div className="mb-4">
+            <label htmlFor="game-day" className="block text-sm mb-1 text-gray-500 font-medium">
+              Day
+            </label>
+            <input
+              type="date"
+              id="game-day"
+              value={gameDay}
+              onChange={handleDateChange}
+              className="w-full px-4 py-2 text-sm border border-gray-300 rounded-md"
+              min={getTodayDate()}
+              required
+            />
+          </div>
+
+          {slots.length > 0 && (
+            <div className="mb-4">
+              <label htmlFor="slots" className="block text-sm mb-1 text-gray-500 font-medium">
+                Available Slots
+              </label>
+              <div className="grid grid-cols-5 gap-2">
+                {slots.map((slot) => {
+                  const isPast = isSlotPast(slot);
+                  return (
+                    <div
+                      key={slot.id}
+                      className={`flex flex-col items-center px-2 py-1 border rounded-md text-xs font-medium ${
+                        isPast || !slot.Availability
+                          ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
+                          : selectedSlots.some((s) => s.id === slot.id)
+                          ? "bg-blue-500 text-white border-blue-700"
+                          : "bg-white text-black border-gray-300 cursor-pointer"
+                      }`}
+                      onClick={() => !isPast && slot.Availability && toggleSlotSelection(slot)}
+                    >
+                      <span>{slot.startTime}</span>
+                      <span>{slot.endTime}</span>
+                      <span>₹{slot.price || 0}</span>
+                      {/* {isPast && <span className="text-red-500 text-xs">Unavailable</span>} */}
+                      {/* {!slot.Availability && <span className="text-red-500 text-xs">Booked</span>} */}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <button
-          type="button"
-          className="w-full text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium"
-          onClick={handleBookNow}
-        >
-          Book Now
-        </button>
-      </form>)}
+          {showEmailPopup && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Email</h2>
+                <input
+                  type="email"
+                  value={userEmail}
+                  onChange={(e) => setUserEmail(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-md mb-4"
+                  placeholder="Enter your email"
+                />
+                <div className="flex justify-end">
+                  <button onClick={handleEmailSubmit} className="px-6 py-2 bg-blue-500 text-white rounded-md">
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="w-full text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium"
+            onClick={handleBookNow}
+          >
+            Book Now
+          </button>
+        </form>
+      )}
     </div>
   );
 }

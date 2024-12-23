@@ -12,6 +12,7 @@ import UserManagement from "./components/Admin/User/UserManagement";
 import Loading from "./components/Loading"; // Import the Loading component
 import Form from "./components/Admin/Form/Form";
 import { StateProvider } from "./components/EndUser/context/StateContext.jsx";
+import BookingGM from "./components/GroundManagement/BookingGM .jsx";
 
 function App() {
   const [loading, setLoading] = useState(true); // Initialize loading state
@@ -72,6 +73,7 @@ function App() {
           {userType === "Ground Manager" && (
             <>
               <Route path="/home" element={<GMHome />} />
+              <Route path="/bookingGM" element={<BookingGM />} />
             </>
           )}
           {userType === "End User" && (

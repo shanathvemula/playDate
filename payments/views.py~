@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework import status
 
+from rest_framework_simplejwt.tokens import AccessToken
+
 from datetime import datetime
 
 from grounds.views import GroundNew
@@ -116,10 +118,38 @@ class TransactionCRUD(APIView):
                                 replace("{{ last_name }}", user.last_name).
                                 replace("{{ amount }}", str(payment_details['amount'] /100)).
                                 replace("{{ email }}", user.email). replace("{{ phone }}", str(user.phone)).
-                                replace("{{ ground_name }}", ground.ground_name). replace("{{ address }}", ground.address))
+                                replace("{{ ground_name }}", ground.ground_name).
+                                replace("{{ address }}", ground.address))
                     send_mail(to=user.email, subject="PlayDate Ground Booking Confirmation", body=body)
                 return Response(transaction_serializer.data, status=status.HTTP_200_OK)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BookingInfo(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        try:
+            order_id = request.GET.get('order_id')
+            transaction = Transaction.objects.get(order_id=order_id)
+            serializer = TransactionSerializer(transaction)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, *args, **kwargs):
+        access_token = AccessToken(request.headers['Authorization'].split(' ')[-1])
+        user_id = access_token['user_id']
+        user = User.objects.get(id=user_id)
+        print(user.first_name, user.user_type)
+        if user.user_type == 'End User':
+            trans = Transaction.objects.filter(user=str(user_id))
+        elif user.user_type == 'Ground Manager':
+            trans = Transaction.objects.filter(groundId__CreatedBy=str(user_id))
+        serializer = TransactionSerializer(trans, many=True)
+        print("Transactions", trans)
+        return Response(serializer.data, status=status.HTTP_200_OK)
