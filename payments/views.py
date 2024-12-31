@@ -12,6 +12,7 @@ from datetime import datetime
 
 from grounds.views import GroundNew
 from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction
+from app.serializer import UserSerializer
 
 import json
 
@@ -100,13 +101,18 @@ class TransactionCRUD(APIView):
     def put(self, request, *args, **kwargs):
         try:
             data = request.data
-            print("Put data", data)
+            # print("Put data", data)
             payment_details = client.payment.fetch(data['payment_id'])
-            print("Payment details", payment_details)
+            # print("Payment details", payment_details)
             transaction = Transaction.objects.get(order_id=data['order_id'])
-            ground = GroundNew.objects.get(id=transaction.groundId)
-            print("Ground details", ground)
-            user = User.objects.get(id=transaction.user)
+            # print("transaction", transaction.groundId.id)
+            ground = GroundNew.objects.get(id=transaction.groundId.id)
+            # print("Ground details", ground, transaction.user.isdigit())
+            if transaction.user.isdigit():
+                user = UserSerializer(User.objects.get(id=int(transaction.user))).data
+            else:
+                user = {"first_name": transaction.user, "last_name": " ", "phone": " ", "email": transaction.user}
+            # print(user['email'])
             transaction_serializer = TransactionSerializer(transaction, data=data, partial=True)
             if transaction_serializer.is_valid():
                 transaction_serializer.save()
@@ -114,13 +120,13 @@ class TransactionCRUD(APIView):
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "ticket.html"),
                               "r") as html:
                         body = html.read()
-                        body = (body.replace("{{ first_name }}", user.first_name).
-                                replace("{{ last_name }}", user.last_name).
+                        body = (body.replace("{{ first_name }}", user['first_name']).
+                                replace("{{ last_name }}", user['last_name']).
                                 replace("{{ amount }}", str(payment_details['amount'] /100)).
-                                replace("{{ email }}", user.email). replace("{{ phone }}", str(user.phone)).
+                                replace("{{ email }}", user['email']). replace("{{ phone }}", str(user['phone'])).
                                 replace("{{ ground_name }}", ground.ground_name).
                                 replace("{{ address }}", ground.address))
-                    send_mail(to=user.email, subject="PlayDate Ground Booking Confirmation", body=body)
+                    send_mail(to=user['email'], subject="PlayDate Ground Booking Confirmation", body=body)
                 return Response(transaction_serializer.data, status=status.HTTP_200_OK)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -144,6 +150,7 @@ class BookingInfo(APIView):
     def post(self, request, *args, **kwargs):
         try:
             access_token = AccessToken(request.headers['Authorization'].split(' ')[-1])
+            print("access token", access_token)
             user_id = access_token['user_id']
             user = User.objects.get(id=user_id)
             print(user.first_name, user.user_type)
@@ -152,7 +159,7 @@ class BookingInfo(APIView):
             elif user.user_type == 'Ground Manager':
                 trans = Transaction.objects.filter(groundId__CreatedBy=str(user_id))
             serializer = TransactionSerializer(trans, many=True)
-            # print("Transactions", trans)
+            print("Transactions", trans)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

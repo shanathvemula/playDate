@@ -286,11 +286,21 @@ export const Orders = async (data) => {
 
 export const UpdateTrans = async (data) => {
     try {
-        console.log("/payments/order/", data);
+        // console.log("/payments/order/", data);
         const response = await apiClient.put('/payments/order/', data);
         return response;
     } catch (error) {
         return handleError(error, 'Failed to create order');
+    }
+}
+
+export const GetBookings = async () => {
+    try {
+        console.log('Getting bookings')
+        const response = await apiClient.post('/payments/booking/');
+        return response;
+    } catch (error) {
+        return handleError(error, 'Failed to fetch orders');
     }
 }
 
@@ -359,3 +369,4 @@ export const GroundPriceCal = async (queryParams) => {
         return []; // Or return an empty array `[]` if your UI expects an array
     }
 }
+
