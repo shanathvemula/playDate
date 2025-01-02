@@ -11,7 +11,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from datetime import datetime
 
 from grounds.views import GroundNew
-from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction
+from payments.serializers import (CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction,
+                                  TransactionSerializerPost)
 from app.serializer import UserSerializer
 
 import json
@@ -56,11 +57,11 @@ class RazorPayOrders(APIView):
 
                 order.pop('created_at')
                 print('created order', order, date)
-                transaction_serializer = TransactionSerializer(data=order)
+                transaction_serializer = TransactionSerializerPost(data=order)
                 if transaction_serializer.is_valid():
                     transaction_serializer.save()
                     return Response(order, status=status.HTTP_200_OK)
-                return Response(order, status=status.HTTP_200_OK)
+                return Response(transaction_serializer.errors, status=status.HTTP_200_OK)
             else:
                 return Response(create_order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -87,11 +88,12 @@ class TransactionCRUD(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            transaction_serializer = TransactionSerializer(data=data)
+            transaction_serializer = TransactionSerializerPost(data=data)
             if transaction_serializer.is_valid():
-                client.utility.verify_payment_signature({"razorpay_order_id":data['order_id'],
+                k = client.utility.verify_payment_signature({"razorpay_order_id":data['order_id'],
                                                          "razorpay_payment_id":data['payment_id'],
                                                          "razorpay_signature":data['signature']})
+                print(k)
                 transaction_serializer.save()
                 return Response(transaction_serializer.data, status=status.HTTP_201_CREATED)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -113,7 +115,7 @@ class TransactionCRUD(APIView):
             else:
                 user = {"first_name": transaction.user, "last_name": " ", "phone": " ", "email": transaction.user}
             # print(user['email'])
-            transaction_serializer = TransactionSerializer(transaction, data=data, partial=True)
+            transaction_serializer = TransactionSerializerPost(transaction, data=data, partial=True)
             if transaction_serializer.is_valid():
                 transaction_serializer.save()
                 if data['status'] == 'SUCCESS':

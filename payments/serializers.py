@@ -20,6 +20,11 @@ class VerifyOrderSerializer(serializers.Serializer):
     razorpay_payment_id = serializers.CharField(max_length=200)
     razorpay_signature = serializers.CharField(max_length=200)
 
+class TransactionSerializerPost(ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = '__all__'
+
 class TransactionSerializer(ModelSerializer):
     groundId = GroundNewSerializerSpecific()
 

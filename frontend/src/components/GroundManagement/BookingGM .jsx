@@ -77,6 +77,12 @@ const BookingPage = () => {
       case "update":
         console.log("WebSocket Actions", message.data.groundId, JSON.parse(user).id)
 
+      case "create":
+        console.log("WebSocket Actions", message.data.groundId.CreatedBy, JSON.parse(user).id)
+        if (message.data.groundId.CreatedBy === JSON.parse(user).id) {
+          console.log("user", JSON.parse(user).id)
+          setBookingsData(prevBookings => [...prevBookings, message.data])
+        }
     }
   };
 

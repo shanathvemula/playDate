@@ -34,4 +34,4 @@ class GroundNewSerializerSpecific(ModelSerializer):
     class Meta:
         model = GroundNew
         fields = ('id', 'ground_name', 'name', 'description', 'address', 'type',
-                  'capacity', 'contact_number', "maintenanceSchedule")
+                  'capacity', 'contact_number', "maintenanceSchedule", "CreatedBy")
