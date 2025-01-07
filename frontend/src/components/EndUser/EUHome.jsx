@@ -46,12 +46,15 @@ const EUHome = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            console.log("position: " + position.coords);
             const { latitude, longitude } = position.coords;
             const radius = 10;
             fetchGameNear(latitude, longitude, radius); // Pass location to API
           },
           (error) => {
-            setError("Unable to fetch location");
+            // setLoading(true);
+            // setError("Unable to fetch location");
+            fetchGameNear(13.071211911886458, 80.20733606164991, 10);
             setLoading(false);
             notification.error({
               message: "Location Error",
