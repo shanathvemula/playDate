@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GroundPriceCal, Orders, UpdateTrans } from "../../api/service";
 import { notification } from "antd";
@@ -15,7 +15,9 @@ function BookingForm({ groundInfo }) {
   const [userEmail, setUserEmail] = useState(localStorage.getItem("userEmail") || "");
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [webSocketLoading, setWebSocketLoading] = useState(true);
   const navigate = useNavigate();
+  const [ws, setWs] = useState(null);
 
   const getTodayDate = () => new Date().toISOString().split("T")[0];
 
@@ -40,6 +42,56 @@ function BookingForm({ groundInfo }) {
     }
     setLoading(false);
   };
+
+  // Handle WebSocket actions
+  const handleWebSocketAction = useCallback((message) => {
+    console.log("Webscoket", message,action, message);
+    // if (!user) return;
+
+    // switch (message.action) {
+    //   case "update":
+    //     // Handle update action
+    //     break;
+    //   case "create":
+    //     if (message.data.groundId.CreatedBy === user.id) {
+    //       setBookingsData((prevBookings) => [...prevBookings, message.data]);
+    //     }
+    //     break;
+    //   default:
+    //     break;
+    // }
+  }, []);
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const wsInstance = new WebSocket('ws://localhost:8000/transactions');
+    wsInstance.onopen = () => {
+      console.log('Connected to WebSocket server');
+      setWebSocketLoading(false);
+    };
+
+    wsInstance.onmessage = (event) => {
+      setLoading(true);
+      try {
+        const message = JSON.parse(event.data);
+        handleWebSocketAction(message);
+      } catch (error) {
+        console.error('Error parsing WebSocket data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    wsInstance.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setWebSocketLoading(false);
+    };
+
+    // Cleanup on unmount
+    return () => {
+      wsInstance.close();
+    };
+  }, []);
 
   const handleDateChange = async (event) => {
     const selectedDate = event.target.value;
@@ -99,6 +151,7 @@ function BookingForm({ groundInfo }) {
     try {
       const response = await Orders({
         selectedSlots,
+        selectedDate: selectedSlots.date,
         groundId: groundInfo.id,
         amount: totalPrice,
         currency: "INR",
@@ -140,11 +193,19 @@ function BookingForm({ groundInfo }) {
 
     const razorpay = new Razorpay(options);
     razorpay.open();
-    razorpay.on("payment.failed", (response) => {
+    razorpay.on("payment.failed", async (response) => {
       notification.error({
         message: "Payment Failed",
         description: "Unable to process payment.",
       });
+  
+      await updateTransactionStatus(
+        response.razorpay_payment_id || '',
+        "FAILED",
+        response.error.description || "Payment failed due to an error",
+        orderId,
+        response.razorpay_signature
+      );
     });
   };
 
@@ -217,8 +278,6 @@ function BookingForm({ groundInfo }) {
                       <span>{slot.startTime}</span>
                       <span>{slot.endTime}</span>
                       <span>₹{slot.price || 0}</span>
-                      {/* {isPast && <span className="text-red-500 text-xs">Unavailable</span>} */}
-                      {/* {!slot.Availability && <span className="text-red-500 text-xs">Booked</span>} */}
                     </div>
                   );
                 })}

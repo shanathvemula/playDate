@@ -19,6 +19,7 @@ class Transaction(models.Model):
     groundId = models.ForeignKey(GroundNew, on_delete=models.CASCADE, verbose_name="Ground ID",
                                  blank=True, null=True, default=None) # models.CharField(max_length=150, blank=True, null=True)
     selectedSlots = models.JSONField(default=dict, blank=True, null=True)
+    # slotDates = models.DateTimeField(auto_now_add=True, verbose_name="Slot selected Date")
     amount_due = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount Due", blank=True, null=True)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount Paid", blank=True, null=True)
     attempts = models.IntegerField(default=0, verbose_name="Attempts")

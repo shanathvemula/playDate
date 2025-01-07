@@ -56,10 +56,11 @@ class RazorPayOrders(APIView):
                 order['amount_due'] = order['amount_due'] / 100
                 order['ground_booked_date'] = datetime.fromisoformat(date)
                 order['user'] = user_info
-                # order['slotDates'] = order['selectedSlots'][0]['date']
+                order['slotDates'] = order['selectedSlots'][0]['date']
 
 
                 order.pop('created_at')
+                print('created order', order, date)
                 transaction_serializer = TransactionSerializerPost(data=order)
                 if transaction_serializer.is_valid():
                     transaction_serializer.save()

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -16,34 +16,36 @@ const BookingPage = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [webSocketLoading, setWebSocketLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
-  const user = localStorage.getItem("user")
+  // Fetch user once
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   // Fetch bookings data
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        setIsLoading(true); // Show loading spinner while fetching data
-        const response = await GetBookings(); // Fetch booking data from API
-        setBookingsData(response.data); // Adjust according to the API response structure
-        setIsLoading(false); // Hide loading spinner after fetching data
+        setIsLoading(true);
+        const response = await GetBookings();
+        setBookingsData(response.data);
       } catch (err) {
         setError("Failed to fetch bookings data. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
-
     fetchBookings();
   }, []);
-  console.log("Fetching bookings", bookingsData)
 
-  let ws;
-
-  useEffect(() => {
-    setIsLoading(true)
-    setWebSocketLoading(true)
-
-    ws = new WebSocket('ws://localhost:8000/transactions')
-
-    ws.open = () => {
+  // WebSocket Connection
+  const initializeWebSocket = useCallback(() => {
+    const ws = new WebSocket('ws://localhost:8000/transactions');
+    ws.onopen = () => {
       console.log('Connected to WebSocket server');
       setWebSocketLoading(false);
     };
@@ -51,7 +53,7 @@ const BookingPage = () => {
     ws.onmessage = (event) => {
       setIsLoading(true);
       try {
-        const message = JSON.parse(event.data)
+        const message = JSON.parse(event.data);
         handleWebSocketAction(message);
       } catch (error) {
         console.error('Error parsing WebSocket data', error);
@@ -65,49 +67,53 @@ const BookingPage = () => {
       setWebSocketLoading(false);
     };
 
-    return () => {
-      ws.close();
-    };
+    return ws;
   }, []);
 
-  const handleWebSocketAction = (message) => {
-    console.log("WebSocket Action:", message.action);
+  // Handle WebSocket actions
+  const handleWebSocketAction = useCallback((message) => {
+    if (!user) return;
 
     switch (message.action) {
       case "update":
-        console.log("WebSocket Actions", message.data.groundId, JSON.parse(user).id)
-
+        // Handle update action
+        break;
       case "create":
-        console.log("WebSocket Actions", message.data.groundId.CreatedBy, JSON.parse(user).id)
-        if (message.data.groundId.CreatedBy === JSON.parse(user).id) {
-          console.log("user", JSON.parse(user).id)
-          setBookingsData(prevBookings => [...prevBookings, message.data])
+        if (message.data.groundId.CreatedBy === user.id) {
+          setBookingsData((prevBookings) => [...prevBookings, message.data]);
         }
+        break;
+      default:
+        break;
     }
-  };
+  }, [user]);
 
+  useEffect(() => {
+    const ws = initializeWebSocket();
+    return () => {
+      ws.close();
+    };
+  }, [initializeWebSocket]);
 
+  // Memoized events to avoid unnecessary re-renders
+  const calendarEvents = React.useMemo(() => 
+    bookingsData.flatMap(({ groundId, selectedSlots }) => 
+      selectedSlots.map(({ id, date, startTime, endTime, Availability, price }) => ({
+        id: `${id}`,
+        title: `${groundId.ground_name} - ${Availability ? "Available" : "Maintenance"}`,
+        start: `${date.split("T")[0]}T${startTime}:00`,
+        end: `${date.split("T")[0]}T${endTime}:00`,
+        backgroundColor: Availability ? "#4caf50" : "#ffa500",
+        borderColor: Availability ? "#4caf50" : "#ff8c00",
+        extendedProps: { date, startTime, endTime, Availability, price, groundName: groundId.ground_name },
+      }))
+    ), [bookingsData]);
 
-  // Map bookings data to events for FullCalendar
-  const calendarEvents = bookingsData.flatMap(({ groundId, selectedSlots }) =>
-    selectedSlots.map(({ id, date, startTime, endTime, Availability, price }) => ({
-      id: `${id}`,
-      title: `${groundId.ground_name} - ${Availability ? "Available" : "Maintenance"}`,
-      start: `${date.split("T")[0]}T${startTime}:00`,
-      end: `${date.split("T")[0]}T${endTime}:00`,
-      backgroundColor: Availability ? "#4caf50" : "#ffa500",
-      borderColor: Availability ? "#4caf50" : "#ff8c00",
-      extendedProps: { date, startTime, endTime, Availability, price, groundName: groundId.ground_name },
-    }))
-  );
-
-  // Handle slot click
   const handleEventClick = ({ event }) => {
     setSelectedSlot(event.extendedProps);
     setIsModalOpen(true);
   };
 
-  // Close the modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedSlot(null);
@@ -115,9 +121,7 @@ const BookingPage = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* min-h-screen flex flex-col bg-gray-100 */}
-      {isLoading && <Loader />} {/* Conditionally render the Loader */}
-      {/* Sidebar */}
+      {isLoading && <Loader />}
       <aside className="w-1/4 bg-white shadow-lg p-6">
         <button className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-3 rounded-lg mb-6 font-semibold hover:from-blue-500 hover:to-blue-700 transition">
           Book Ground
@@ -130,7 +134,6 @@ const BookingPage = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-6">
         {error ? (
           <div className="text-center text-red-600">{error}</div>
@@ -157,7 +160,6 @@ const BookingPage = () => {
         )}
       </main>
 
-      {/* Modal */}
       {isModalOpen && selectedSlot && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-4/5 md:w-1/3 max-w-lg">
@@ -178,8 +180,7 @@ const BookingPage = () => {
                     hour: "2-digit",
                     minute: "2-digit",
                     hour12: true,
-                  })}{" "}
-                  -{" "}
+                  })} - 
                   {new Date(`1970-01-01T${selectedSlot.endTime}:00Z`).toLocaleTimeString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
