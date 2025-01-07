@@ -44,7 +44,7 @@ const BookingPage = () => {
 
   // WebSocket Connection
   const initializeWebSocket = useCallback(() => {
-    const ws = new WebSocket('ws://localhost:8000/transactions');
+    const ws = new WebSocket('ws://157.173.195.249:8000/transactions');
     ws.onopen = () => {
       console.log('Connected to WebSocket server');
       setWebSocketLoading(false);

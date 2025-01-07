@@ -419,7 +419,7 @@ const GMHome = () => {
         setIsLoading(true);
         setWebSocketLoading(true);
     
-        ws = new WebSocket('ws://localhost:8000/groundnew'); // 'ws://157.173.195.249:8000/groundnew'
+        ws = new WebSocket('ws://157.173.195.249:8000/groundnew'); // 'ws://157.173.195.249:8000/groundnew'
     
         ws.onopen = () => {
           console.log('Connected to WebSocket server');

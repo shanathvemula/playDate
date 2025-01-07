@@ -64,7 +64,7 @@ function BookingForm({ groundInfo }) {
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const wsInstance = new WebSocket('ws://localhost:8000/transactions');
+    const wsInstance = new WebSocket('ws://157.173.195.249:8000/transactions');
     wsInstance.onopen = () => {
       console.log('Connected to WebSocket server');
       setWebSocketLoading(false);
