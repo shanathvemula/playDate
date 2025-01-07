@@ -23,7 +23,6 @@ ENV GEOS_LIBRARY_PATH=/usr/lib/libgeos_c.so
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install psycopg2-binary --no-cache-dir --user
-RUN pip install GDAL-3.9.2-cp312-cp312-win_amd64.whl
 
 # Copy project files
 COPY . .
