@@ -74,7 +74,8 @@ INSTALLED_APPS = [
     # project Apps
     'app.apps.AppConfig',
     'grounds',
-    'payments'
+    'payments',
+    'tournament'
 ]
 
 MIDDLEWARE = [

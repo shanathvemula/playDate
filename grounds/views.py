@@ -278,8 +278,9 @@ class GroundCRUD(APIView):
             serializer = GroundNewSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
-                serializer.save()
-                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+                # serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
+                                    status=status.HTTP_201_CREATED)
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
@@ -334,8 +335,8 @@ class GroundsData(APIView):
     serializer_class = GroundNewSerializer
 
     @extend_schema(parameters=[
-        OpenApiParameter(name='lat', description='Enter latitude', type=int),
-        OpenApiParameter(name='lon', description='Enter longitude', type=int),
+        OpenApiParameter(name='lat', description='Enter latitude', type=float),
+        OpenApiParameter(name='lon', description='Enter longitude', type=float),
         OpenApiParameter(name='radius', description='Enter radius', type=int),
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
@@ -365,13 +366,13 @@ class GroundsData(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    def post(self, request, *args, **kwargs):
-        try:
-            data = request.data
-            print(data)
-        except Exception as e:
-            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
-                                status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, *args, **kwargs):
+    #     try:
+    #         data = request.data
+    #         print(data)
+    #     except Exception as e:
+    #         return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+    #                             status=status.HTTP_400_BAD_REQUEST)
 
 # def get(self, request, *args, **kwargs):
 #     date = request.GET.get('date', None)

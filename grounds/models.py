@@ -14,7 +14,8 @@ from django.utils import timezone
 
 # Create your models here.
 ScoreboardType = (('Digital', 'Digital'), ('Manual', 'Manual'),('Not Avaliable', 'Not Avaliable'))
-maintenanceStatus = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'), ('Not Scheduled', 'Not Scheduled'))
+maintenanceStatus = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'),
+                     ('Not Scheduled', 'Not Scheduled'))
 availableStatus = (('Available', 'Available'), ('Not Available', 'Not Available'))
 
 # class Arena(models.Model):
