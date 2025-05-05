@@ -167,7 +167,36 @@ class TournamentCRUD(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
+class TournamentsList(APIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = Tournament.objects.all().order_by('-created_by')
+    serializer_class = TournamentSerializerDepth
 
+    @extend_schema(parameters=[
+        OpenApiParameter(name='id', description="Enter the Tournament Id", type=str)
+    ], summary='Get Tournaments Information', description=f'* This endpoint provides the Tournaments Information. \n'
+                                                        f"* By using the Tournament Id \n"
+                                                        f"* If Tournament Id is empty or null return the all the "
+                                                         f"Tournaments Information ")
+    def get(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            if id:
+                tournament = Tournament.objects.get(id=id)
+                serializer_data = TournamentSerializerDepth(tournament).data
+                return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
+                                    status=status.HTTP_200_OK)
+            else:
+                tournament = Tournament.objects.all().order_by('-created_by')
+                serializer_data = TournamentSerializerDepth(tournament, many=True).data
+                return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
+                                    status=status.HTTP_200_OK)
+                # return HttpResponse(JSONRenderer().render({"Error": "Please provide the id info."}),
+                #                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
 # class TeamsCRUD(APIView):
 #     permission_classes = [DjangoModelPermissions, IsAuthenticated]
 #     authentication_classes = [JWTAuthentication]
