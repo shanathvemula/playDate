@@ -22,8 +22,20 @@ class Tournament(models.Model):
     address = models.CharField(max_length=500, blank=True, null=True)
     ground = models.ManyToManyField(GroundNew)
     status = models.CharField(max_length=25, choices=status_choice)
-    Created = models.DateTimeField(default=timezone.now)
-    CreatedBy = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_date = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_by')
+    updated_date = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    updated_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='updated_by')
+
 
     class Meta:
         db_table = 'tournament'
+
+class Teams(models.Model):
+    name = models.CharField(max_length=250)
+    images = models.JSONField(default=dict, blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
+    team = models.JSONField(default=dict, blank=True, null=True)
+
+    class Meta:
+        db_table = 'teams'

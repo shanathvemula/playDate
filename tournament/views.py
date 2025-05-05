@@ -23,8 +23,9 @@ from django.contrib.gis.measure import D
 
 from datetime import datetime, timedelta
 
-from tournament.serializers import TournamentSerializer, TournamentSerializerDepth
-from tournament.models import Tournament, GroundNew
+from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth,
+                                    TeamsSerializer, TeamsSerializerDepth)
+from tournament.models import Tournament, Teams
 from payments.models import Transaction
 
 from django.db import connection
@@ -55,48 +56,48 @@ from django.db import connection
 #     return False
 
 # print(find_transactions(ground_id='GRD0000001', start_date='2025-04-24', end_date='2025-04-28'))
-class TournamentList(APIView):
-    permission_classes = []
-    authentication_classes = []
-    queryset = Tournament.objects.all().order_by('-Created')
-    serializer_class = TournamentSerializerDepth
-
-    @extend_schema(parameters=[
-        OpenApiParameter(name='lat', description="Enter latitude", type=float),
-        OpenApiParameter(name='lon', description="Enter longitude", type=float),
-        OpenApiParameter(name='radius', description="Enter radius", type=int)
-    ], summary='Get Tournament Information', description='This endpoint provides the Tournament Information')
-    def get(self, request, *args, **kwargs):
-        try:
-            lat = request.GET.get('lat', None)
-            lon = request.GET.get('lon', None)
-            radius = request.GET.get('radius', None)
-            if lat and lon and radius:
-                user_location = Point(float(lat), float(lon))
-                tournaments = Tournament.objects.filter(
-                    ground__location__distance_lte=(user_location, D(km=int(radius)))
-                ).annotate(
-                    distance=Distance('ground__location', user_location)
-                ).order_by('ground__Created')
-
-                # grounds = GroundNew.objects.filter(
-                #     location__distance_lte=(Point(float(lat), float(lon)), D(km=int(radius)))).order_by('Created')
-                # tournaments = Tournament.objects.filter(ground__in = grounds)
-                serializer_data = list(TournamentSerializerDepth(tournaments, many=True).data)
-                return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
-                                    status=status.HTTP_200_OK)
-            else:
-                return HttpResponse(JSONRenderer().render({"Error": "Please provide the location info."}),
-                                    content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
-                                status=status.HTTP_400_BAD_REQUEST)
+# class TournamentList(APIView):
+#     permission_classes = []
+#     authentication_classes = []
+#     queryset = Tournament.objects.all().order_by('-created_by')
+#     serializer_class = TournamentSerializerDepth
+#
+#     @extend_schema(parameters=[
+#         OpenApiParameter(name='lat', description="Enter latitude", type=float),
+#         OpenApiParameter(name='lon', description="Enter longitude", type=float),
+#         OpenApiParameter(name='radius', description="Enter radius", type=int)
+#     ], summary='Get Tournament Information', description='This endpoint provides the Tournament Information')
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             lat = request.GET.get('lat', None)
+#             lon = request.GET.get('lon', None)
+#             radius = request.GET.get('radius', None)
+#             if lat and lon and radius:
+#                 user_location = Point(float(lat), float(lon))
+#                 tournaments = Tournament.objects.filter(
+#                     ground__location__distance_lte=(user_location, D(km=int(radius)))
+#                 ).annotate(
+#                     distance=Distance('ground__location', user_location)
+#                 ).order_by('ground__Created')
+#
+#                 # grounds = GroundNew.objects.filter(
+#                 #     location__distance_lte=(Point(float(lat), float(lon)), D(km=int(radius)))).order_by('Created')
+#                 # tournaments = Tournament.objects.filter(ground__in = grounds)
+#                 serializer_data = list(TournamentSerializerDepth(tournaments, many=True).data)
+#                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
+#                                     status=status.HTTP_200_OK)
+#             else:
+#                 return HttpResponse(JSONRenderer().render({"Error": "Please provide the location info."}),
+#                                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+#                                 status=status.HTTP_400_BAD_REQUEST)
 
 
 class TournamentCRUD(APIView):
     permission_classes = [DjangoModelPermissions, IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    queryset = Tournament.objects.all().order_by('-Created')
+    queryset = Tournament.objects.all().order_by('-created_by')
     serializer_class = TournamentSerializerDepth
 
     @extend_schema(parameters=[
@@ -123,7 +124,7 @@ class TournamentCRUD(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            data['CreatedBy'] = request.user.id
+            data['created_by'] = request.user.id
             serializer = TournamentSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -165,3 +166,9 @@ class TournamentCRUD(APIView):
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+# class TeamsCRUD(APIView):
+#     permission_classes = [DjangoModelPermissions, IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+#     queryset = Teams.objects.all().order_by('')
