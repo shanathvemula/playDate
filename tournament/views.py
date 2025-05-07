@@ -23,9 +23,9 @@ from django.contrib.gis.measure import D
 
 from datetime import datetime, timedelta
 
-from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth,
-                                    TeamsSerializer, TeamsSerializerDepth)
-from tournament.models import Tournament, Teams
+from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth, TournamentGroundsSerializer,
+                                    TeamsSerializer, TeamsSerializerDepth, IdSerializer)
+from tournament.models import Tournament, Teams, GroundNew
 from payments.models import Transaction
 
 from django.db import connection
@@ -120,7 +120,7 @@ class TournamentCRUD(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(request=TournamentSerializer, summary="Making a new Tournament",
-                   description="This endpoint helps to create anew Tournament")
+                   description="This endpoint helps to create a new Tournament")
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
@@ -197,7 +197,45 @@ class TournamentsList(APIView):
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
-# class TeamsCRUD(APIView):
-#     permission_classes = [DjangoModelPermissions, IsAuthenticated]
-#     authentication_classes = [JWTAuthentication]
-#     queryset = Teams.objects.all().order_by('')
+
+    @extend_schema(request=IdSerializer, summary="Getting Grounds info based on the Tournament Id",
+                   description="This endpoint helps to Get the Grounds info based on the Tournament Id")
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        try:
+            if data['id']:
+                tournament = Tournament.objects.get(id=data['id'])
+                serializer_data = TournamentGroundsSerializer(tournament).data
+                return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
+                                    status=status.HTTP_200_OK)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "Please provide the Tournament id info."}),
+                                    content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+class TeamsCRUD(APIView):
+    permission_classes = [DjangoModelPermissions, IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    queryset = Teams.objects.all().order_by('id').last()
+
+    @extend_schema(parameters=[
+        OpenApiParameter(name='id', description="Enter the Team Owner Id", type=str)
+    ], summary='Get Teams Information', description=f'* This endpoint provides the List of teams Information. \n'
+                                                         f"* By using the Team Owner Id")
+    def get(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            print("id", id)
+            if id:
+                tournament = Teams.objects.get(id=id)
+                serializer_data = TeamsSerializerDepth(tournament).data
+                return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
+                                    status=status.HTTP_200_OK)
+            else:
+                return HttpResponse(JSONRenderer().render({"Error": "Please provide the id info."}),
+                                    content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)

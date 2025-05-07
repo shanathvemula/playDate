@@ -8,8 +8,16 @@ from django.utils import timezone
 
 status_choice = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'),
                  ('Not Scheduled', 'Not Scheduled'))
+
+def GenTournamentId():
+    ground = Tournament.objects.all().order_by('id').last()
+    if not ground:
+        return "TUR" + '0000001'
+    return 'TUR' + str(int(ground.id[4:]) + 1).zfill(7)
+
 # Create your models here.
 class Tournament(models.Model):
+    id = models.CharField(max_length=50, primary_key=True, default=GenTournamentId)
     name = models.CharField(max_length=50)
     type = models.CharField(max_length=50)
     about = models.TextField()
@@ -32,7 +40,14 @@ class Tournament(models.Model):
     class Meta:
         db_table = 'tournament'
 
+def GenTeamId():
+    ground = Teams.objects.all().order_by('id').last()
+    if not ground:
+        return "TEM" + '0000001'
+    return 'TEM' + str(int(ground.id[4:]) + 1).zfill(7)
+
 class Teams(models.Model):
+    id = models.CharField(max_length=50, primary_key=True, default=GenTeamId)
     name = models.CharField(max_length=250)
     images = models.JSONField(default=dict, blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
