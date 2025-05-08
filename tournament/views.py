@@ -123,8 +123,10 @@ class TournamentCRUD(APIView):
                    description="This endpoint helps to create a new Tournament")
     def post(self, request, *args, **kwargs):
         try:
+            access_token = AccessToken(request.headers['Authorization'].split(' ')[-1])
+            user_id = access_token['user_id']
             data = request.data
-            data['created_by'] = request.user.id
+            data['created_by'] = user_id
             serializer = TournamentSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
@@ -153,7 +155,9 @@ class TournamentCRUD(APIView):
 
     @extend_schema(request=TournamentSerializer, summary="Partial Update Tournament",
                    description=f"Full Updating Tournament.\n"
-                               f"This endpoint helps to update the partial Tournament details")
+                               f"This endpoint helps to update the partial Tournament details. \n"
+                               f"Send the required fields to update in the body with id.\n"
+                               f"id is required filed. \n")
     def patch(self, request, *args, **kwargs):
         try:
             data = request.data
@@ -227,7 +231,6 @@ class TeamsCRUD(APIView):
     def get(self, request, *args, **kwargs):
         try:
             id = request.GET.get('id')
-            print("id", id)
             if id:
                 tournament = Teams.objects.get(id=id)
                 serializer_data = TeamsSerializerDepth(tournament).data
@@ -239,3 +242,35 @@ class TeamsCRUD(APIView):
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=TeamsSerializer, summary="Making a new Team",
+                   description="This endpoint helps to create a new Team")
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            serializer = TeamsSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
+                                    status=status.HTTP_201_CREATED)
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=TeamsSerializer, summary="Update Team",
+                   description=f"Updating Team.\n"
+                               f"This endpoint helps to update the Team details")
+    def put(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            team = Teams.objects.get(id=data['id'])
+            serializer = TeamsSerializer(team, data=data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                            status=status.HTTP_400_BAD_REQUEST)
+

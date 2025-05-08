@@ -97,7 +97,7 @@ class TransactionCRUD(APIView):
                 k = client.utility.verify_payment_signature({"razorpay_order_id":data['order_id'],
                                                          "razorpay_payment_id":data['payment_id'],
                                                          "razorpay_signature":data['signature']})
-                print(k)
+                # print(k)
                 transaction_serializer.save()
                 return Response(transaction_serializer.data, status=status.HTTP_201_CREATED)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
