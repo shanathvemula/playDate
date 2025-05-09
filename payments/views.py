@@ -54,7 +54,7 @@ class RazorPayOrders(APIView):
                 order['order_id'] = order.pop('id')
                 order['amount'] = order['amount'] / 100
                 order['amount_due'] = order['amount_due'] / 100
-                order['ground_booked_date'] = datetime.fromisoformat(date)
+                order['booked_date'] = datetime.fromisoformat(date)
                 order['user'] = user_info
                 # order['slotDates'] = order['selectedSlots'][0]['date']
 

@@ -1,7 +1,7 @@
 # from rest_framework.serializers import ModelSerializer, Serializer
 from rest_framework import serializers
 
-from tournament.models import Tournament, Teams
+from tournament.models import Tournament, Teams, MatchScore
 
 class TournamentSerializerDepth(serializers.ModelSerializer):
     class Meta:
@@ -34,3 +34,14 @@ class TeamsSerializerDepth(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
 
+
+class MatchScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MatchScore
+        fields = '__all__'
+
+class MatchScoreSerializerDepth(serializers.ModelSerializer):
+    class Meta:
+        model = MatchScore
+        fields = '__all__'
+        depth = 1

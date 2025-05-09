@@ -6,6 +6,22 @@ from grounds.models import GroundNew
 
 from django.utils import timezone
 
+def GenTeamId():
+    ground = Teams.objects.all().order_by('id').last()
+    if not ground:
+        return "TEM" + '0000001'
+    return 'TEM' + str(int(ground.id[4:]) + 1).zfill(7)
+
+class Teams(models.Model):
+    id = models.CharField(max_length=50, primary_key=True, default=GenTeamId)
+    name = models.CharField(max_length=250)
+    images = models.JSONField(default=dict, blank=True, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
+    team = models.JSONField(default=dict, blank=True, null=True)
+
+    class Meta:
+        db_table = 'teams'
+
 status_choice = (('Scheduled', 'Scheduled'), ('Completed', 'Completed'), ('Pending', 'Pending'),
                  ('Not Scheduled', 'Not Scheduled'))
 
@@ -35,23 +51,21 @@ class Tournament(models.Model):
     updated_date = models.DateTimeField(default=timezone.now, blank=True, null=True)
     updated_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='updated_by')
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    teams = models.ManyToManyField(Teams, blank=True)
 
 
     class Meta:
         db_table = 'tournament'
 
-def GenTeamId():
-    ground = Teams.objects.all().order_by('id').last()
-    if not ground:
-        return "TEM" + '0000001'
-    return 'TEM' + str(int(ground.id[4:]) + 1).zfill(7)
 
-class Teams(models.Model):
-    id = models.CharField(max_length=50, primary_key=True, default=GenTeamId)
-    name = models.CharField(max_length=250)
-    images = models.JSONField(default=dict, blank=True, null=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
-    team = models.JSONField(default=dict, blank=True, null=True)
+class MatchScore(models.Model):
+    grounds = models.ForeignKey(GroundNew, models.CASCADE, blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+    teams = models.ManyToManyField(Teams, blank=True)
+    score = models.JSONField(default=dict, blank=True, null=True)
+    mvp = models.JSONField(default=dict, blank=True, null=True)
 
     class Meta:
-        db_table = 'teams'
+        db_table = "match_score"
