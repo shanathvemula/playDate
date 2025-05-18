@@ -221,7 +221,7 @@ class TournamentsList(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
 class TeamsCRUD(APIView):
-    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    permission_classes = [IsAuthenticated]  # DjangoModelPermissions
     authentication_classes = [JWTAuthentication]
     queryset = Teams.objects.all().order_by('id').last()
 
