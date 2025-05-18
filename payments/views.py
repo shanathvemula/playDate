@@ -43,14 +43,24 @@ class RazorPayOrders(APIView):
                 user_info = json.loads(user_info)['id']
             except:
                 user_info = user_info
-            selectedSlots = data.pop('selectedSlots')
-            date = selectedSlots[0]['date']
-            groundId = data.pop('groundId')
+            selectedSlots = data.pop('selectedSlots', None)
+            if selectedSlots:
+                date = selectedSlots[0]['date']
+            else:
+                date = datetime.now()
+            groundId = data.pop('groundId', None)
+            tournamentId = data.pop('tournamentId', None)
+            teamId = data.pop('teamId', None)
+            # print("groundId", groundId)
             create_order_serializer = CreateOrderSerializer(data=data)
             if create_order_serializer.is_valid():
                 order = client.order.create(data)
-                order['groundId'] = groundId
-                order['selectedSlots'] = selectedSlots
+                if tournamentId or teamId:
+                    order['tournament'] = tournamentId
+                    order['team'] = teamId
+                else:
+                    order['groundId'] = groundId
+                    order['selectedSlots'] = selectedSlots
                 order['order_id'] = order.pop('id')
                 order['amount'] = order['amount'] / 100
                 order['amount_due'] = order['amount_due'] / 100

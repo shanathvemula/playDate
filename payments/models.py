@@ -1,7 +1,7 @@
 from django.db import models
 
 from grounds.models import GroundNew
-from tournament.models import Tournament
+from tournament.models import Tournament, Teams
 
 def GenTransactionIds():
     trans = Transaction.objects.all().order_by('id').last()
@@ -20,6 +20,7 @@ class Transaction(models.Model):
     groundId = models.ForeignKey(GroundNew, on_delete=models.CASCADE, verbose_name="Ground ID",
                                  blank=True, null=True, default=None) # models.CharField(max_length=150, blank=True, null=True)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, verbose_name="Tournament", blank=True, null=True, default=None)
+    team = models.ForeignKey(Teams, on_delete=models.CASCADE, verbose_name="Tournament", blank=True, null=True, default=None)
     selectedSlots = models.JSONField(default=dict, blank=True, null=True)
     # slotDates = models.DateTimeField(auto_now_add=True, verbose_name="Slot selected Date")
     amount_due = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount Due", blank=True, null=True)

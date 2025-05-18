@@ -236,7 +236,7 @@ class TeamsCRUD(APIView):
             if id:
                 owner = User.objects.get(id=id)
                 print("owner", owner)
-                teams = Teams.objects.get(owner=owner)
+                teams = Teams.objects.filter(owner=owner)
                 serializer_data = TeamsSerializerDepth(teams).data
                 # print("tournament", tournament)
                 # serializer_data = TeamsSerializerDepth(tournament).data
@@ -295,9 +295,3 @@ class TeamsCRUD(APIView):
 #         except Exception as e:
 #             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
 #                                 status=status.HTTP_400_BAD_REQUEST)
-
-from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer
-
-# import razorpay
-# from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
-# client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
