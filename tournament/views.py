@@ -298,6 +298,6 @@ class TeamsCRUD(APIView):
 
 from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer
 
-import razorpay
-from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+# import razorpay
+# from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+# client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
