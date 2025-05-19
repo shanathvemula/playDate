@@ -37,6 +37,7 @@ class RazorPayOrders(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
+            print(data)
             data['amount'] = float(data['amount']*100)
             user_info = data.pop('user')
             try:
@@ -47,7 +48,7 @@ class RazorPayOrders(APIView):
             if selectedSlots:
                 date = selectedSlots[0]['date']
             else:
-                date = datetime.now()
+                date = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
             groundId = data.pop('groundId', None)
             tournamentId = data.pop('tournamentId', None)
             teamId = data.pop('teamId', None)
@@ -101,7 +102,10 @@ class TransactionCRUD(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            data['slotDates'] = data['selectedSlots'][0]['date']
+            selectedSlots = data.pop("selectedSlots", None)
+            # print("selectedSlots", selectedSlots)
+            if selectedSlots:
+                data['slotDates'] = data['selectedSlots'][0]['date']
             transaction_serializer = TransactionSerializerPost(data=data)
             if transaction_serializer.is_valid():
                 k = client.utility.verify_payment_signature({"razorpay_order_id":data['order_id'],
