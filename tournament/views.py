@@ -110,7 +110,7 @@ class TournamentCRUD(APIView):
             id = request.GET.get('id')
             if id:
                 tournament = Tournament.objects.get(id=id)
-                serializer_data = TournamentSerializerDepth(tournament, many=True).data
+                serializer_data = TournamentSerializerDepth(tournament).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
             else:
@@ -232,12 +232,12 @@ class TeamsCRUD(APIView):
     def get(self, request, *args, **kwargs):
         try:
             id = request.GET.get('id')
-            print(id)
+            # print(id)
             if id:
                 owner = User.objects.get(id=id)
-                print("owner", owner)
+                # print("owner", owner)
                 teams = Teams.objects.filter(owner=owner)
-                serializer_data = TeamsSerializerDepth(teams).data
+                serializer_data = TeamsSerializerDepth(teams, many=True).data
                 # print("tournament", tournament)
                 # serializer_data = TeamsSerializerDepth(tournament).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
