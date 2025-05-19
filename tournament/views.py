@@ -110,7 +110,7 @@ class TournamentCRUD(APIView):
             id = request.GET.get('id')
             if id:
                 tournament = Tournament.objects.get(id=id)
-                serializer_data = TournamentSerializerDepth(tournament).data
+                serializer_data = TournamentSerializerDepth(tournament, many=True).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
             else:
