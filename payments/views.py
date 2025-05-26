@@ -37,20 +37,31 @@ class RazorPayOrders(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
+            print(data)
             data['amount'] = float(data['amount']*100)
             user_info = data.pop('user')
             try:
                 user_info = json.loads(user_info)['id']
             except:
                 user_info = user_info
-            selectedSlots = data.pop('selectedSlots')
-            date = selectedSlots[0]['date']
-            groundId = data.pop('groundId')
+            selectedSlots = data.pop('selectedSlots', None)
+            if selectedSlots:
+                date = selectedSlots[0]['date']
+            else:
+                date = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
+            groundId = data.pop('groundId', None)
+            tournamentId = data.pop('tournamentId', None)
+            teamId = data.pop('teamId', None)
+            # print("groundId", groundId)
             create_order_serializer = CreateOrderSerializer(data=data)
             if create_order_serializer.is_valid():
                 order = client.order.create(data)
-                order['groundId'] = groundId
-                order['selectedSlots'] = selectedSlots
+                if tournamentId or teamId:
+                    order['tournament'] = tournamentId
+                    order['team'] = teamId
+                else:
+                    order['groundId'] = groundId
+                    order['selectedSlots'] = selectedSlots
                 order['order_id'] = order.pop('id')
                 order['amount'] = order['amount'] / 100
                 order['amount_due'] = order['amount_due'] / 100
@@ -91,7 +102,10 @@ class TransactionCRUD(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            data['slotDates'] = data['selectedSlots'][0]['date']
+            selectedSlots = data.pop("selectedSlots", None)
+            # print("selectedSlots", selectedSlots)
+            if selectedSlots:
+                data['slotDates'] = data['selectedSlots'][0]['date']
             transaction_serializer = TransactionSerializerPost(data=data)
             if transaction_serializer.is_valid():
                 k = client.utility.verify_payment_signature({"razorpay_order_id":data['order_id'],

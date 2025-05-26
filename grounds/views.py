@@ -456,7 +456,7 @@ class PriceCalculator(APIView):
             date = datetime.strptime(date, "%Y-%m-%d")
             shot_date_name = date.strftime("%a")
             slots  = generate_slots(date_str=date, pricing_data=ground.pricing)
-            trans = Transaction.objects.filter(ground_booked_date=date, groundId=id, status="SUCCESS")
+            trans = Transaction.objects.filter(booked_date=date, groundId=id, status="SUCCESS")
             # print([item for sublist in [x.selectedSlots for x in trans] for item in sublist])
             slot_id = 1
             for slot in slots:
