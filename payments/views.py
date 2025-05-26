@@ -111,8 +111,10 @@ class TransactionCRUD(APIView):
             payment_details = client.payment.fetch(data['payment_id'])
             # print("Payment details", payment_details)
             transaction = Transaction.objects.get(order_id=data['order_id'])
-            # print("transaction", transaction.groundId.id)
-            ground = GroundNew.objects.get(id=transaction.groundId.id)
+            if transaction.groundId:
+                ground = GroundNew.objects.get(id=transaction.groundId.id)
+            else:
+                ground = None
             # print("Ground details", ground, transaction.user.isdigit())
             if transaction.user.isdigit():
                 user = UserSerializer(User.objects.get(id=int(transaction.user))).data
@@ -129,8 +131,9 @@ class TransactionCRUD(APIView):
                         body = (body.replace("{{ first_name }}", user['first_name']).
                                 replace("{{ last_name }}", user['last_name']).
                                 replace("{{ amount }}", str(payment_details['amount'] /100)).
-                                replace("{{ email }}", user['email']). replace("{{ phone }}", str(user['phone'])).
-                                replace("{{ ground_name }}", ground.ground_name).
+                                replace("{{ email }}", user['email']). replace("{{ phone }}", str(user['phone'])))
+                        if ground:
+                            body=(body.replace("{{ ground_name }}", ground.ground_name).
                                 replace("{{ address }}", ground.address))
                     send_mail(to=user['email'], subject="PlayDate Ground Booking Confirmation", body=body)
                 return Response(transaction_serializer.data, status=status.HTTP_200_OK)

@@ -27,6 +27,7 @@ from tournament.serializers import (TournamentSerializer, TournamentSerializerDe
                                     TeamsSerializer, TeamsSerializerDepth, IdSerializer)
 from tournament.models import Tournament, Teams, GroundNew
 from payments.models import Transaction
+from app.models import User
 
 from django.db import connection
 
@@ -95,7 +96,7 @@ from django.db import connection
 
 
 class TournamentCRUD(APIView):
-    permission_classes = [DjangoModelPermissions, IsAuthenticated]
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
     authentication_classes = [JWTAuthentication]
     queryset = Tournament.objects.all().order_by('-created_by')
     serializer_class = TournamentSerializerDepth
@@ -220,7 +221,7 @@ class TournamentsList(APIView):
                                 status=status.HTTP_400_BAD_REQUEST)
 
 class TeamsCRUD(APIView):
-    permission_classes = [DjangoModelPermissions, IsAuthenticated]
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
     authentication_classes = [JWTAuthentication]
     queryset = Teams.objects.all().order_by('id').last()
 
@@ -231,9 +232,14 @@ class TeamsCRUD(APIView):
     def get(self, request, *args, **kwargs):
         try:
             id = request.GET.get('id')
+            print(id)
             if id:
-                tournament = Teams.objects.get(id=id)
-                serializer_data = TeamsSerializerDepth(tournament).data
+                owner = User.objects.get(id=id)
+                print("owner", owner)
+                teams = Teams.objects.get(owner=owner)
+                serializer_data = TeamsSerializerDepth(teams).data
+                # print("tournament", tournament)
+                # serializer_data = TeamsSerializerDepth(tournament).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
             else:
@@ -274,3 +280,24 @@ class TeamsCRUD(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                             status=status.HTTP_400_BAD_REQUEST)
 
+# class TeamsAdditional(APIView):
+#     permission_classes = [IsAuthenticated, DjangoModelPermissions]
+#     authentication_classes = [JWTAuthentication]
+#     queryset = Teams.objects.all().order_by('id').last()
+#
+#     @extend_schema(parameters=[
+#         OpenApiParameter(name='id', description="Enter the Tournament Id", type=str)
+#     ], summary='Get Teams Information', description=f'* This endpoint provides the List of teams Information. \n'
+#                                                     f"* By using the Tournament Id")
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             id = request.GET.get('id')
+#         except Exception as e:
+#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+#                                 status=status.HTTP_400_BAD_REQUEST)
+
+from payments.serializers import CreateOrderSerializer, VerifyOrderSerializer
+
+import razorpay
+from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
