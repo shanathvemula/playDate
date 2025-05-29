@@ -138,7 +138,7 @@ class TransactionCRUD(APIView):
             transaction_serializer = TransactionSerializerPost(transaction, data=data, partial=True)
             if transaction_serializer.is_valid():
                 transaction_serializer.save()
-                if data['status'] == 'SUCCESS':
+                if data['status'] == 'SUCCESS' and ground:
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "ticket.html"),
                               "r") as html:
                         body = html.read()
@@ -150,6 +150,11 @@ class TransactionCRUD(APIView):
                             body=(body.replace("{{ ground_name }}", ground.ground_name).
                                 replace("{{ address }}", ground.address))
                     send_mail(to=user['email'], subject="PlayDate Ground Booking Confirmation", body=body)
+                if data['status'] == 'SUCCESS' and transaction.tournament:
+                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "tournament_registration_success.html"),"r") as html:
+                        body = html.read()
+                        body = (body.replace("{{ first_name }}", user['first_name']).replace("{{ tournament }}", transaction.tournament.name))
+                    send_mail(to=user['email'], subject="PlayDate Tournament Registration Confirmation", body=body)
                 return Response(transaction_serializer.data, status=status.HTTP_200_OK)
             return Response(transaction_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
