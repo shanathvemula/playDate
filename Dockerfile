@@ -24,6 +24,9 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install psycopg2-binary --no-cache-dir --user
 
+# Install Gunicorn
+RUN pip install gunicorn
+
 # Copy project files into container
 COPY . .
 
@@ -32,3 +35,5 @@ EXPOSE 8000
 
 # Run Django development server (for production, consider using gunicorn)
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "playDate.wsgi:application"]
+
