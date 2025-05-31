@@ -1,0 +1,48 @@
+FROM python:3.11
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install system dependencies (incl. GDAL & SSL)
+RUN apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    gcc \
+    python3-dev \
+    build-essential \
+    libpq-dev \
+    libssl-dev \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set GDAL environment variables
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
+RUN gdal-config --version
+
+# Create and activate virtual environment
+RUN python -m venv $VIRTUAL_ENV
+
+# Set work directory
+WORKDIR /usr/src/app
+
+# Copy requirements and install them inside the venv
+COPY requirements.txt ./
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Gunicorn
+RUN pip install gunicorn
+
+# Copy the rest of the project
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Start the Django app with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "playDate.wsgi:application"]
