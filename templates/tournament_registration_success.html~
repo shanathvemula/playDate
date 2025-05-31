@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlayDate Tournament Registration</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #1e3a8a;
+      color: #ffffff;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .content {
+      padding: 30px 25px;
+      color: #1e293b;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .content p {
+      margin-bottom: 20px;
+    }
+    .content ul {
+      padding-left: 20px;
+      margin-top: 0;
+    }
+    .content li {
+      margin-bottom: 10px;
+    }
+    .cta {
+      background-color: #3b82f6;
+      color: white;
+      padding: 12px 25px;
+      text-align: center;
+      display: inline-block;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      font-size: 14px;
+      color: #64748b;
+      padding: 20px;
+      background: #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>You're Almost In! Final Step to Join the {{ tournament }}</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>{{ first_name}}</strong>,</p>
+      <p>You're one step away from stepping into the arena – and we're thrilled to have you join the <strong>PlayDate
+          {{ tournament }} Tournament</strong>!</p>
+      <p><strong>Important:</strong> Your spot is only confirmed after your payment is verified. Once that’s done, you’re officially in!</p>
+
+      <p><strong>Before Game Day, Remember:</strong></p>
+      <ul>
+        <li>Arrive <strong>20 minutes early</strong> to be match-ready.</li>
+        <li>Bring a <strong>valid ID</strong> – no ID, no entry.</li>
+        <li>Ensure your <strong>entire team is registered</strong> before your first match.</li>
+        <li>Need changes or help? Just <a href="mailto:support@playdate.com">reply to this email</a>.</li>
+      </ul>
+
+      <p>This isn’t just a tournament – it’s a full-blown, high-energy showdown with epic teams, roaring fans, and serious bragging rights.</p>
+
+<!--      <p style="text-align: center;">-->
+<!--        <a href="#" class="cta">Complete Your Payment</a>-->
+<!--      </p>-->
+
+      <p>Get ready to bring the heat, show your skills, and make some noise.</p>
+
+      <p>See you on the field, <br><strong>The PlayDate Team</strong><br>Let’s Play.</p>
+    </div>
+    <div class="footer">
+        &copy; 2025 PlayDate. All rights reserved. | Developed by <b>Sahasra</b>
+    </div>
+  </div>
+</body>
+</html>
