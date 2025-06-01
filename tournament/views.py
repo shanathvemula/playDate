@@ -96,7 +96,7 @@ from django.db import connection
 
 
 class TournamentCRUD(APIView):
-    permission_classes = [IsAuthenticated, DjangoModelPermissions]
+    permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     queryset = Tournament.objects.all().order_by('-created_by')
     serializer_class = TournamentSerializerDepth
