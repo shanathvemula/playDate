@@ -219,8 +219,7 @@ class SignUp(APIView):
                         body = html.read()
                         body = (body.replace("{{ logo_path }}",os.getenv('logoURL')).replace("{{ reset_link }}", reset_link)
                                 .replace("{{ supportMail }}", os.getenv("supportMail")).replace("{{ current_year }}", str(datetime.now().year))
-                                .replace("{{ company_address }}", os.getenv("company_address")).replace("{{ app_name }}", os.getenv('app_name'))
-                                .replace("{{ user_name }}", user.first_name))
+                                .replace("{{ company_address }}", os.getenv("company_address")).replace("{{ app_name }}", os.getenv('app_name')))
                         send_mail(to=user.email,
                                   subject=f"Password Reset Request for Your {os.getenv('app_name')} Account", body=body)
                         return HttpResponse(JSONRenderer().render({"message":"Reset mail sent"}), content_type='application/json',

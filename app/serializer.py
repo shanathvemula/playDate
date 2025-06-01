@@ -42,7 +42,7 @@ class UserSerializerDepth(ModelSerializer):
 class UserSignUpSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ('username','password' ,'first_name')
+        fields = ('username','password' ,'first_name','phone')
 
 class UserForgetPasswordSerializer(ModelSerializer):
     class Meta:
