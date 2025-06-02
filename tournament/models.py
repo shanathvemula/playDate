@@ -52,6 +52,7 @@ class Tournament(models.Model):
     updated_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='updated_by')
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     teams = models.ManyToManyField(Teams, blank=True)
+    match_schedule_image = models.JSONField(default=dict, blank=True, null=True)
 
 
     class Meta:
