@@ -46,15 +46,21 @@
     .content li {
       margin-bottom: 10px;
     }
-    .cta {
-      background-color: #3b82f6;
-      color: white;
-      padding: 12px 25px;
+    .payment-section {
       text-align: center;
-      display: inline-block;
-      border-radius: 6px;
-      text-decoration: none;
+      margin: 30px 0;
+    }
+    .payment-section img {
+      width: 200px;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .amount {
+      font-size: 20px;
       font-weight: bold;
+      color: #1e3a8a;
+      margin-bottom: 10px;
     }
     .footer {
       text-align: center;
@@ -72,9 +78,9 @@
     </div>
     <div class="content">
       <p>Hi <strong>{{ first_name }}</strong>,</p>
-      <p>You're one step away from stepping into the arena – and we're thrilled to have you join the <strong>PlayDate
-          {{ tournament }} Tournament</strong>!</p>
-      <p><strong>Important:</strong> Your spot is only confirmed after your payment is verified. Once that's done, you're officially in!</p>
+      <p>You're one step away from stepping into the arena - and we're thrilled to have you join the <b>PlayDate
+          {{ tournament }} Tournament</b>!</p>
+      <b><b>Important:</b> Your spot is only confirmed after your payment is verified. Once that's done, you're officially in!</b>
 
       <p><strong>Before Game Day, Remember:</strong></p>
       <ul>
@@ -84,11 +90,12 @@
         <li>Need changes or help? Just <a href="mailto:support@playdate.com">reply to this email</a>.</li>
       </ul>
 
-      <p>This isn't just a tournament - it's a full-blown, high-energy showdown with epic teams, roaring fans, and serious bragging rights.</p>
-
-<!--      <p style="text-align: center;">-->
-<!--        <a href="#" class="cta">Complete Your Payment</a>-->
-<!--      </p>-->
+      <div class="payment-section">
+        <p class="amount">Amount: ₹{{ amount }}</p>
+        <p>Scan the QR code below to complete your payment via PhonePe:</p>
+        <img src="" alt="UPI QR Code for Payment" />
+        <p><strong>UPI Name:</strong> Rafi</p>
+      </div>
 
       <p>Get ready to bring the heat, show your skills, and make some noise.</p>
 
