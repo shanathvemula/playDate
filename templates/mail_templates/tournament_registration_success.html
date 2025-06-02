@@ -91,10 +91,10 @@
       </ul>
 
       <div class="payment-section">
-        <p class="amount">Amount: ₹{{ amount }}</p>
+        <p class="amount">Amount: INR {{ amount }}</p>
         <p>Scan the QR code below to complete your payment via PhonePe:</p>
-        <img src="" alt="UPI QR Code for Payment" />
-        <p><strong>UPI Name:</strong> Rafi</p>
+        <img src="{{ qr_code_url }}" alt="UPI QR Code for Payment" />
+        <p><strong>UPI Name:</strong> {{ upi_link }}</p>
       </div>
 
       <p>Get ready to bring the heat, show your skills, and make some noise.</p>

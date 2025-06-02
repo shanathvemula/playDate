@@ -83,7 +83,8 @@ class RazorPayOrders(APIView):
                             body = (body.replace("{{ first_name }}", user_info.split('@')[0]).replace("{{ tournament }}",
                                                                                                  Tournament.objects.get(
                                                                                                      id=tournamentId).name).
-                                    replace("{{ amount }}", str(order['amount'])))
+                                    replace("{{ amount }}", str(order['amount'])).replace("{{ qr_code_url }}", os.getenv("PAYMENT_QR_CODE_URL"))
+                                    .replace("{{ upi_link }}", os.getenv("PAYMENT_UPI_LINK")))
                         send_mail(to=user_info, subject="PlayDate Tournament Registration Confirmation", body=body)
                     return Response(order, status=status.HTTP_200_OK)
                 return Response(transaction_serializer.errors, status=status.HTTP_200_OK)
