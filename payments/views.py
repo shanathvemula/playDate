@@ -27,8 +27,22 @@ from app.views import send_mail, BASE_DIR
 
 import razorpay
 
+import qrcode
+import base64
+from io import BytesIO
+
 from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+
+def gen_code(amount, order_id, url, upi_id):
+    upi_link = f"upi://pay?pa={upi_id}&pn=Playdate%20Sport&mc=0000&mode=02&purpose=00&am={amount}&tn={order_id}&url={url}"
+    qr = qrcode.make(upi_link)
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.read()).decode("utf-8")
+    return f"data:image/png;base64,{img_base64}", upi_link
 
 # Create your views here.
 class RazorPayOrders(APIView):
@@ -38,7 +52,7 @@ class RazorPayOrders(APIView):
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            print(data)
+            # print(data)
             data['amount'] = float(data['amount']*100)
             user_info = data.pop('user')
             try:
@@ -76,6 +90,10 @@ class RazorPayOrders(APIView):
                 if transaction_serializer.is_valid():
                     transaction_serializer.save()
                     if tournamentId or teamId:
+                        qr_code, upi_link = gen_code(amount=order['amount'], order_id=order['order_id'],
+                                                     url=os.getenv("PAYMENT_QR_CODE_REDIRECT_URL"),
+                                                     upi_id=os.getenv("PAYMENT_UPI_ID"))
+                        # print(upi_link)
                         with open(os.path.join(
                                 BASE_DIR / "templates" / "mail_templates" / "tournament_registration_success.html"),
                                   "r") as html:
@@ -83,8 +101,10 @@ class RazorPayOrders(APIView):
                             body = (body.replace("{{ first_name }}", user_info.split('@')[0]).replace("{{ tournament }}",
                                                                                                  Tournament.objects.get(
                                                                                                      id=tournamentId).name).
-                                    replace("{{ amount }}", str(order['amount'])).replace("{{ qr_code_url }}", os.getenv("PAYMENT_QR_CODE_URL"))
-                                    .replace("{{ upi_link }}", os.getenv("PAYMENT_UPI_LINK")))
+                                    replace("{{ amount }}", str(order['amount'])).replace("{{ qr_code_url }}", qr_code)
+                                    .replace("{{ upi_link }}", upi_link))
+                            order['qr_code'] = qr_code
+                            order['upi_link'] = upi_link
                         send_mail(to=user_info, subject="PlayDate Tournament Registration Confirmation", body=body)
                     return Response(order, status=status.HTTP_200_OK)
                 return Response(transaction_serializer.errors, status=status.HTTP_200_OK)
