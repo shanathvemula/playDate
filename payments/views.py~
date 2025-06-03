@@ -93,7 +93,7 @@ class RazorPayOrders(APIView):
                         qr_code, upi_link = gen_code(amount=order['amount'], order_id=order['order_id'],
                                                      url=os.getenv("PAYMENT_QR_CODE_REDIRECT_URL"),
                                                      upi_id=os.getenv("PAYMENT_UPI_ID"))
-                        print(upi_link)
+                        # print(upi_link)
                         with open(os.path.join(
                                 BASE_DIR / "templates" / "mail_templates" / "tournament_registration_success.html"),
                                   "r") as html:
