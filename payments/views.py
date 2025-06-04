@@ -105,6 +105,7 @@ class RazorPayOrders(APIView):
                                     .replace("{{ upi_link }}", upi_link))
                             order['qr_code'] = qr_code
                             order['upi_link'] = upi_link
+                            print(qr_code)
                         send_mail(to=user_info, subject="PlayDate Tournament Registration Confirmation", body=body)
                     return Response(order, status=status.HTTP_200_OK)
                 return Response(transaction_serializer.errors, status=status.HTTP_200_OK)

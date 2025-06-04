@@ -233,7 +233,7 @@ class GroundCRUD(APIView):
     serializer_class = GroundNewSerializer
 
     @extend_schema(parameters=[
-        OpenApiParameter(name='id', description='Enter Ground Id', type=int),
+        OpenApiParameter(name='id', description='Enter Ground Id', type=str),
         OpenApiParameter(name='user_id', description='Enter User Id', type=int),
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
@@ -338,13 +338,18 @@ class GroundsData(APIView):
         OpenApiParameter(name='lat', description='Enter latitude', type=float),
         OpenApiParameter(name='lon', description='Enter longitude', type=float),
         OpenApiParameter(name='radius', description='Enter radius', type=int),
+        OpenApiParameter(name='id', description='Enter Ground Id', type=str)
     ], summary='Get Ground Management Information', description='This endpoint provides the Ground details')
     def get(self, request, *args, **kwargs):
         try:
             lat = request.GET.get('lat', None)
             lon = request.GET.get('lon', None)
             radius = request.GET.get('radius', None)
-            if lat and lon and radius:
+            id = request.GET.get('id', None)
+            if id:
+                ground = GroundNew.objects.get(id=id)
+                return HttpResponse(JSONRenderer().render(GroundNewSerializer(ground).data))
+            elif lat and lon and radius:
                 ground = GroundNew.objects.filter(
                     location__distance_lte=(Point(float(lat), float(lon)), D(km=int(radius)))).order_by('Created')
                 serializers_data = list(GroundNewSerializer(ground, many=True).data)
