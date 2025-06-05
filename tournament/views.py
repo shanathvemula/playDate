@@ -266,33 +266,33 @@ class TeamsCRUD(APIView):
                 new_emails = [team for team in data['team'] if team['email'] not in exists_emails]
                 owner = User.objects.get(id=data['owner'])
                 # print(new_emails)
-                for team in new_emails:
-                    # user = User.objects.create_user(username=team['email'],
-                    #                                 email=team['email'],
-                    #                                 password='Test@123',
-                    #                                 user_type='End User')
-                    UserSerializer = UserSignUpSerializer(data={'username': team['email'],
-                                                                     'password': 'Test@123',
-                                                                     'email': team['email']})
-                    if UserSerializer.is_valid():
-                        UserSerializer.save()
-                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
-                              "r") as html:
-                        body = html.read()
-                    # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
-                    # logInURL = os.getenv("logInURL")
-                    # print(os.getenv('logoURL'))
-                    body = (body.replace("{{ logo_path }}", os.getenv('logoURL')).replace("{{ app_name }}",
-                                                                                          os.getenv('app_name'))
-                            .replace("{{ first_name }}", team['name']).replace("{{ email }}", team['email'])
-                            .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
-                                                                                      str(datetime.now().year))
-                            .replace("{{ company_address }}", os.getenv("company_address"))
-                            .replace("{{ supportMail }}", os.getenv("supportMail"))
-                            .replace("{{ password }}", 'Test@123').replace("{{ owner }}", owner.first_name)
-                            .replace("{{ team_name }}", data['name']))
-                    send_mail(to=team['email'],
-                              subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
+                # for team in new_emails:
+                #     # user = User.objects.create_user(username=team['email'],
+                #     #                                 email=team['email'],
+                #     #                                 password='Test@123',
+                #     #                                 user_type='End User')
+                #     UserSerializer = UserSignUpSerializer(data={'username': team['email'],
+                #                                                      'password': 'Test@123',
+                #                                                      'email': team['email']})
+                #     if UserSerializer.is_valid():
+                #         UserSerializer.save()
+                #     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
+                #               "r") as html:
+                #         body = html.read()
+                #     # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
+                #     # logInURL = os.getenv("logInURL")
+                #     # print(os.getenv('logoURL'))
+                #     body = (body.replace("{{ logo_path }}", os.getenv('logoURL')).replace("{{ app_name }}",
+                #                                                                           os.getenv('app_name'))
+                #             .replace("{{ first_name }}", team['name']).replace("{{ email }}", team['email'])
+                #             .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
+                #                                                                       str(datetime.now().year))
+                #             .replace("{{ company_address }}", os.getenv("company_address"))
+                #             .replace("{{ supportMail }}", os.getenv("supportMail"))
+                #             .replace("{{ password }}", 'Test@123').replace("{{ owner }}", owner.first_name)
+                #             .replace("{{ team_name }}", data['name']))
+                #     send_mail(to=team['email'],
+                #               subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
                 serializer.save()
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json',
                                     status=status.HTTP_201_CREATED)
@@ -315,29 +315,29 @@ class TeamsCRUD(APIView):
                 new_emails = [team for team in data['team'] if team['email'] not in exists_emails]
                 owner = User.objects.get(id=data['owner'])
                 # print(new_emails)
-                for team in new_emails:
-                    UserSerializer = UserSignUpSerializer(data={'username': team['email'],
-                                                                'password': 'Test@123',
-                                                                'email': team['email']})
-                    if UserSerializer.is_valid():
-                        UserSerializer.save()
-                    with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
-                              "r") as html:
-                        body = html.read()
-                    # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
-                    # logInURL = os.getenv("logInURL")
-                    # print(os.getenv('logoURL'))
-                    body = (body.replace("{{ logo_path }}", os.getenv('logoURL')).replace("{{ app_name }}",
-                                                                                          os.getenv('app_name'))
-                            .replace("{{ first_name }}", team['name']).replace("{{ email }}", team['email'])
-                            .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
-                                                                                      str(datetime.now().year))
-                            .replace("{{ company_address }}", os.getenv("company_address"))
-                            .replace("{{ supportMail }}", os.getenv("supportMail"))
-                            .replace("{{ password }}", 'Test@123').replace("{{ owner }}", owner.first_name)
-                            .replace("{{ team_name }}", data['name']))
-                    send_mail(to=team['email'],
-                              subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
+                # for team in new_emails:
+                #     UserSerializer = UserSignUpSerializer(data={'username': team['email'],
+                #                                                 'password': 'Test@123',
+                #                                                 'email': team['email']})
+                #     if UserSerializer.is_valid():
+                #         UserSerializer.save()
+                #     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
+                #               "r") as html:
+                #         body = html.read()
+                #     # logo_path = os.path.join( "media", "logo", "Logo_without_background.png")
+                #     # logInURL = os.getenv("logInURL")
+                #     # print(os.getenv('logoURL'))
+                #     body = (body.replace("{{ logo_path }}", os.getenv('logoURL')).replace("{{ app_name }}",
+                #                                                                           os.getenv('app_name'))
+                #             .replace("{{ first_name }}", team['name']).replace("{{ email }}", team['email'])
+                #             .replace("{{ logInURL }}", os.getenv("logInURL")).replace("{{ current_year }}",
+                #                                                                       str(datetime.now().year))
+                #             .replace("{{ company_address }}", os.getenv("company_address"))
+                #             .replace("{{ supportMail }}", os.getenv("supportMail"))
+                #             .replace("{{ password }}", 'Test@123').replace("{{ owner }}", owner.first_name)
+                #             .replace("{{ team_name }}", data['name']))
+                #     send_mail(to=team['email'],
+                #               subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering", body=body)
                 serializer.save()
                 return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
             return HttpResponse(JSONRenderer().render(serializer.errors), status=status.HTTP_400_BAD_REQUEST)

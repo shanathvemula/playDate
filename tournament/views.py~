@@ -274,7 +274,8 @@ class TeamsCRUD(APIView):
                     UserSerializer = UserSignUpSerializer(data={'username': team['email'],
                                                                      'password': 'Test@123',
                                                                      'email': team['email']})
-                    UserSerializer.save()
+                    if UserSerializer.is_valid():
+                        UserSerializer.save()
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
                               "r") as html:
                         body = html.read()
@@ -318,7 +319,8 @@ class TeamsCRUD(APIView):
                     UserSerializer = UserSignUpSerializer(data={'username': team['email'],
                                                                 'password': 'Test@123',
                                                                 'email': team['email']})
-                    UserSerializer.save()
+                    if UserSerializer.is_valid():
+                        UserSerializer.save()
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
                               "r") as html:
                         body = html.read()
