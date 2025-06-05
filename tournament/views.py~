@@ -271,11 +271,11 @@ class TeamsCRUD(APIView):
                     #                                 email=team['email'],
                     #                                 password='Test@123',
                     #                                 user_type='End User')
-                    # UserSerializer = UserSignUpSerializer(data={'username': team['email'],
-                    #                                                  'password': 'Test@123',
-                    #                                                  'email': team['email']})
-                    # if UserSerializer.is_valid():
-                    #     UserSerializer.save()
+                    UserSerializer = UserSignUpSerializer(data={'username': team['email'],
+                                                                     'password': 'Test@123',
+                                                                     'email': team['email']})
+                    if UserSerializer.is_valid():
+                        UserSerializer.save()
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
                               "r") as html:
                         body = html.read()
@@ -316,11 +316,11 @@ class TeamsCRUD(APIView):
                 owner = User.objects.get(id=data['owner'])
                 # print(new_emails)
                 for team in new_emails:
-                    # UserSerializer = UserSignUpSerializer(data={'username': team['email'],
-                    #                                             'password': 'Test@123',
-                    #                                             'email': team['email']})
-                    # if UserSerializer.is_valid():
-                    #     UserSerializer.save()
+                    UserSerializer = UserSignUpSerializer(data={'username': team['email'],
+                                                                'password': 'Test@123',
+                                                                'email': team['email']})
+                    if UserSerializer.is_valid():
+                        UserSerializer.save()
                     with open(os.path.join(BASE_DIR / "templates" / "mail_templates" / "Team_invite_template.html"),
                               "r") as html:
                         body = html.read()
