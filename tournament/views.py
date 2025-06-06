@@ -267,10 +267,10 @@ class TeamsCRUD(APIView):
                 owner = User.objects.get(id=data['owner'])
                 # print(new_emails)
                 for team in new_emails:
-                    # user = User.objects.create_user(username=team['email'],
-                    #                                 email=team['email'],
-                    #                                 password='Test@123',
-                    #                                 user_type='End User')
+                    user = User.objects.create_user(username=team['email'],
+                                                    email=team['email'],
+                                                    password='Test@123',
+                                                    user_type='End User')
                     # UserSerializer = UserSignUpSerializer(data={'username': team['email'],
                     #                                                  'password': 'Test@123',
                     #                                                  'email': team['email']})
@@ -316,6 +316,10 @@ class TeamsCRUD(APIView):
                 owner = User.objects.get(id=data['owner'])
                 # print(new_emails)
                 for team in new_emails:
+                    user = User.objects.create_user(username=team['email'],
+                                                    email=team['email'],
+                                                    password='Test@123',
+                                                    user_type='End User')
                     # UserSerializer = UserSignUpSerializer(data={'username': team['email'],
                     #                                             'password': 'Test@123',
                     #                                             'email': team['email']})
