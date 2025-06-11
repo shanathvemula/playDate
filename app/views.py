@@ -644,3 +644,35 @@ class ImportUser(APIView):
 #             # raise e
 #             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
 #                                 status=status.HTTP_400_BAD_REQUEST)
+
+class ContactUs(APIView):
+    authentication_classes = []
+    permission_classes = []
+    # parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            print(data)
+            body = (f"<h3>Name:  </h3> {data['name']}<br>"
+                    f"<h3>Email:  </h3> {data['email']}<br>"
+                    f"<h3>Phone:  </h3> {data['phone']}<br>"
+                    f"<h3>Subject:  </h3> {data['subject']}<br>"
+                    f"<h3>Message:  </h3> {data['message']}")
+            send_mail(to="mohammadrafi264@gmail.com", subject="From Contact us page", body=body)
+            return HttpResponse(JSONRenderer().render({"message": "Message sent successfully"}),
+                                content_type='application/json',
+                                status=status.HTTP_200_OK)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"error": "Something went wrong"}),
+                                content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+        # serializer = ContactUsSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return HttpResponse(JSONRenderer().render({"message": "Message sent successfully"}),
+        #                         content_type='application/json',
+        #                         status=status.HTTP_200_OK)
+        # return HttpResponse(JSONRenderer().render({"error": serializer.errors}),
+        #                     content_type='application/json',
+        #                     status=status.HTTP_400_BAD_REQUEST)
