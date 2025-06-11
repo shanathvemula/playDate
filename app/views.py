@@ -659,7 +659,8 @@ class ContactUs(APIView):
                     f"<h3>Phone:  </h3> {data['phone']}<br>"
                     f"<h3>Subject:  </h3> {data['subject']}<br>"
                     f"<h3>Message:  </h3> {data['message']}")
-            send_mail(to="mohammadrafi264@gmail.com", subject="From Contact us page", body=body)
+            print(EMAIL_HOST_USER)
+            send_mail(to=EMAIL_HOST_USER, subject="From Contact us page", body=body)
             return HttpResponse(JSONRenderer().render({"message": "Message sent successfully"}),
                                 content_type='application/json',
                                 status=status.HTTP_200_OK)
