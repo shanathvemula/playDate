@@ -54,6 +54,8 @@ class GroundMinimalSerializer(serializers.ModelSerializer):
 
 
 class TournamentGroundDepthSerializers(serializers.ModelSerializer):
+    ground = GroundMinimalSerializer(many=True)
+
     class Meta:
         model = Tournament
         fields = ['id', 'name', 'ground']

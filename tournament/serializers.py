@@ -17,7 +17,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 class TournamentGroundsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tournament
-        fields = ['ground']
+        fields = ['status', 'ground']
         depth = 1
 
 class IdSerializer(serializers.Serializer):
