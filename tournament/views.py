@@ -199,7 +199,7 @@ class TournamentsList(APIView):
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
             else:
-                tournament = Tournament.objects.filter(status__in = ['Not Scheduled', 'Pending']).order_by('-created_by')
+                tournament = Tournament.objects.all().order_by('-created_date')
                 serializer_data = TournamentSerializerDepth(tournament, many=True).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
