@@ -275,6 +275,8 @@ class GroundCRUD(APIView):
         try:
             data = request.data
             data['CreatedBy'] = request.user.id
+            if 'null' in data['location']:
+                data['location'] = "POINT (17.387140 78.491684)"
             serializer = GroundNewSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
