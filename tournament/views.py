@@ -24,7 +24,8 @@ from django.contrib.gis.measure import D
 from datetime import datetime, timedelta
 
 from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth, TournamentGroundsSerializer,
-                                    TeamsSerializer, TeamsSerializerDepth, IdSerializer)
+                                    TeamsSerializer, TeamsSerializerDepth, IdSerializer,
+                                    TournamentGroundDepthSerializers)
 from tournament.models import Tournament, Teams, GroundNew
 from payments.models import Transaction
 
@@ -198,7 +199,7 @@ class TournamentsList(APIView):
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
             else:
-                tournament = Tournament.objects.all().order_by('-created_by')
+                tournament = Tournament.objects.filter(status__in = ['Not Scheduled', 'Pending']).order_by('-created_by')
                 serializer_data = TournamentSerializerDepth(tournament, many=True).data
                 return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json',
                                     status=status.HTTP_200_OK)
@@ -361,6 +362,28 @@ class TeamsCRUD(APIView):
 #     def get(self, request, *args, **kwargs):
 #         try:
 #             id = request.GET.get('id')
+#         except Exception as e:
+#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+#                                 status=status.HTTP_400_BAD_REQUEST)
+
+# class TournamentGroundDepthAPIView(APIView):
+#     permission_classes = []
+#     authentication_classes = []
+#     queryset = Tournament.objects.all().order_by('id').last()
+#     serializer_class = TournamentGroundDepthSerializers
+#
+#     @extend_schema(parameters=[
+#         # OpenApiParameter(name='id', description="Enter the Tournament Id", type=str)
+#     ], summary='Get Teams Information', description=f'* This endpoint provides the List of teams Information. \n'
+#                                                     f"* By using the Tournament Id")
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             import json
+#             # id = request.GET.get('id')
+#             tournament = Tournament.objects.filter(status__in=['Not Scheduled', 'Pending']).order_by('-created_date')
+#             serializer = TournamentGroundDepthSerializers(tournament, many=True)
+#             # print(json.loads(json.dumps(serializer.data)))
+#             return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
 #         except Exception as e:
 #             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
 #                                 status=status.HTTP_400_BAD_REQUEST)
