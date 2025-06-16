@@ -61,10 +61,13 @@ class Tournament(models.Model):
 
 class MatchScore(models.Model):
     grounds = models.ForeignKey(GroundNew, models.CASCADE, blank=True, null=True)
+    tournament = models.ForeignKey(Tournament, models.CASCADE, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     start_time = models.TimeField(blank=True, null=True)
     end_time = models.TimeField(blank=True, null=True)
-    teams = models.ManyToManyField(Teams, blank=True)
+    team1 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='team1', blank=True, null=True)
+    team2 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='team2', blank=True, null=True)
+    # teams = models.ManyToManyField(Teams, blank=True)
     score = models.JSONField(default=dict, blank=True, null=True)
     mvp = models.JSONField(default=dict, blank=True, null=True)
 

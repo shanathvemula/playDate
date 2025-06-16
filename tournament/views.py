@@ -24,8 +24,9 @@ from django.contrib.gis.measure import D
 from datetime import datetime, timedelta
 
 from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth, TournamentGroundsSerializer,
-                                    TeamsSerializer, TeamsSerializerDepth, IdSerializer,
-                                    TournamentGroundDepthSerializers)
+                                    TeamsSerializer, TeamsSerializerDepth, IdSerializer, MatchScore,
+                                    TournamentGroundDepthSerializers, MatchScoreSerializer,
+                                    MatchScoreSerializerDepth)
 from tournament.models import Tournament, Teams, GroundNew
 from payments.models import Transaction
 
@@ -35,6 +36,7 @@ from app.views import send_mail
 
 from django.db import connection
 import os
+import json
 
 from app.serializer import UserSignUpSerializer
 
@@ -366,24 +368,73 @@ class TeamsCRUD(APIView):
 #             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
 #                                 status=status.HTTP_400_BAD_REQUEST)
 
-# class TournamentGroundDepthAPIView(APIView):
-#     permission_classes = []
-#     authentication_classes = []
-#     queryset = Tournament.objects.all().order_by('id').last()
-#     serializer_class = TournamentGroundDepthSerializers
-#
-#     @extend_schema(parameters=[
-#         # OpenApiParameter(name='id', description="Enter the Tournament Id", type=str)
-#     ], summary='Get Teams Information', description=f'* This endpoint provides the List of teams Information. \n'
-#                                                     f"* By using the Tournament Id")
-#     def get(self, request, *args, **kwargs):
-#         try:
-#             import json
-#             # id = request.GET.get('id')
-#             tournament = Tournament.objects.filter(status__in=['Not Scheduled', 'Pending']).order_by('-created_date')
-#             serializer = TournamentGroundDepthSerializers(tournament, many=True)
-#             # print(json.loads(json.dumps(serializer.data)))
-#             return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
-#         except Exception as e:
-#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
-#                                 status=status.HTTP_400_BAD_REQUEST)
+class TournamentGroundDepthAPIView(APIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = Tournament.objects.all().order_by('id').last()
+    serializer_class = TournamentGroundDepthSerializers
+
+    @extend_schema(
+        # parameters=[
+        # OpenApiParameter(name='id', description="Enter the Tournament Id", type=str),
+        # OpenApiParameter(name='date', description="Enter the date", type=str),
+        # # OpenApiParameter(name='ground', description="Enter the date", type=str)],
+        summary='Making Matches Schedule', description=f'* This endpoint Schedule the Matches.\n'
+                                                    f"* By using the Tournament Id and Ground Id")
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            id = data['id']
+            date = data['date']
+            # ground = data['ground']
+            tournament = Tournament.objects.get(id=id)  # status__in=['Not Scheduled', 'Pending']
+            serializer = TournamentGroundDepthSerializers(tournament)
+            # print(serializer.data['ground'][0]['id'])
+            user_emails = set([x.user for x in Transaction.objects.filter(tournament=tournament.id)])
+            # print(user_emails)
+            # print([x.owner for x in Teams.objects.all()])
+            teams = Teams.objects.filter(owner__email__in=user_emails)
+            # teams = Teams.objects.all()
+            matches = [teams[i:i+2] for i in range(0, len(teams), 2)]
+            print(matches)
+            match_schedule = []
+            for match in matches:
+                print(match[0].id, match[1].id if len(match)==2 else None, serializer.data['ground'][0]['id'])
+                data = {'tournament': tournament.id,
+                                       'team1': match[0].id,
+                                       'team2': match[1].id if len(match)==2 else None,
+                                       "date":date, # datetime.strptime(date, '%Y-%m-%d'),
+                                       "grounds":serializer.data['ground'][0]['id']}
+                match_schedule.append(data)
+            serializer = MatchScoreSerializer(data=match_schedule, many=True)
+            # print(match_schedule)
+            # print(serializer.is_valid())
+            # print(serializer.errors)
+            if serializer.is_valid():
+                serializer.save()
+                return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+            return HttpResponse(JSONRenderer().render({"Error": serializer.errors}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+            # return HttpResponse(JSONRenderer().render({"ok": "ok"}), content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+        OpenApiParameter(name='id', description="Enter the Tournament Id", type=str),
+        # OpenApiParameter(name='date', description="Enter the date", type=str),
+        # # OpenApiParameter(name='ground', description="Enter the date", type=str)
+            ],
+        summary='Getting Matches Schedule', description=f'* This endpoint getting Schedule the Matches.\n'
+                                                       f"* By using the Tournament Id")
+    def get(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            match = MatchScore.objects.filter(tournament=id)
+            serializer_data = MatchScoreSerializerDepth(match, many=True).data
+            return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+

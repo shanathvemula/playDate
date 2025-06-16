@@ -1,6 +1,8 @@
 from django.urls import path
 
-from tournament.views import TournamentCRUD, TournamentsList, TeamsCRUD, TournamentGroundDepthAPIView
+from tournament.views import (TournamentCRUD, TournamentsList, TeamsCRUD,
+                              # TournamentGroundDepthAPIView
+                              )
 
 urlpatterns = [
     path('tournaments/', TournamentsList.as_view()),
