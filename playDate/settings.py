@@ -115,7 +115,7 @@ ASGI_APPLICATION = 'playDate.asgi.application'
 # celery
 CELERY_BROKER_URL = 'redis://'+os.getenv('REDIS_HOST')+':'+os.getenv('REDIS_PORT')+'/0'
 # CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'django.db'
 CELERY_CACHE_BACKEND = 'django-cache'
 
 # Channels

@@ -281,7 +281,7 @@ class TeamsCRUD(APIView):
 
             # serializer.save()
             # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-            return HttpResponse(JSONRenderer().render({"ok":'Team is created successfully'}), content_type='application/json', status=status.HTTP_200_OK) # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
+            return HttpResponse(JSONRenderer().render({"ok":'ok'}), content_type='application/json', status=status.HTTP_200_OK) # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
