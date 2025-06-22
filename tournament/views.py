@@ -279,7 +279,7 @@ class TeamsCRUD(APIView):
                 create_user_and_send_email.delay(member, data['name'], data['owner'])
                 print("User created and email sent")
 
-            # serializer.save()
+            serializer.save()
             # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
             return HttpResponse(JSONRenderer().render({"ok":'Team is created successfully'}), content_type='application/json', status=status.HTTP_200_OK) # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
 
