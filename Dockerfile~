@@ -24,8 +24,8 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install psycopg2-binary --no-cache-dir --user
 
-# Install Gunicorn
-RUN pip install gunicorn
+# Install Gunicorn and Celery
+RUN pip install gunicorn celery
 
 # Copy project files into container
 COPY . .

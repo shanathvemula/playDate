@@ -34,6 +34,7 @@ COPY . .
 EXPOSE 8000
 
 # Run Django development server (for production, consider using gunicorn)
- CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 # CMD ["gunicorn", "--bind", "0.0.0.0:8000", "playDate.asgi:application"]
-#CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "playDate.asgi:application"]
+# CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "playDate.asgi:application"]
+CMD ["sh", "start.sh"]
