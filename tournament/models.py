@@ -39,6 +39,7 @@ class Tournament(models.Model):
     about = models.TextField()
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
+    game = models.CharField(max_length=250, blank=True, null=True, default=None)
     # start_time = models.TimeField(blank=True, null=True)
     # end_time = models.TimeField(blank=True, null=True)
     rules = models.JSONField(default=list, blank=True, null=True)

@@ -1,0 +1,54 @@
+import os
+import sys
+import django
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Add your Django project directory to Python path
+sys.path.append('/path/to/your/project')  # ← change this to your Django project root
+
+# Set the settings module
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')  # ← change to your settings module
+
+# Setup Django
+django.setup()
+
+# Now you can import Django models safely
+from django.contrib.auth.models import User
+
+
+# Database credentials from .env
+DB_PARAMS = {
+    "dbname": os.getenv("DB_NAME"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "port": os.getenv("DB_PORT", 5432),  # default PostgreSQL port
+}
+
+# SQL query
+QUERY = "SELECT * FROM public.teams ORDER BY id ASC;"
+
+# Database connection and DataFrame loading
+with psycopg2.connect(**DB_PARAMS) as conn:
+    df = pd.read_sql(QUERY, conn)
+
+# Process rows (example: print and prepare user creation)
+for _, row in df.iterrows():
+    team_name = row['team']
+    email = row.get('email', f'{team_name.lower()}@example.com')  # fallback email
+
+    print(f"Team: {team_name}, Email: {email}")
+
+    # Example: create Django user (ensure you're running inside Django context)
+    # user = User.objects.create_user(
+    #     username=email,
+    #     email=email,
+    #     password='Test@123',
+    # )
+    # user.profile.user_type = 'End User'  # If you use a custom profile model
+    # user.save()
+
+    break  # remove or adjust this as needed
