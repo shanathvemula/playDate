@@ -12,7 +12,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import F
 from django.db.models.expressions import RawSQL
 
@@ -258,34 +258,65 @@ class TeamsCRUD(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
-    @extend_schema(request=TeamsSerializer, summary="Making a new Team",
-                   description="This endpoint helps to create a new Team")
+    # @extend_schema(request=TeamsSerializer, summary="Making a new Team",
+    #                description="This endpoint helps to create a new Team")
+    # def post(self, request, *args, **kwargs):
+    #     data = request.data
+    #     print('data', data)
+    #     serializer = TeamsSerializer(data=data)
+    #
+    #     if not serializer.is_valid():
+    #         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     try:
+    #         team_data = data.get('team', [])
+    #         emails = [member['email'] for member in team_data]
+    #         existing_emails = set(User.objects.filter(email__in=emails).values_list('email', flat=True))
+    #
+    #         new_members = [member for member in team_data if member['email'] not in existing_emails]
+    #
+    #         for member in new_members:
+    #             print(member)
+    #             create_user_and_send_email.delay(member, data['name'], data['owner'])
+    #             print("User created and email sent")
+    #
+    #         serializer.save()
+    #         # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+    #         return HttpResponse(JSONRenderer().render({"ok":'Team is created successfully'}), content_type='application/json', status=status.HTTP_200_OK) # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
+    #
+    #     except Exception as e:
+    #         return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(request=TeamsSerializer, summary="Create Team", description="This endpoint helps to Create the Team")
     def post(self, request, *args, **kwargs):
-        data = request.data
-        print('data', data)
-        serializer = TeamsSerializer(data=data)
-
-        if not serializer.is_valid():
-            return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
         try:
-            team_data = data.get('team', [])
-            emails = [member['email'] for member in team_data]
-            existing_emails = set(User.objects.filter(email__in=emails).values_list('email', flat=True))
+            data = request.data
+            print(data.get('name'))
+            serializer = TeamsSerializer(data=data)
 
-            new_members = [member for member in team_data if member['email'] not in existing_emails]
+            if not serializer.is_valid():
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            for member in new_members:
-                print(member)
-                create_user_and_send_email.delay(member, data['name'], data['owner'])
-                print("User created and email sent")
+            try:
+                team_data = json.loads(data.get('team', []))
+                emails = [member['email'] for member in team_data]
+                existing_emails = set(User.objects.filter(email__in=emails).values_list('email', flat=True))
+                new_members = [member for member in team_data if member['email'] not in existing_emails]
+                for member in new_members:
+                    print(member)
+                    create_user_and_send_email.delay(member, data['name'], data['owner'])
+                    print("User created and email sent")
+                serializer.save()
+                # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+                return HttpResponse(JSONRenderer().render({"ok": 'Team is created successfully'}),
+                                    content_type='application/json',
+                                    status=status.HTTP_200_OK)  # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
 
-            serializer.save()
-            # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
-            return HttpResponse(JSONRenderer().render({"ok":'Team is created successfully'}), content_type='application/json', status=status.HTTP_200_OK) # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
-
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
 
     # def post(self, request, *args, **kwargs):
     #     try:
@@ -467,6 +498,33 @@ class TournamentGroundDepthAPIView(APIView):
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
 
+class InfoTournamentAPIView(APIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = Tournament.objects.all().order_by('id').last()
+    serializer_class = TournamentSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='game', description="Enter the game name or all", type=str),
+            # OpenApiParameter(name='date', description="Enter the date", type=str),
+            # # OpenApiParameter(name='ground', description="Enter the date", type=str)
+        ],
+        summary='Getting Matches Schedule', description=f'* This endpoint getting all the tournaments based on the game.\n'
+                                                        f"* By using the Tournament related game name")
+    def get(self, request, *args, **kwargs):
+        try:
+            game = request.GET.get('game')
+            print('game', game)
+            if game == 'all' or game is None or game == '':
+                tournament = Tournament.objects.all()
+            else:
+                tournament = Tournament.objects.filter(game__icontains=game)
+            serializer_data = TournamentSerializer(tournament, many=True).data
+            return HttpResponse(JSONRenderer().render(serializer_data), content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
 
 class CreateTeamAPIView(APIView):
     permission_classes = []
@@ -474,51 +532,87 @@ class CreateTeamAPIView(APIView):
     queryset = Teams.objects.all().order_by('id').last()
     serializer_class = TeamsSerializer
 
-    def get(self, request, *args, **kwargs):
+    @extend_schema(request=TeamsSerializer, summary="Create Team", description="This endpoint helps to Create the Team")
+    def post(self, request, *args, **kwargs):
         try:
-            teams = Teams.objects.all().order_by('id')
-            for team in teams:
-                print(team.id)
-                # print(team.team)
-                owner = team.owner
-                for i in team.team:
-                    print(i)
-                    try:
-                        user = User.objects.create_user(
-                            username=i['email'],
-                            email=i['email'],
-                            password='Test@123',
-                            user_type='End User'
-                        )
-                        owner = User.objects.get(email=owner)
-                        context = {
-                            "logo_path": os.getenv('logoURL'),
-                            "app_name": os.getenv('app_name'),
-                            "first_name": i['name'],
-                            "email": i['email'],
-                            "logInURL": os.getenv("logInURL"),
-                            "current_year": datetime.now().year,
-                            "company_address": os.getenv("company_address"),
-                            "supportMail": os.getenv("supportMail"),
-                            "password": 'Test@123',
-                            "owner": owner.first_name,
-                            "team_name": team.name,
-                        }
+            data = request.data
+            print(data.get('name'))
+            serializer = TeamsSerializer(data=data)
 
-                        body = render_to_string("mail_templates/Team_invite_template.html", context)
+            if not serializer.is_valid():
+                return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                        send_mail(
-                            to=i['email'],
-                            subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering",
-                            body=body
-                        )
+            try:
+                team_data = json.loads(data.get('team', []))
+                emails = [member['email'] for member in team_data]
+                existing_emails = set(User.objects.filter(email__in=emails).values_list('email', flat=True))
+                new_members = [member for member in team_data if member['email'] not in existing_emails]
+                for member in new_members:
+                    print(member)
+                    create_user_and_send_email.delay(member, data['name'], data['owner'])
+                    print("User created and email sent")
+                serializer.save()
+                # return JsonResponse(serializer.data, status=status.HTTP_201_CREATED, safe=False)
+                return HttpResponse(JSONRenderer().render({"ok": 'Team is created successfully'}),
+                                    content_type='application/json',
+                                    status=status.HTTP_200_OK)  # JsonResponse({"ok":'ok'}, status=status.HTTP_200_OK)
 
-                        print(owner.id)
-                    except Exception as e:
-                        print(f"Failed to create user or send email for {i['email']}: {e}")
-                # break
-            # serializer = TeamsSerializer(team, many=True)
-            return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json')
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
+# class CreateTeamAPIView(APIView):
+#     permission_classes = []
+#     authentication_classes = []
+#     queryset = Teams.objects.all().order_by('id').last()
+#     serializer_class = TeamsSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             teams = Teams.objects.all().order_by('id')
+#             for team in teams:
+#                 print(team.id)
+#                 # print(team.team)
+#                 owner = team.owner
+#                 for i in team.team:
+#                     print(i)
+#                     try:
+#                         user = User.objects.create_user(
+#                             username=i['email'],
+#                             email=i['email'],
+#                             password='Test@123',
+#                             user_type='End User'
+#                         )
+#                         owner = User.objects.get(email=owner)
+#                         context = {
+#                             "logo_path": os.getenv('logoURL'),
+#                             "app_name": os.getenv('app_name'),
+#                             "first_name": i['name'],
+#                             "email": i['email'],
+#                             "logInURL": os.getenv("logInURL"),
+#                             "current_year": datetime.now().year,
+#                             "company_address": os.getenv("company_address"),
+#                             "supportMail": os.getenv("supportMail"),
+#                             "password": 'Test@123',
+#                             "owner": owner.first_name,
+#                             "team_name": team.name,
+#                         }
+#
+#                         body = render_to_string("mail_templates/Team_invite_template.html", context)
+#
+#                         send_mail(
+#                             to=i['email'],
+#                             subject=f"Welcome to {os.getenv('app_name')}! Thank you for registering",
+#                             body=body
+#                         )
+#
+#                         print(owner.id)
+#                     except Exception as e:
+#                         print(f"Failed to create user or send email for {i['email']}: {e}")
+#                 # break
+#             # serializer = TeamsSerializer(team, many=True)
+#             return HttpResponse(JSONRenderer().render({"ok":"ok"}), content_type='application/json')
+#         except Exception as e:
+#             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+#                                 status=status.HTTP_400_BAD_REQUEST)

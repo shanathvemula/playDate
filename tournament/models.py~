@@ -16,7 +16,7 @@ class Teams(models.Model):
     id = models.CharField(max_length=50, primary_key=True, default=GenTeamId)
     name = models.CharField(max_length=250)
     images = models.JSONField(default=dict, blank=True, null=True)
-    logo = models.FileField(upload_to='team_logo/', blank=True, null=True)
+    # logo = models.FileField(upload_to='team_logo/', blank=True, null=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner')
     team = models.JSONField(default=dict, blank=True, null=True)
 
