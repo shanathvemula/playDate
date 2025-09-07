@@ -1,5 +1,5 @@
 # Use the official Python base image
-FROM python:latest
+FROM python:3.12.4
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file and install dependencies
-COPY requirements.txt ./
+COPY requirements.xt ./
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install psycopg2-binary --no-cache-dir --user
 
