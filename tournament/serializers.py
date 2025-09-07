@@ -20,6 +20,21 @@ class TournamentGroundsSerializer(serializers.ModelSerializer):
         fields = ['status', 'ground']
         depth = 1
 
+class GroundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroundNew
+        fields = ['id', 'ground_name', 'name', 'address', 'type', 'capacity', 'availability_status']
+        # include only the fields you want
+
+class TournamentGroundsListSerializer(serializers.ModelSerializer):
+    ground = GroundSerializer(many=True, read_only=True)  # nested serializer
+
+    class Meta:
+        model = Tournament
+        fields = ['id', 'name', 'start_date',
+                  'end_date', 'address', 'price',
+                  'status', 'ground', 'game'] #  'images', 'ground'
+
 class IdSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=25)
 

@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth, TournamentGroundsSerializer,
                                     TeamsSerializer, TeamsSerializerDepth, IdSerializer, MatchScore,
                                     TournamentGroundDepthSerializers, MatchScoreSerializer,
-                                    MatchScoreSerializerDepth)
+                                    MatchScoreSerializerDepth, TournamentGroundsListSerializer)
 from tournament.models import Tournament, Teams, GroundNew
 from payments.models import Transaction
 from tournament.tasks import create_user_and_send_email
@@ -225,6 +225,21 @@ class TournamentsList(APIView):
             else:
                 return HttpResponse(JSONRenderer().render({"Error": "Please provide the Tournament id info."}),
                                     content_type='application/json', status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        data = request.data
+        try:
+            if data['game'] in ["All Sports", '']:
+                tournaments = Tournament.objects.all().order_by('-created_date')
+            else:
+                tournaments = Tournament.objects.filter(game__icontains=data['game']).order_by('-created_date')
+            serializer = TournamentGroundsListSerializer(tournaments, many=True)
+            res = {"games": list(Tournament.objects.values_list('game', flat=True).distinct()), "data": serializer.data}
+            return HttpResponse(JSONRenderer().render(res), content_type='application/json',
+                                status=status.HTTP_200_OK)
         except Exception as e:
             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
                                 status=status.HTTP_400_BAD_REQUEST)
