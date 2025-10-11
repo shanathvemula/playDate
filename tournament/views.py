@@ -236,7 +236,7 @@ class TournamentsList(APIView):
             for key, value in data.items():
                 if value not in ('All Sports', '', None):
                     filters[f"{key}__contains"] = value
-            print(filters)
+            # print(filters)
             tournaments = Tournament.objects.filter(**filters).order_by('-created_date')
             # if data['game'] in ["All Sports", ''] or data=={}:
             #     tournaments = Tournament.objects.all().order_by('-created_date')
