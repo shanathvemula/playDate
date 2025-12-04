@@ -55,7 +55,8 @@ class Tournament(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     teams = models.ManyToManyField(Teams, blank=True)
     match_schedule_image = models.JSONField(default=dict, blank=True, null=True)
-
+    capacity = models.IntegerField(default=0)
+    registered_count = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'tournament'
@@ -75,3 +76,13 @@ class MatchScore(models.Model):
 
     class Meta:
         db_table = "match_score"
+
+class Matches(models.Model):
+    tournament = models.ForeignKey(Tournament, models.CASCADE, blank=True, null=True)
+    team1 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='match_team1', blank=True, null=True)
+    team2 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='match_team2', blank=True, null=True)
+    status = models.CharField(max_length=25, choices=status_choice)
+    stage = models.CharField(max_length=250, blank=True, null=True)
+
+    class Meta:
+        db_table = 'matches'

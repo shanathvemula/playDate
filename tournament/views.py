@@ -26,8 +26,8 @@ from datetime import datetime, timedelta
 from tournament.serializers import (TournamentSerializer, TournamentSerializerDepth, TournamentGroundsSerializer,
                                     TeamsSerializer, TeamsSerializerDepth, IdSerializer, MatchScore,
                                     TournamentGroundDepthSerializers, MatchScoreSerializer,
-                                    MatchScoreSerializerDepth, TournamentGroundsListSerializer)
-from tournament.models import Tournament, Teams, GroundNew
+                                    MatchScoreSerializerDepth, TournamentGroundsListSerializer, MatchSerializer,)
+from tournament.models import Tournament, Teams, GroundNew, Matches
 from payments.models import Transaction
 from tournament.tasks import create_user_and_send_email
 
@@ -641,3 +641,19 @@ class CreateTeamAPIView(APIView):
 #         except Exception as e:
 #             return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
 #                                 status=status.HTTP_400_BAD_REQUEST)
+
+class MatchesAPIView(APIView):
+    permission_classes = []
+    authentication_classes = []
+    queryset = Matches.objects.all().order_by('id').last()
+    serializer_class = MatchSerializer
+
+    def get(self, request, *args, **kwargs):
+        try:
+
+            matches = Matches.objects.all()
+            serializer = MatchSerializer(matches, many=True)
+            return HttpResponse(JSONRenderer().render(serializer.data), content_type='application/json')
+        except Exception as e:
+            return HttpResponse(JSONRenderer().render({"Error": str(e)}), content_type='application/json',
+                                status=status.HTTP_400_BAD_REQUEST)

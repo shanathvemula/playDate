@@ -453,6 +453,9 @@ const GMHome = () => {
         console.log("WebSocket Action:", message.action);
         
         switch (message.action) {
+            case "Initial":
+                setGroundData(message.data)
+                break;
             case "create":
                 // Add new ground data to the list
                 setGroundData((prevGroundData) => [...prevGroundData, message.data]);
