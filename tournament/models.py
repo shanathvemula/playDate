@@ -57,6 +57,7 @@ class Tournament(models.Model):
     match_schedule_image = models.JSONField(default=dict, blank=True, null=True)
     capacity = models.IntegerField(default=0)
     registered_count = models.IntegerField(default=0)
+    price_pool = models.IntegerField(default=0) # Winner Price
 
     class Meta:
         db_table = 'tournament'
