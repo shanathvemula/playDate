@@ -53,19 +53,24 @@ class RazorPayOrders(APIView):
         try:
             data = request.data
             # print(data)
-            data['amount'] = float(data['amount']*100)
+            tournamentId = data.pop('tournamentId', None)
+            data['amount'] = int(Tournament.objects.get(id=tournamentId).price)
+            print(data['amount'])
             user_info = data.pop('user')
             try:
                 user_info = json.loads(user_info)['id']
             except:
                 user_info = user_info
             selectedSlots = data.pop('selectedSlots', None)
+            name = data.pop('name', None)
+            phone = data.pop('phone', None)
+            email = data.pop('email', None)
+            tournamentId = data.pop('tournamentId', None)
             if selectedSlots:
                 date = selectedSlots[0]['date']
             else:
                 date = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
             groundId = data.pop('groundId', None)
-            tournamentId = data.pop('tournamentId', None)
             teamId = data.pop('teamId', None)
             # print("groundId", groundId)
             create_order_serializer = CreateOrderSerializer(data=data)
