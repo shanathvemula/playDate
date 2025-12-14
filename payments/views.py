@@ -266,7 +266,7 @@ class PhonepayOrders(APIView):
             print(amount, type(amount))
             order = {
                 "merchantOrderId":f"Order_{uuid.uuid4().hex[:10]}",
-                "amount": 100, # amount * 100,
+                "amount": amount * 100, # 100, #
                 "expireAfter": 1200,
                 "metaInfo": data,
                 "paymentFlow": {
