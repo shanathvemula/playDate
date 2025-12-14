@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import F, Func, Value
 from django.db.models.functions import Cast
 from django.db import models
+from django.http import HttpResponse, JsonResponse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -30,6 +31,8 @@ import razorpay
 import qrcode
 import base64
 from io import BytesIO
+import uuid
+import requests
 
 from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -227,4 +230,57 @@ class BookingInfo(APIView):
             # print("Transactions", trans)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PhonepayOrders(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+            # print(data)
+            client_id = os.getenv('PHONEPAY_CLIENT_ID')
+            client_version = os.getenv('PHONEPAY_CLIENT_VERSION')
+            client_secret = os.getenv('PHONEPAY_CLIENT_SECRET')
+            token_url = url = "https://api-preprod.phonepe.com/apis/pg-sandbox/v1/oauth/token"
+            token_payload = f'client_id={client_id}&client_version={client_version}&client_secret={client_secret}&grant_type=client_credentials'
+            token_headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+            response = requests.request("POST", token_url, data=token_payload, headers=token_headers)
+            print(response.json()), client_id, client_secret
+            url = "https://api-preprod.phonepe.com/apis/pg-sandbox/checkout/v2/pay"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'O-Bearer {response.json()['access_token']}'
+            }
+            amount = data.get("amount", None)
+            print("amount", amount)
+            if amount in [None, ""]:
+                amount = Tournament.objects.get(id=data['tournamentId']).price
+            amount = int(float(amount))
+            print("amount",amount)
+            # amount = data['amount']
+            print(amount, type(amount))
+            order = {
+                "merchantOrderId":f"Order_{uuid.uuid4().hex[:10]}",
+                "amount": 100, # amount * 100,
+                "expireAfter": 1200,
+                "metaInfo": data,
+                "paymentFlow": {
+                    "type": "PG_CHECKOUT",
+                    "message": "Payment message used for collect requests",
+                    "merchantUrls": {
+                        "redirectUrl": "https://playdatesport.com/"
+                    }
+                }
+            }
+            print(order)
+            order_response = requests.request("POST", url, headers=headers, json=order)
+            print(order_response.json())
+            return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
+        except Exception as e:
+            raise e
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
