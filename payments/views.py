@@ -256,8 +256,8 @@ class PhonepayOrders(APIView):
             headers = {
                 'Content-Type': 'application/json',
                 'Authorization': f'O-Bearer {response.json()['access_token']}',
-                'Referrer-Policy': 'strict-origin-when-cross-origin',
-                "Cross-Origin-Opener-Policy": 'same-origin-allow-popups'
+                # 'Referrer-Policy': 'strict-origin-when-cross-origin',
+                # "Cross-Origin-Opener-Policy": 'same-origin-allow-popups'
 
             }
             amount = data.get("amount", None)
