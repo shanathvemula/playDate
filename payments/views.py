@@ -257,7 +257,8 @@ class PhonepayOrders(APIView):
                 'Content-Type': 'application/json',
                 'Authorization': f'O-Bearer {response.json()['access_token']}',
                 'Referrer-Policy': 'strict-origin-when-cross-origin',
-                'Cross-Origin-Opener-Policy': 'same-origin'
+                "Cross-Origin-Opener-Policy": 'same-origin-allow-popups'
+
             }
             amount = data.get("amount", None)
             print("amount", amount)
@@ -284,8 +285,8 @@ class PhonepayOrders(APIView):
             email = order.get('email', None)
             team = order.get('team', None)
             order_response = requests.request("POST", url, headers=headers, json=order)
-            data = {"order_id": order['merchantOrderId'], "amount": amount, "tournament": data['tournamentId'],
-                    "team": team, "user": user if user else email, "Status": "PENDING"}
+            # data = {"order_id": order['merchantOrderId'], "amount": amount, "tournament": data['tournamentId'],
+            #         "team": team, "user": user if user else email, "Status": "PENDING"}
             # Transaction.objects.create(**data)
             # print(order_response.json())
             return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
