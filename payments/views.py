@@ -251,7 +251,7 @@ class PhonepayOrders(APIView):
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             response = requests.request("POST", token_url, data=token_payload, headers=token_headers)
-            print(response.json()), client_id, client_secret
+            print(response.json())  # , client_id, client_secret
             url = "https://api.phonepe.com/apis/pg/checkout/v2/pay"
             headers = {
                 'Content-Type': 'application/json',
