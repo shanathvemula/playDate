@@ -27,7 +27,7 @@ class Transaction(models.Model):
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount Paid", blank=True, null=True)
     attempts = models.IntegerField(default=0, verbose_name="Attempts")
     currency = models.CharField(max_length=10, verbose_name="Currency")
-    order_id = models.CharField(max_length=200, verbose_name="Order ID")
+    # order_id = models.CharField(max_length=200, verbose_name="Order ID")
     status = models.CharField(max_length=20, verbose_name="Status")
     booked_date = models.DateTimeField(blank=True, null=True)
     user = models.CharField(max_length=250)

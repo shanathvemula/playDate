@@ -17,7 +17,7 @@ from datetime import datetime
 from grounds.views import GroundNew
 from payments.serializers import (CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction,
                                   TransactionSerializerPost)
-from tournament.models import Tournament
+from tournament.models import Tournament, Teams
 from app.serializer import UserSerializer
 
 import json
@@ -33,6 +33,7 @@ import base64
 from io import BytesIO
 import uuid
 import requests
+import random
 
 from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -244,17 +245,19 @@ class PhonepayOrders(APIView):
             client_id = os.getenv('PHONEPAY_CLIENT_ID')
             client_version = os.getenv('PHONEPAY_CLIENT_VERSION')
             client_secret = os.getenv('PHONEPAY_CLIENT_SECRET')
-            token_url = url = "https://api-preprod.phonepe.com/apis/pg-sandbox/v1/oauth/token"
+            token_url = "https://api.phonepe.com/apis/identity-manager/v1/oauth/token"
             token_payload = f'client_id={client_id}&client_version={client_version}&client_secret={client_secret}&grant_type=client_credentials'
             token_headers = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             response = requests.request("POST", token_url, data=token_payload, headers=token_headers)
             print(response.json()), client_id, client_secret
-            url = "https://api-preprod.phonepe.com/apis/pg-sandbox/checkout/v2/pay"
+            url = "https://api.phonepe.com/apis/pg/checkout/v2/pay"
             headers = {
                 'Content-Type': 'application/json',
-                'Authorization': f'O-Bearer {response.json()['access_token']}'
+                'Authorization': f'O-Bearer {response.json()['access_token']}',
+                'Referrer-Policy': 'strict-origin-when-cross-origin',
+                'Cross-Origin-Opener-Policy': 'same-origin'
             }
             amount = data.get("amount", None)
             print("amount", amount)
@@ -277,10 +280,32 @@ class PhonepayOrders(APIView):
                     }
                 }
             }
-            print(order)
+            user = order.get('user', None)
+            email = order.get('email', None)
+            team = order.get('team', None)
             order_response = requests.request("POST", url, headers=headers, json=order)
-            print(order_response.json())
+            data = {"order_id": order['merchantOrderId'], "amount": amount, "tournament": data['tournamentId'],
+                    "team": team, "user": user if user else email, "Status": "PENDING"}
+            # Transaction.objects.create(**data)
+            # print(order_response.json())
             return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
         except Exception as e:
-            raise e
+            # raise e
+            print(e)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Match_Schedule(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request, *args, **kwargs):
+        try:
+            id = request.GET.get('id')
+            teams = list(Transaction.objects.filter(tournament=id, team__isnull=False))
+            random.shuffle(teams)
+            team_pairs = [teams[i:i+2] for i in range(0, len(teams), 2)]
+            print(id, teams, team_pairs)
+            return Response({"ok":"ok"}, status=status.HTTP_200_OK)
+        except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
