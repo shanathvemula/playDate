@@ -17,7 +17,8 @@ from datetime import datetime
 from grounds.views import GroundNew
 from payments.serializers import (CreateOrderSerializer, VerifyOrderSerializer, TransactionSerializer, Transaction,
                                   TransactionSerializerPost)
-from tournament.models import Tournament, Teams
+from tournament.models import Tournament, Teams, Matches
+from tournament.serializers import MatchSerializer
 from app.serializer import UserSerializer
 
 import json
@@ -303,10 +304,150 @@ class Match_Schedule(APIView):
     def get(self, request, *args, **kwargs):
         try:
             id = request.GET.get('id')
-            teams = list(Transaction.objects.filter(tournament=id, team__isnull=False))
-            random.shuffle(teams)
-            team_pairs = [teams[i:i+2] for i in range(0, len(teams), 2)]
-            print(id, teams, team_pairs)
-            return Response({"ok":"ok"}, status=status.HTTP_200_OK)
+            matches = Matches.objects.filter(tournament=id)
+            res = []
+            for match in matches:
+                res_match = {"id": match.id,
+                             "team1": {"id": match.team1.id, "name": match.team1.name, "flag": match.team1.name[:2]},
+                             "status": match.status,
+                             "venue": None,
+                             }
+                if match.team2:
+                    res_match["team2"] = {"id": match.team2.id, "name": match.team2.name, "flag": match.team2.name[:2]}
+                res.append(res_match)
+            return Response(
+                {"name": "initial", "matches": res},
+                status=status.HTTP_200_OK
+            )
+        except ValidationError as e:
+            return Response(
+                {
+                    "error": "Validation failed",
+                    "details": e.detail
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def post(self, request, *args, **kwargs):
+        try:
+            tournament_id = request.data.get("id")
+            if not tournament_id:
+                return Response(
+                    {"error": "Tournament id is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            tournament = Tournament.objects.get(id=id)
+            print(tournament.ground[0])
+
+            # Fetch only required fields
+            transactions = Transaction.objects.filter(
+                tournament=tournament_id
+            ).select_related("team")
+
+            teams = set()
+
+            for tx in transactions:
+                if tx.team:
+                    teams.add(tx.team)
+                    continue
+
+                user = tx.user
+                if not user:
+                    continue
+
+                # If user is numeric → owner id
+                if str(user).isdigit():
+                    team = Teams.objects.filter(owner_id=user).first()
+                else:
+                    team = Teams.objects.filter(owner__username=user).first()
+
+                if team:
+                    teams.add(team)
+
+            teams = list(teams)
+            random.shuffle(teams)
+
+            serializers = []
+
+            for i in range(0, len(teams), 2):
+                team1 = teams[i]
+                team2 = teams[i + 1] if i + 1 < len(teams) else None
+
+                data = {
+                    "tournament": tournament_id,
+                    "team1": team1.id,
+                    "stage": "Initial",
+                }
+
+                if team2:
+                    data.update({
+                        "team2": team2.id,
+                        "status": "Pending",
+                    })
+                else:
+                    data.update({
+                        "winner": team1.id,
+                        "status": "Completed",
+                    })
+                serializer = MatchSerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                serializers.append(serializer)
+
+            # Save all matches
+            for serializer in serializers:
+                serializer.save()
+
+            return Response(
+                {"message": "Matches Scheduled"},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # def post(self, request, *args, **kwargs):
+    #     try:
+    #         id = request.data['id']
+    #         trans = list(Transaction.objects.filter(tournament=id))
+    #         teams = []
+    #         for i in trans:
+    #             if i.team:
+    #                 teams.append(i.team)
+    #             else:
+    #                 # print(i.user, type(i.user), i.user.isdigit())
+    #                 if i.user.isdigit():
+    #                     teams.append(Teams.objects.get(owner=i.user))
+    #                 else:
+    #                     try:
+    #                         teams.append(Teams.objects.get(owner__username=i.user))
+    #                     except:
+    #                         pass
+    #                 # print(i.user)
+    #
+    #         teams = list(set(teams))
+    #         random.shuffle(teams)
+    #         team_pairs = [teams[i:i+2] for i in range(0, len(teams), 2)]
+    #         # print(team_pairs)
+    #         for pair in team_pairs:
+    #             if len(pair)==2:
+    #                 res_pair = {"tournament":id, "team1":pair[0].id, "team2": pair[1].id,
+    #                             "status": "Pending", "stage": "Initial"}
+    #             else:
+    #                 res_pair = {"tournament":id, "team1":pair[0].id, "winner": pair[0].id,
+    #                             "status": "Completed", "stage": "Initial"}
+    #             serializer = MatchSerializer(data=res_pair)
+    #             if serializer.is_valid():
+    #                 serializer.save()
+    #         return Response({"message":"Matches Scheduled"}, status=status.HTTP_200_OK)
+    #     except Exception as e:
+    #         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+

@@ -82,8 +82,10 @@ class Matches(models.Model):
     tournament = models.ForeignKey(Tournament, models.CASCADE, blank=True, null=True)
     team1 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='match_team1', blank=True, null=True)
     team2 = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='match_team2', blank=True, null=True)
+    winner = models.ForeignKey(Teams, on_delete=models.CASCADE, related_name='winner', blank=True, null=True)
     status = models.CharField(max_length=25, choices=status_choice)
     stage = models.CharField(max_length=250, blank=True, null=True)
+    venue = models.CharField(max_length=250, blank=True, null=True)
 
     class Meta:
         db_table = 'matches'
