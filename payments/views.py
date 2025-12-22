@@ -314,6 +314,8 @@ class Match_Schedule(APIView):
                              }
                 if match.team2:
                     res_match["team2"] = {"id": match.team2.id, "name": match.team2.name, "flag": match.team2.name[:2]}
+                if match.winner:
+                    res_match['winner'] = { "id": match.winner.id, "name": match.winner.name }
                 res.append(res_match)
             return Response(
                 [{"name": "initial", "matches": res}],
