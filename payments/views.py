@@ -316,7 +316,7 @@ class Match_Schedule(APIView):
                     res_match["team2"] = {"id": match.team2.id, "name": match.team2.name, "flag": match.team2.name[:2]}
                 res.append(res_match)
             return Response(
-                {"name": "initial", "matches": res},
+                [{"name": "initial", "matches": res}],
                 status=status.HTTP_200_OK
             )
         except ValidationError as e:
