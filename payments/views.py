@@ -337,23 +337,23 @@ class Match_Schedule(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            tournament_id = request.data.get("id")
+            tournament_id = request.data["id"]
+            print(tournament_id, type(tournament_id))
             if not tournament_id:
                 return Response(
                     {"error": "Tournament id is required"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            tournament = Tournament.objects.get(id=id)
-            print(tournament.ground[0])
+            # print([t.id for t in Tournament.objects.all()])
+            tournament = Tournament.objects.get(id=tournament_id)
+            # print(tournament)
+            venue = tournament.ground.all()[0].ground_name
 
             # Fetch only required fields
             transactions = Transaction.objects.filter(
                 tournament=tournament_id
             ).select_related("team")
-
             teams = set()
-
             for tx in transactions:
                 if tx.team:
                     teams.add(tx.team)
@@ -362,7 +362,6 @@ class Match_Schedule(APIView):
                 user = tx.user
                 if not user:
                     continue
-
                 # If user is numeric → owner id
                 if str(user).isdigit():
                     team = Teams.objects.filter(owner_id=user).first()
@@ -371,12 +370,9 @@ class Match_Schedule(APIView):
 
                 if team:
                     teams.add(team)
-
             teams = list(teams)
             random.shuffle(teams)
-
             serializers = []
-
             for i in range(0, len(teams), 2):
                 team1 = teams[i]
                 team2 = teams[i + 1] if i + 1 < len(teams) else None
@@ -386,21 +382,22 @@ class Match_Schedule(APIView):
                     "team1": team1.id,
                     "stage": "Initial",
                 }
-
+                # print('loop2')
                 if team2:
                     data.update({
                         "team2": team2.id,
                         "status": "Pending",
+                        "venue": venue,
                     })
                 else:
                     data.update({
                         "winner": team1.id,
                         "status": "Completed",
+                        "venue" : venue,
                     })
                 serializer = MatchSerializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 serializers.append(serializer)
-
             # Save all matches
             for serializer in serializers:
                 serializer.save()
