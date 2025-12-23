@@ -310,7 +310,7 @@ class Match_Schedule(APIView):
                 res_match = {"id": match.id,
                              "team1": {"id": match.team1.id, "name": match.team1.name, "flag": match.team1.name[:2]},
                              "status": match.status,
-                             "venue": None,
+                             "venue": match.venue,
                              }
                 if match.team2:
                     res_match["team2"] = {"id": match.team2.id, "name": match.team2.name, "flag": match.team2.name[:2]}
