@@ -373,6 +373,7 @@ class Match_Schedule(APIView):
             teams = list(teams)
             random.shuffle(teams)
             serializers = []
+            print("venue", venue)
             for i in range(0, len(teams), 2):
                 team1 = teams[i]
                 team2 = teams[i + 1] if i + 1 < len(teams) else None
@@ -381,20 +382,20 @@ class Match_Schedule(APIView):
                     "tournament": tournament_id,
                     "team1": team1.id,
                     "stage": "Initial",
+                    "venue": venue
                 }
                 # print('loop2')
                 if team2:
                     data.update({
                         "team2": team2.id,
                         "status": "Pending",
-                        "venue": venue,
                     })
                 else:
                     data.update({
                         "winner": team1.id,
                         "status": "Completed",
-                        "venue" : venue,
                     })
+
                 serializer = MatchSerializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 serializers.append(serializer)
