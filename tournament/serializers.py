@@ -31,9 +31,9 @@ class TournamentGroundsListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tournament
-        fields = ['id', 'name', 'start_date',
-                  'end_date', 'address', 'price',
-                  'status', 'ground', 'game'] #  'images', 'ground'
+        fields = ['id', 'name', 'start_date', 'capacity',
+                  'end_date', 'address', 'price', 'registered_count',
+                  'status', 'ground', 'game', 'price_pool'] #  'images', 'ground'
 
 class IdSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=25)
