@@ -331,3 +331,13 @@ RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 # CSRF_COOKIE_SECURE = True
 
 # APPEND_SLASH = False
+
+PHONEPE = {
+    "CLIENT_ID": os.getenv("PHONEPAY_CLIENT_ID"),
+    "CLIENT_SECRET": os.getenv("PHONEPAY_CLIENT_SECRET"),
+    "CLIENT_VERSION": os.getenv("PHONEPAY_CLIENT_VERSION"),
+    "TOKEN_URL": "https://api.phonepe.com/apis/identity-manager/v1/oauth/token",
+    "PAY_URL": "https://api.phonepe.com/apis/pg/checkout/v2/pay",
+    "REDIRECT_URL": "https://playdatesport.com/",
+    "TIMEOUT": 15,
+}

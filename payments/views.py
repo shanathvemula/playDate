@@ -36,6 +36,14 @@ import uuid
 import requests
 import random
 
+from .token_service import fetch_phonepe_token
+from .phonepe_service import create_phonepe_order
+
+import uuid
+import logging
+
+logger = logging.getLogger("payments.phonepe")
+
 from playDate.settings import RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
 client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
@@ -239,36 +247,72 @@ class PhonepayOrders(APIView):
     permission_classes = []
     authentication_classes = []
 
+    # def post(self, request, *args, **kwargs):
+    #     try:
+    #         data = request.data
+    #         # print(data)
+    #         client_id = os.getenv('PHONEPAY_CLIENT_ID')
+    #         client_version = os.getenv('PHONEPAY_CLIENT_VERSION')
+    #         client_secret = os.getenv('PHONEPAY_CLIENT_SECRET')
+    #         token_url = "https://api.phonepe.com/apis/identity-manager/v1/oauth/token"
+    #         token_payload = f'client_id={client_id}&client_version={client_version}&client_secret={client_secret}&grant_type=client_credentials'
+    #         token_headers = {
+    #             'Content-Type': 'application/x-www-form-urlencoded'
+    #         }
+    #         response = requests.request("POST", token_url, data=token_payload, headers=token_headers)
+    #         # print(response.json())  # , client_id, client_secret
+    #         url = "https://api.phonepe.com/apis/pg/checkout/v2/pay"
+    #         headers = {
+    #             'Content-Type': 'application/json',
+    #             'Authorization': f'O-Bearer {response.json()['access_token']}',
+    #             # 'Referrer-Policy': 'strict-origin-when-cross-origin',
+    #             # "Cross-Origin-Opener-Policy": 'same-origin-allow-popups'
+    #
+    #         }
+    #         amount = data.get("amount", None)
+    #         print("amount", amount)
+    #         if amount in [None, ""]:
+    #             amount = Tournament.objects.get(id=data['tournamentId']).price
+    #         amount = int(float(amount))
+    #         print("amount",amount)
+    #         # amount = data['amount']
+    #         print(amount, type(amount))
+    #         order = {
+    #             "merchantOrderId":f"Order_{uuid.uuid4().hex[:10]}",
+    #             "amount": amount * 100, # 100, #
+    #             "expireAfter": 1200,
+    #             "metaInfo": data,
+    #             "paymentFlow": {
+    #                 "type": "PG_CHECKOUT",
+    #                 "message": "Payment message used for collect requests",
+    #                 "merchantUrls": {
+    #                     "redirectUrl": "https://playdatesport.com/"
+    #                 }
+    #             }
+    #         }
+    #         user = order.get('user', None)
+    #         email = order.get('email', None)
+    #         team = order.get('team', None)
+    #         order_response = requests.request("POST", url, headers=headers, json=order)
+    #         # data = {"order_id": order['merchantOrderId'], "amount": amount, "tournament": data['tournamentId'],
+    #         #         "team": team, "user": user if user else email, "Status": "PENDING"}
+    #         # Transaction.objects.create(**data)
+    #         # print(order_response.json())
+    #         return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
+    #     except Exception as e:
+    #         # raise e
+    #         print(e)
+    #         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request, *args, **kwargs):
         try:
             data = request.data
-            # print(data)
-            client_id = os.getenv('PHONEPAY_CLIENT_ID')
-            client_version = os.getenv('PHONEPAY_CLIENT_VERSION')
-            client_secret = os.getenv('PHONEPAY_CLIENT_SECRET')
-            token_url = "https://api.phonepe.com/apis/identity-manager/v1/oauth/token"
-            token_payload = f'client_id={client_id}&client_version={client_version}&client_secret={client_secret}&grant_type=client_credentials'
-            token_headers = {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-            response = requests.request("POST", token_url, data=token_payload, headers=token_headers)
-            print(response.json())  # , client_id, client_secret
-            url = "https://api.phonepe.com/apis/pg/checkout/v2/pay"
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': f'O-Bearer {response.json()['access_token']}',
-                # 'Referrer-Policy': 'strict-origin-when-cross-origin',
-                # "Cross-Origin-Opener-Policy": 'same-origin-allow-popups'
-
-            }
             amount = data.get("amount", None)
-            print("amount", amount)
             if amount in [None, ""]:
                 amount = Tournament.objects.get(id=data['tournamentId']).price
             amount = int(float(amount))
-            print("amount",amount)
-            # amount = data['amount']
-            print(amount, type(amount))
+            if amount <= 0:
+                return Response({"error": "Invalid amount"}, status=400)
             order = {
                 "merchantOrderId":f"Order_{uuid.uuid4().hex[:10]}",
                 "amount": amount * 100, # 100, #
@@ -282,18 +326,37 @@ class PhonepayOrders(APIView):
                     }
                 }
             }
+
+            # Getting Access Token
+            access_token = fetch_phonepe_token()
+
+            # Creating Order in phonepay
+            res = create_phonepe_order(access_token, order_payload)
+            res_data = res.json()
+
+            logger.info("PhonePe order created", extra={
+                "order_id": merchant_order_id,
+                "amount": amount,
+                "response": res_data
+            })
+
             user = order.get('user', None)
             email = order.get('email', None)
             team = order.get('team', None)
-            order_response = requests.request("POST", url, headers=headers, json=order)
+
             # data = {"order_id": order['merchantOrderId'], "amount": amount, "tournament": data['tournamentId'],
             #         "team": team, "user": user if user else email, "Status": "PENDING"}
             # Transaction.objects.create(**data)
             # print(order_response.json())
+
             return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
+        except Tournament.DoesNotExist:
+            return Response({"error": "Tournament not found"}, status=404)
+
         except Exception as e:
             # raise e
-            print(e)
+            # print(e)
+            logger.exception("PhonePe payment error")
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
