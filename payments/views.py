@@ -335,7 +335,7 @@ class PhonepayOrders(APIView):
             res_data = res.json()
 
             logger.info("PhonePe order created", extra={
-                "order_id": merchant_order_id,
+                "order_id": order["merchantOrderId"],
                 "amount": amount,
                 "response": res_data
             })
