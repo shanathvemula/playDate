@@ -349,7 +349,7 @@ class PhonepayOrders(APIView):
             # Transaction.objects.create(**data)
             # print(order_response.json())
 
-            return JsonResponse(order_response.json(), content_type='application/json', status=order_response.status_code)
+            return JsonResponse(res.json(), content_type='application/json', status=order_response.status_code)
         except Tournament.DoesNotExist:
             return Response({"error": "Tournament not found"}, status=404)
 
