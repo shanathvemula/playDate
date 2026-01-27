@@ -331,7 +331,7 @@ class PhonepayOrders(APIView):
             access_token = fetch_phonepe_token()
 
             # Creating Order in phonepay
-            res = create_phonepe_order(access_token, order_payload)
+            res = create_phonepe_order(access_token, order)
             res_data = res.json()
 
             logger.info("PhonePe order created", extra={
